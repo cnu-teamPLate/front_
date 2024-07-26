@@ -105,7 +105,7 @@
     margin-right: 5px;
   }
   
-  button {
+  .SignUp button {
     background-color: #a5bbe7;
     color: white;
     padding: 10px;
@@ -122,7 +122,7 @@
     background-color: #8fa9d6;
   }
   
-  button[type="submit"] {
+  .SignUp button [type="submit"] {
     width: 100%;
     margin-top: 20px;
   }
