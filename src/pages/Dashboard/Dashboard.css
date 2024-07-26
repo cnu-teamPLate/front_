@@ -1,0 +1,323 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .App {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .App-header, .Dashboard-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    background-color: #e0e5ef;
+    color: rgb(0, 0, 0);
+    padding: 1em;
+    display: flex;
+    justify-content: flex-end;
+    z-index: 1000;
+  }
+  
+  .login-signup, .my-page-logout {
+    display: flex;
+    align-items: center;
+    margin-right: 1em;
+  }
+  
+  .login-signup a, .my-page-logout a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    margin: 0 10px;
+  }
+  
+  .sidebar-toggle {
+    position: fixed;
+    top: 1em;
+    left: 1em;
+    z-index: 1001;
+    background: none;
+    border: none;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+  }
+  
+  .App-sidebar {
+    position: fixed;
+    left: -285px;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #f8f8f8;
+    color: rgb(0, 0, 0);
+    transition: left 0.3s;
+    padding: 1em;
+    z-index: 1000;
+  }
+  
+  .App-sidebar.open {
+    left: 0;
+  }
+  
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .create-project {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+  }
+  
+  .create-project p {
+    margin-top: 5px;
+  }
+  
+  .my-projects {
+    margin-top: 20px;
+    width: 100%;
+  }
+  
+  .my-projects h2 {
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  
+  .project-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px 0;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+  }
+  
+  .project-item:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .project-item p {
+    margin-top: 5px;
+  }
+  
+  .App-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    padding: 2em;
+    margin-top: 60px; /* Adjust based on header height */
+    text-align: center;
+  }
+  
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: #fff;
+    padding: 3em 1em;
+  }
+  
+  .hero-text h1 {
+    font-size: 2.7em;
+    color: #070707;
+    margin-bottom: 0.5em;
+  }
+  
+  .hero-text p {
+    font-size: 1.2em;
+    margin-bottom: 1.5em;
+  }
+  
+  .cta-button {
+    background-color: #a5bbe7;
+    color: white;
+    padding: 0.75em 1.5em;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .features, .how-it-works, .testimonials, .faq {
+    margin: 2em 0;
+  }
+  
+  .features h2, .how-it-works h2, .testimonials h2, .faq h2 {
+    text-align: center;
+    margin-bottom: 1em;
+  }
+  
+  .feature-list {
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .feature-item {
+    text-align: center;
+    width: 30%;
+  }
+  
+  .feature-item img {
+    max-width: 100%;
+  }
+  
+  .testimonial-list {
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .testimonial-item {
+    background-color: #f0f0f0;
+    padding: 1em;
+    border-radius: 8px;
+    width: 45%;
+  }
+  
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .faq-item {
+    width: 80%;
+    margin-bottom: 1em;
+  }
+  
+  .footer-links a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    margin: 0 10px;
+  }
+  
+  footer {
+    text-align: center;
+    margin-top: 2em;
+  }
+  
+  .project-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .project-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    position: relative;
+  }
+  
+  .project-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .project-card h2 {
+    margin: 0;
+    font-size: 1.5em;
+  }
+  
+  .project-card p {
+    margin-top: 1em;
+  }
+  
+  .project-link {
+    color: #6200ee;
+    text-decoration: none;
+    display: block;
+    margin-top: 1em;
+    text-align: right;
+  }
+  
+  .project-card .bookmark {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .popup-inner {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    text-align: center;
+  }
+  
+  .popup-inner h2 {
+    margin-bottom: 20px;
+  }
+  
+  .popup-inner label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .popup-inner input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .popup-inner button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .popup-inner button:last-child {
+    background-color: #dc3545;
+  }
+  
+  .popup-inner ul {
+    list-style-type: none;
+    padding: 0;
+  }         
+  
+  .popup-inner ul li {
+    padding: 5px;
+    cursor: pointer;
+  }
+  
+  .popup-inner ul li:hover {
+    background-color: #f0f0f0;
+  }
+  
