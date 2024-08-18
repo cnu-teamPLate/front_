@@ -24,18 +24,18 @@ function Home() {
           <h2>주요 기능</h2>
           <div className="feature-list">
             <div className="feature-item">
-              <img src="contribute.png" alt="Feature 1" />
+              <img src="feature1.png" alt="feature1" />
               <h3>과제별 기여도 측정</h3>
               <p>전체, 월별, 주별 기여도를 자동으로 제공</p>
             </div>
             <div className="feature-item">
-              <img src="" alt="Feature 2" />
+              <img src="feature2.png" alt="feature2" />
               <h3>역할, 업무 분담</h3>
               <p>과제별, 인원별 명확한 업무 분담, 정리</p>
               <p>해야하는 활동에 대한 가이드라인 제시</p>
             </div>
             <div className="feature-item">
-              <img src="whentomeet.png" alt="Feature 3" />
+              <img src="feature3.png" alt="feature3" />
               <h3>회의 시간 정하기</h3>
               <p>가능한 시간대를 직접 고를 수 있는 편리한 서비스</p>
             </div>

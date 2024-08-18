@@ -1,0 +1,202 @@
+    .App {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .App-header, .Assignment-header {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        background-color: #A32125;
+        color: rgb(255, 255, 255);
+        padding: 1em;
+        display: flex;
+        justify-content: flex-end;
+        z-index: 1000;
+    }
+
+    .login-signup, .my-page-logout {
+        display: flex;
+        align-items: center;
+        margin-right: 1em;
+    }
+
+    .login-signup a, .my-page-logout a {
+        color: rgb(255, 255, 255);
+        text-decoration: none;
+        margin: 0 10px;
+    }
+  
+    .sidebar-toggle {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 1001;
+        background: none;
+        border: none;
+        color: rgb(0, 0, 0);
+        cursor: pointer;
+    }
+  
+    .App-sidebar {
+        position: fixed;
+        left: -285px;
+        top: 0;
+        width: 250px;
+        height: 100%;
+        background-color: #f8f8f8;
+        color: rgb(0, 0, 0);
+        transition: left 0.3s;
+        padding: 1em;
+        z-index: 1000;
+    }
+  
+    .App-sidebar.open {
+        left: 0;
+    }
+
+    .sidebar-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;}
+
+    .center-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .As-create-form {
+        margin-top: 80px;
+        width: 800px;
+        display: flex;
+        flex-direction: column;
+        border-style: none;
+        align-items: center;
+
+    }
+
+    .setting-list {
+        display: flex;
+        margin-right: auto;
+        flex-direction: row;
+    }
+
+    .setting-list select {
+        background-color:#ececec;
+        width: 90px;
+        height: 30px;
+        margin-right: 5px;
+        border-width: 2px;
+        border-radius: 5px;
+        text-align: center;
+
+
+    }
+
+    .setting-list input {
+        background-color:#ececec;
+        max-width: 130px;
+        width: 80%;
+        height: 30px;
+        text-align: center;
+        border-radius: 5px;
+        border-style: solid;
+        border-width: 2px;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-direction: column;
+    }
+
+    .As-title textarea, .As-detail textarea {
+        border: 1.5px solid #970005;
+        padding-top: 15px;
+        padding-left: 25px;
+        width: 800px;
+        border-radius: 5px;
+        box-sizing: border-box;
+        resize: none;
+    }
+
+    .As-title textarea {
+        margin-top: 5px;
+        height:50px;
+    }
+
+    .As-detail textarea {
+        margin-bottom: 5px;
+        height: 100px;
+        overflow: auto;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+
+    }
+
+
+    .As-create-form button {
+        width: 100px;
+        padding: 10px;
+        margin-left: auto;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 5px;
+        background-color: #970005;
+        color: white;
+        border-style: none;
+    }
+    
+    .Assignment-look {
+        width: 920px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        text-align: center;
+    }
+
+    .my-assignment {
+        background-color:#f8f8f8;
+        margin-right:30px;
+        margin-left: 30px;
+        width: 400px;
+        height: 500px;
+        border-radius: 10px;
+        
+        
+    }
+
+    .all-assignment {
+        background-color:#f8f8f8;
+        margin-left:30px;
+        margin-right: 30px;
+        width: 400px;
+        height: 500px;
+        border-radius: 10px;
+    }
+
+    .look-item {
+        border: 1px solid gray;
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .look-item.past-deadline {
+        border-color: red;
+    }
+
+    

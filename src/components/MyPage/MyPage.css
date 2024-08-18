@@ -1,0 +1,118 @@
+
+.MyPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    height: auto;
+    box-sizing: border-box;
+    background-color: #f8f9fa;
+  }
+  
+  .MyPage-header {
+    width: 100%;
+    background-color: #343a40; 
+    color: #fff; 
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+  }
+  
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 800px; 
+  }
+  
+  .header-container h1 {
+    margin: 0;
+    font-size: 32px;
+  
+  }
+  
+  .header-container button {
+    background-color: #17a2b8;
+    color: white;
+    padding: 10px 20px; 
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 20px; 
+    text-decoration: none;
+  }
+  
+  button:hover {
+    background-color: #138496; 
+  }
+  
+  .MyPage form {
+    width: 100%;
+    max-width: 800px; /* 최대 넓이 설정 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .MyPage .form-group {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .MyPage .form-group label {
+    width: 30%;
+    text-align: right;
+    padding-right: 10px;
+    box-sizing: border-box;
+  }
+  
+  .MyPage .form-group input {
+    width: 65%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  .MyPage .form-group button {
+    padding: 10px 20px;
+    background-color: #cad3e5;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .MyPage .form-group button:hover {
+    background-color: #8fa9d6;
+  }
+  
+  footer {
+    margin-top: auto;
+    padding: 20px;
+    background-color: #e0e5ef;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .footer-links a {
+    color: #007bff;
+    text-decoration: none;
+    margin: 0 5px;
+  }
+  
+  .footer-links a:hover {
+    text-decoration: underline;
+  }
+  

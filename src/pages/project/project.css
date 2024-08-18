@@ -1,0 +1,113 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.ProjectDetail {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.ProjectDetail-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    background-color: #a32125;
+    color: rgb(0, 0, 0);
+    padding: 1em;
+    display: flex;
+    justify-content: flex-end;
+    z-index: 1000;
+}
+
+.my-page-logout {
+    display: flex;
+    align-items: center;
+    margin-right: 1em;
+}
+
+.my-page-logout a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    top: 1em;
+    left: 1em;
+    z-index: 1001;
+    background: none;
+    border: none;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+}
+
+.App-sidebar {
+    position: fixed;
+    left: -285px;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #f8f8f8;
+    color: rgb(0, 0, 0);
+    transition: left 0.3s;
+    padding: 1em;
+    z-index: 1000;
+}
+
+.App-sidebar.open {
+    left: 0;
+}
+
+.sidebar-content ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar-content ul li {
+    margin: 15px 0;
+}
+
+.sidebar-content ul li a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.App-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    padding: 2em;
+    margin-top: 60px; /* Adjust based on header height */
+    text-align: center;
+}
+
+.App-content h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.App-content h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.App-content ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.App-content ul li {
+    font-size: 1.2em;
+    margin: 5px 0;
+}
+
+.shifted {
+    margin-left: 250px; /* To shift the main content when the sidebar is open */
+}

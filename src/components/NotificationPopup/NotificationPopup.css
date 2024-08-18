@@ -1,0 +1,58 @@
+    .notification-container {
+        position:fixed;
+        top:100px;
+        right:30px;
+        z-index: 1000;
+        background-color: transparent;
+    }
+
+    .notification-icon {
+        width : 30px;
+        height: 30px;
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: -20px;
+        margin-top: -10px;
+    }
+
+    .notification-icon.open {
+        width: 350px;
+        height: 200px;
+        background-color: #f8f8f8;
+        border: 2px solid rgb(151, 151, 151);
+        border-radius: 5px;
+    }
+
+    .new-notification-dot {
+        width: 5px;
+        height: 5px;
+        background-color: red;
+        border-radius: 50%;
+        position: absolute;
+        top: -2px;
+        right: -2px;
+    }
+      
+    .notification-popup {
+        position: absolute;
+        top: 20px;
+        right: 0;
+        width: 350px;
+        height: 200px;
+        background-color: #f8f8f8;
+        border: 2px solid rgb(151, 151, 151);
+        border-radius: 5px;
+        padding: 10px;
+        overflow-y: auto;
+        z-index: 1001;
+    }
+      
+    .notification-item {
+        margin-bottom: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }

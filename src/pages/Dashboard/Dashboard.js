@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
-import { IoMenu, IoAddCircle, IoPerson, IoBookmark } from "react-icons/io5";
+import { IoMenu, IoAddCircle, IoPerson, IoBookmark, IoSettings } from "react-icons/io5";
 import './Dashboard.css';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
-  const [newProject, setNewProject] = useState({ topic: '', goal: '', teamMembers: [] });
+  const [newProject, setNewProject] = useState({
+    githubLink: '',
+    goal: '',
+    professorName: '',
+    teamName: '',
+    deadline: '',
+    subject: '',
+    projectName: '',
+    teamMembers: [],
+  });
   const [studentID, setStudentID] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -31,26 +39,32 @@ function Dashboard() {
     setStudentID(e.target.value);
   };
 
-  const handleSearch = () => {
-    // Simulate a search result
-    const results = [
-      { id: '123456', name: 'John Doe' },
-      { id: '654321', name: 'Jane Smith' }
-    ].filter(student => student.id.includes(studentID));
-
-    setSearchResults(results);
-  };
-
-  const handleAddTeamMember = (member) => {
+  const handleAddTeamMember = () => {
+    const contribution = Math.floor(Math.random() * 100); 
+    const newMember = {
+      id: studentID,
+      contribution,
+      color: `rgba(188, 13, 18, ${contribution / 100})`, 
+    };
     setNewProject(prevProject => ({
       ...prevProject,
-      teamMembers: [...prevProject.teamMembers, member]
+      teamMembers: [...prevProject.teamMembers, newMember]
     }));
+    setStudentID('');
   };
 
   const handleAddProject = () => {
     setProjects([...projects, newProject]);
-    setNewProject({ topic: '', goal: '', teamMembers: [] });
+    setNewProject({
+      githubLink: '',
+      goal: '',
+      professorName: '',
+      teamName: '',
+      deadline: '',
+      subject: '',
+      projectName: '',
+      teamMembers: [],
+    });
     setShowPopup(false);
   };
 
@@ -75,7 +89,7 @@ function Dashboard() {
             <h2>내 프로젝트</h2>
             {projects.map((project, index) => (
               <div className="project-item" key={index}>
-                <p>{project.topic}</p>
+                <p>{project.projectName}</p>
               </div>
             ))}
           </div>
@@ -86,8 +100,11 @@ function Dashboard() {
           {projects.map((project, index) => (
             <div className="project-card" key={index}>
               <div className="project-card-header">
-                <h2>{project.topic}</h2>
-                <IoBookmark size={24} style={{ color: 'gold' }} />
+                <h2>{project.projectName}</h2>
+                <div className="project-controls">
+                  <IoBookmark size={24} style={{ color: 'gold' }} />
+                  <IoSettings size={24} style={{ color: 'gray', cursor: 'pointer' }} />
+                </div>
               </div>
               <p>{project.goal}</p>
               <a href={`/project/${index}`} className="project-link">프로젝트로 이동</a>
@@ -95,7 +112,14 @@ function Dashboard() {
                 <h3>팀원:</h3>
                 <ul>
                   {project.teamMembers.map((member, idx) => (
-                    <li key={idx}>{member.name} ({member.id})</li>
+                    <li key={idx}>
+                      {member.id}
+                      <div className="contribution-graph">
+                        <div className="contribution-bar" style={{ width: `${member.contribution}%`, backgroundColor: member.color }}>
+                          {member.contribution}%
+                        </div>
+                      </div>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -109,16 +133,25 @@ function Dashboard() {
           <div className="popup-inner">
             <h2>새 프로젝트 생성</h2>
             <label>
-              프로젝트 주제:
+              프로젝트명:
               <input
                 type="text"
-                name="topic"
-                value={newProject.topic}
+                name="projectName"
+                value={newProject.projectName}
                 onChange={handleChange}
               />
             </label>
             <label>
-              목표:
+              깃허브 팀 링크:
+              <input
+                type="text"
+                name="githubLink"
+                value={newProject.githubLink}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              프로젝트 목표:
               <input
                 type="text"
                 name="goal"
@@ -127,21 +160,60 @@ function Dashboard() {
               />
             </label>
             <label>
-              팀원 추가:
+              교수님명:
+              <input
+                type="text"
+                name="professorName"
+                value={newProject.professorName}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              팀명 (추천):
+              <input
+                type="text"
+                name="teamName"
+                value={newProject.teamName}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              마감기한:
+              <input
+                type="date"
+                name="deadline"
+                value={newProject.deadline}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              과목:
+              <input
+                type="text"
+                name="subject"
+                value={newProject.subject}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              팀원 추가 (학번 입력):
               <input
                 type="text"
                 value={studentID}
                 onChange={handleSearchChange}
               />
-              <button onClick={handleSearch}>검색</button>
+              <button onClick={handleAddTeamMember}>추가</button>
+            </label>
+            <div className="added-members">
+              <h4>추가된 팀원:</h4>
               <ul>
-                {searchResults.map((result, index) => (
-                  <li key={index} onClick={() => handleAddTeamMember(result)}>
-                    {result.name} ({result.id})
+                {newProject.teamMembers.map((member, idx) => (
+                  <li key={idx}>
+                    {member.id}
                   </li>
                 ))}
               </ul>
-            </label>
+            </div>
             <button onClick={handleAddProject}>프로젝트 생성</button>
             <button onClick={handleClosePopup}>취소</button>
           </div>

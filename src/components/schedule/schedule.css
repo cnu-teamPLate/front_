@@ -1,0 +1,147 @@
+
+.create-schedule-button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    position: absolute;/*캘린더를 기준으로*/
+    top: 105px;
+    right: 20px;
+    /* 화면 오른쪽에 배치 */
+    z-index: 1000;
+    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
+    다른 요소들 위에 표시되도록 z-index 설정 */
+}
+.month-version-button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    position: absolute;/*캘린더를 기준으로*/
+    top: 105px;
+    left: 10px;
+    /* 화면 오른쪽에 배치 */
+    z-index: 1000;
+    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
+    다른 요소들 위에 표시되도록 z-index 설정 */
+}
+.week-version-button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    position: absolute;/*캘린더를 기준으로*/
+    top: 105px;
+    left: 140px;
+    z-index: 1000;
+    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
+    다른 요소들 위에 표시되도록 z-index 설정 */
+}
+.when-to-meet-button{
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    position: absolute;/*캘린더를 기준으로*/
+    top: 105px;
+    right: 150px;
+    /* 화면 오른쪽에 배치 */
+    z-index: 1000;
+    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
+    다른 요소들 위에 표시되도록 z-index 설정 */
+}
+.when-to-meet-calendars {
+    display: flex;
+    justify-content: space-around; /* 캘린더 사이에 공간을 고르게 분배 */
+    align-items: flex-start; /* 캘린더들이 위쪽 정렬되도록 */
+    gap: 20px; /* 두 캘린더 사이의 간격 */
+    margin-top: 20px;
+}
+
+.when-to-meet-calendars .calendar {
+    flex: 1; /* 캘린더가 동일한 비율로 크기를 차지하도록 */
+    min-width: 400px; /* 캘린더 최소 너비 설정 */
+}
+
+.add-event-button {
+    padding: 10px 20px;
+    margin: 10px 5px;
+    /* 버튼 사이 간격 추가 */
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    /* 마우스 호버 시 배경색 변환 */
+    width: 100px;
+    /* 버튼 크기 고정 */
+}
+
+.cancel-button {
+    padding: 10px 20px;
+    margin: 10px 5px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100px;
+}
+
+.add-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.add-button:hover {
+    background-color: #0056b3;
+}
+
+/* 취소 버튼 스타일 */
+.cancel-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #c82333;
+}
+
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* 반투명 검은색 배경 */
+    z-index: 999;
+    /* 팝업 창 뒤에 위치하도록 설정 */
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* 배경 위에 팝업이 위치하도록 설정 */
+}

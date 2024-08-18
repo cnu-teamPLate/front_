@@ -1,0 +1,145 @@
+    .App {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .App-header, .As-detail-header {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        background-color: #A32125;
+        color: rgb(255, 255, 255);
+        padding: 1em;
+        display: flex;
+        justify-content: flex-end;
+        z-index: 1000;
+    }
+
+    .login-signup, .my-page-logout {
+        display: flex;
+        align-items: center;
+        margin-right: 1em;
+    }
+
+    .login-signup a, .my-page-logout a {
+        color: rgb(255, 255, 255);
+        text-decoration: none;
+        margin: 0 10px;
+    }
+  
+    .sidebar-toggle {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 1001;
+        background: none;
+        border: none;
+        color: rgb(0, 0, 0);
+        cursor: pointer;
+    }
+  
+    .App-sidebar {
+        position: fixed;
+        left: -285px;
+        top: 0;
+        width: 250px;
+        height: 100%;
+        background-color: #f8f8f8;
+        color: rgb(0, 0, 0);
+        transition: left 0.3s;
+        padding: 1em;
+        z-index: 1000;
+    }
+  
+    .App-sidebar.open {
+        left: 0;
+    }
+
+    .sidebar-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    .As-detail main {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .view {
+        width: 100vh;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+
+    }
+
+    .inform {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .substance h2, .substance p {
+        padding: 10px;
+    }
+
+    .white-box {
+        display: flex;
+        width: 310px;
+    }
+
+    .editable-post {
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        padding: 20px;
+        width: 500px;
+        margin: 20px auto;
+    }
+      
+    .editable-post .setting {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+      
+    .editable-post .setting select,
+    .editable-post .setting input[type="date"] {
+        margin-right: 10px;
+        padding: 5px;
+    }
+      
+    .editable-post h2,
+    .editable-post p,
+    .editable-post textarea,
+    .editable-post input[type="text"] {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+      
+    .editable-post .file-link,
+    .editable-post .link {
+        margin-bottom: 10px;
+    }
+      
+    .editable-post .button-row {
+        display: flex;
+        justify-content: flex-end;
+    }
+      
+    .editable-post button {
+        padding: 5px 10px;
+        margin-left: 10px;
+    }
+      

@@ -1,128 +1,131 @@
-    .App {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-  
-  .App-header {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 100%;
-    background-color: #e0e5ef;
-    color: white;
-    padding: 1em;
-    display: flex;
-    justify-content: flex-end;
-    z-index: 1000;
-  }
-  
-  .login-signup, .my-page-logout {
-    display: flex;
-    align-items: center;
-    margin-right: 1em;
-  }
-  
-  .login-signup a, .my-page-logout a {
-    text-decoration: none;
-    margin: 0 10px;
-  }
-  
-  .App-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    padding: 2em;
-    margin-top: 60px; /* Adjust based on header height */
-    text-align: center;
-  }
-  
-  .hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background-color: #fff;
-    padding: 3em 1em;
-  }
-  
-  .hero-text h1 {
-    font-size: 2.7em;
-    color: #070707;
-    margin-bottom: 0.5em;
-  }
-  
-  .hero-text p {
-    font-size: 1.2em;
-    margin-bottom: 1.5em;
-  }
-  
-  .cta-button {
-    background-color: #a5bbe7;
-    color: white;
-    padding: 0.75em 1.5em;
-    border-radius: 5px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-  }
-  
-  .features, .how-it-works, .testimonials, .faq {
-    margin: 2em 0;
-  }
-  
-  .features h2, .how-it-works h2, .testimonials h2, .faq h2 {
-    text-align: center;
-    margin-bottom: 1em;
-  }
-  
-  .feature-list {
-    display: flex;
-    justify-content: space-around;
-  }
-  
-  .feature-item {
-    text-align: center;
-    width: 30%;
-  }
-  
-  .feature-item img {
-    max-width: 100%;
-  }
-  
-  .testimonial-list {
-    display: flex;
-    justify-content: space-around;
-  }
-  
-  .testimonial-item {
-    background-color: #f0f0f0;
-    padding: 1em;
-    border-radius: 8px;
-    width: 45%;
-  }
-  
-  .faq-list {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .faq-item {
-    width: 80%;
-    margin-bottom: 1em;
-  }
-  
-  .footer-links a {
-    color: rgb(0, 0, 0);
-    text-decoration: none;
-    margin: 0 10px;
-  }
-  
-  footer {
-    text-align: center;
-    margin-top: 2em;
-  }
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.App-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  background-color: #A32125;
+  color: white;
+  padding: 1em;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1000;
+}
+
+.login-signup, .my-page-logout {
+  display: flex;
+  align-items: center;
+  margin-right: 1em;
+}
+
+.login-signup a, .my-page-logout a {
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.App-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  padding: 2em;
+  margin-top: 60px; /* Adjust based on header height */
+  text-align: center;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #fff;
+  padding: 3em 1em;
+}
+
+.hero-text h1 {
+  font-size: 2.7em;
+  color: #070707;
+  margin-bottom: 0.5em;
+}
+
+.hero-text p {
+  font-size: 1.2em;
+  margin-bottom: 1.5em;
+}
+
+.cta-button {
+  background-color: #E7A5A5
+;
+  color: white;
+  padding: 0.75em 1.5em;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+.features, .how-it-works, .testimonials, .faq {
+  margin: 2em 0;
+}
+
+.features h2, .how-it-works h2, .testimonials h2, .faq h2 {
+  text-align: center;
+  margin-bottom: 1em;
+}
+
+.feature-list {
+  display: flex;
+  justify-content: space-around;
+}
+
+.feature-item {
+  text-align: center;
+  width: 30%;
+  margin: 0 50px /* 마진을 추가했음 */
+}
+
+.feature-item img {
+  max-width: 100%;
+}
+
+.testimonial-list {
+  display: flex;
+  justify-content: space-around;
+}
+
+.testimonial-item {
+  background-color: #f0f0f0;
+  padding: 1em;
+  border-radius: 8px;
+  width: 45%;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.faq-item {
+  width: 80%;
+  margin-bottom: 1em;
+}
+
+.footer-links a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 2em;
+  color: white;
+}
