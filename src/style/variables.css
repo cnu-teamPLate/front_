@@ -1,0 +1,187 @@
+
+:root {
+    --header-height: 60px;
+    --footer-height: 150px;
+    --sidebar-width: 250px;
+
+    --default-padding: 12px;
+    --default-margin: 16px;
+    --button-border-radius: 5px;
+    --button-height: 20%;
+    --button-width: 100%;
+
+    --form-height: 20px;
+    --form-width: 360px;
+    --form-padding: 20px;
+    --form-border-radius: 10px;
+    --form-background-color: #ffffff;
+    --form-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    --header-background-color: #A32125;
+    --header-text-color: #a32828;
+    --footer-background-color: #353535;
+    --footer-text-color: #FFFFFF;
+    --primary-color: #A72118;
+    --secondary-color: #821a1a;
+    --tertiary-color: #868686;
+    --background-color: #FFFFFF;
+    --modal-background-color: #b1362d;
+    --sidebar-background-color: #d8a5a5;
+    --button-background-color: #c1c1c1;
+
+    --secondary-text-color: #b1b1b1;
+    --link-color: white;
+    --disabled-text-color: #542828;
+    --button-text-color: #FFFFFF;
+    --hover-color: #868686;
+    --button-disabled-color: #DEDEDE;
+
+    --text-button-color: #a71e1e;
+    --text-button-hover-color: #721b1b;
+    --text-button-disabled-color: #DEDEDE;
+    --text-button-font-size: 16px;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --error-color: #dc3545;
+    --info-color: #17a2b8;
+}
+
+.text-on-light {
+    color: #000000;
+}
+
+.text-on-dark {
+    color: #FFFFFF;
+}
+
+header {
+    width: 100%;
+    background-color: var(--header-background-color);
+    color: var(--header-text-color);
+    padding: var(--default-padding);
+    text-align: center;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: var(--header-height);
+}
+
+footer {
+    margin-top: auto;
+    padding: var(--default-padding);
+    color: var(--footer-text-color);
+    background-color: var(--footer-background-color);
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    height: var(--footer-height);
+}
+
+button {
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
+    padding: var(--default-padding);
+    border-radius: var(--button-border-radius);
+    border: none;
+    cursor: pointer;
+    height: var(--button-height);
+    width: var(--button-width);
+}
+
+button:hover {
+    background-color: var(--hover-color);
+}
+
+button:disabled {
+    background-color: var(--button-disabled-color);
+    color: var(--disabled-text-color);
+    cursor: not-allowed;
+}
+
+.text-button {
+    background-color: transparent;
+    color: var(--text-button-color);
+    border: none;
+    cursor: pointer;
+    padding: var(--default-padding);
+    font-size: var(--text-button-font-size);
+    text-decoration: none;
+}
+
+.text-button:hover {
+    background-color: transparent;
+    color: var(--text-button-hover-color);
+    text-decoration: underline;
+}
+
+.text-button:disabled {
+    color: var(--text-button-disabled-color);
+    cursor: not-allowed;
+}
+
+.return a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+.return a:hover {
+    color: var(--link-color);
+    text-decoration: underline;
+}
+
+.alert-success {
+    background-color: var(--success-color);
+    color: #fff;
+    padding: var(--default-padding);
+    border-radius: 4px;
+    margin: var(--default-margin) 0;
+}
+
+.alert-warning {
+    background-color: var(--warning-color);
+    color: #000;
+    padding: var(--default-padding);
+    border-radius: 4px;
+    margin: var(--default-margin) 0;
+}
+
+.alert-error {
+    background-color: var(--error-color);
+    color: #fff;
+    padding: var(--default-padding);
+    border-radius: 4px;
+    margin: var(--default-margin) 0;
+}
+
+.alert-info {
+    background-color: var(--info-color);
+    color: #fff;
+    padding: var(--default-padding);
+    border-radius: 4px;
+    margin: var(--default-margin) 0;
+}
+
+.sidebar {
+    background-color: var(--sidebar-background-color);
+    width: var(--sidebar-width);
+    padding: var(--default-padding);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+/* 모달 창 스타일 */
+.modal {
+    background-color: var(--modal-background-color);
+    padding: var(--popup-padding);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: var(--popup-width);
+    max-width: 500px;
+    margin: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

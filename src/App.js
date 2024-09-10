@@ -9,6 +9,7 @@ import AssignmentDetail from './pages/AssignmentDetail/AssignmentDetail';
 import ProjectDetail from './pages/project/project';
 import MyPage from './components/MyPage/MyPage';
 import Schedule from './components/schedule/schedule';
+import FileUploadPage from './pages/FileUpload/FileUploadPage';
 import './App.css';
 
 function App() {
@@ -37,7 +38,9 @@ function App() {
           />
           <Route path="/AssignmentDetail" element={<AssignmentDetail />} />
           <Route path="/project-detail" element={<ProjectDetail />} />
+          <Route path="/FileUpload" element={<FileUploadPage />} />
         </Routes>
+
       </div>
     </Router>
   );
