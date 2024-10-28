@@ -9,7 +9,6 @@
 
 .login-header {
   width: 100%;
-  background-color: #e0e5ef;
   padding: 27px;
   text-align: center;
   margin-bottom: 40px;
@@ -30,7 +29,8 @@
   font-size: 16px;
   margin-top: 30px;
   margin-bottom: 30px;
-  width: 380px;;
+  width: 380px;
+  ;
 }
 
 .login-form label {
@@ -46,14 +46,13 @@
   border-radius: 5px;
 }
 
-.login-form button, .logout-button {
+.login-form button,
+.logout-button {
   margin-top: 20px;
   font-size: 16px;
   cursor: pointer;
   width: 105%;
   padding: 10px;
-  background-color: #cad3e5;
-  color: #fff;
   border: none;
   border-radius: 5px;
   transition: background-color 0.3s ease;
@@ -70,36 +69,7 @@
   justify-content: space-between;
 }
 
-.text-button {
-  background: none;
-  border: none;
-  color: #007bff;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 14px;
-  margin: 5px;
-  padding: 5px;
-}
 
-.text-button:hover {
-  color: #0056b3;
-}
-
-/* Footer styles */
-footer {
-  margin-top: auto;
-  padding: 20px;
-  background-color: #e0e5ef;
-  width: 100%;
-  text-align: center;
-  font-size: 14px;
-}
-
-.footer-links a {
-  color: #007bff;
-  text-decoration: none;
-  margin: 0 5px;
-}
 
 .footer-links a:hover {
   text-decoration: underline;
@@ -108,7 +78,6 @@ footer {
 .password-recovery h2 {
   margin-bottom: 20px;
   font-size: 24px;
-  color: #333;
 }
 
 .password-recovery form {
@@ -139,15 +108,9 @@ footer {
   cursor: pointer;
   width: 100%;
   padding: 10px;
-  background-color: #cad3e5;
-  color: #fff;
   border: none;
   border-radius: 5px;
   transition: background-color 0.3s ease;
-}
-
-.password-recovery button:hover {
-  background-color: #0056b3;
 }
 
 .password-recovery .error-message {
