@@ -11,6 +11,11 @@ import MeetingLogView from './pages/MeetingLogView/MeetingLogView';
 import ProjectDetail from './pages/project/project';
 import MyPage from './components/MyPage/MyPage';
 import Schedule from './components/schedule/schedule';
+<<<<<<< HEAD
+=======
+import './style/variables.css';
+import FileUploadPage from './pages/FileUpload/FileUploadPage';
+>>>>>>> 572e49333509d284c070a77131ed0fd3c27816c7
 import './App.css';
 import FileUploadPage from './pages/FileUpload/FileUploadPage';
 import './style/variables.css';
@@ -35,7 +40,14 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/schedule" element={<Schedule />} />
+<<<<<<< HEAD
           <Route path="/Assignment" element={<Assignment onSubmit={handleFormSubmit} currentUser="1" notifications={notifications}/>} />
+=======
+          <Route
+            path="/Assignment"
+            element={<Assignment onSubmit={handleFormSubmit} currentUser="1" notifications={notifications} />}
+          />
+>>>>>>> 572e49333509d284c070a77131ed0fd3c27816c7
           <Route path="/AssignmentDetail" element={<AssignmentDetail />} />
           <Route path="/project-detail" element={<ProjectDetail />} />
           <Route path="/FileUpload" element={<FileUploadPage />} />
