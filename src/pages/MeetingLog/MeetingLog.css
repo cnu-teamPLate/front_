@@ -1,0 +1,72 @@
+.MeetingLog {
+    margin: auto;
+    font-family: Arial, sans-serif;
+    display: grid;
+    place-items: center;
+    height: 100vh;    
+    grid-template-columns:repeat(1,1fr);
+    gap: 0px;
+}
+
+.record-button {
+    align-items: center;
+}
+
+.meeting-contents {
+    align-items: center;
+    display: grid;
+    place-items: center;
+    gap: 50px;
+}
+
+.h1 {
+    text-align: center;
+}
+
+.participants {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: auto;
+
+}
+
+.choose, .dicided {
+    display: grid;
+    place-items: center;
+    margin: 0 1em;
+}
+
+.par {
+    margin: 0;
+}
+
+.delete {
+    padding: 0.1em;
+    color: #A32125;
+    background-color: white;
+    text-decoration: underline;
+    margin: 0;
+}
+
+.p {
+    text-align: center;
+}
+
+.end-button {
+    align-items: center;
+}
+    
+
+.titleinput {
+    border: 1.5px solid #970005;
+    padding-top: auto;
+    padding-left: 25px;
+    width: 800px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    resize: none;
+    margin-top: 5px;
+    height:50px;
+}
+    
