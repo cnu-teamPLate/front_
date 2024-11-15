@@ -3,8 +3,8 @@ import { io } from 'socket.io-client';
 import { useNavigate } from "react-router-dom";
 import { IoMenu, IoPerson, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
-
 const socket = io('http://localhost:3001'); // 백엔드 서버 URL로 교체
+
 
 function ParticipantSelector({ participants }) {
   const [selectedParticipants, setSelectedParticipants] = useState([]);
@@ -48,12 +48,13 @@ function ParticipantSelector({ participants }) {
 }
 
 function MeetingLog({ onSave }) {
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const RecordingComponent = () => {
     const [isRecording, setIsRecording] = useState(false);
-    const [recordingText, setRecordingText] = useState('');
+    const [recordingText] = useState('');
     const [participants, setParticipants] = useState([]);
     const [realTimeData, setRealTimeData] = useState('');
     const [realTimeText, setRealTimeText] = useState('');
@@ -87,15 +88,15 @@ function MeetingLog({ onSave }) {
 
       // 실시간 편집 업데이트 받기
       socket.on('update', (content) => {
-        if (content !== realTimeText) {
-          setRealTimeText(content);
-        }
+        console.log('Update received from server:', content);
+        setRealTimeText(content);
+        
       });
 
       return () => {
         socket.off('update'); // 컴포넌트 언마운트 시 소켓 연결 해제
       };
-    }, [realTimeText]);
+    }, [realTimeText, socket]);
 
     const handleEditorChange = (e) => {
       const newText = e.target.value;
