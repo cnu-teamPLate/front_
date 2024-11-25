@@ -10,6 +10,7 @@ function Login() {
   });
   const [error, setError] = useState('');
   const [isFindingPassword, setIsFindingPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleChange = (e) => {
@@ -20,13 +21,41 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.username && formData.password) {
-      setError('');
-      navigate('/dashboard'); // Redirect to Dashboard after successful login
-    } else {
+    if (!formData.username || !formData.password) {
       setError('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true); // 로딩 시작
+    setError(''); // 에러 초기화
+
+    try {
+      const response = await fetch(
+        'https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/auth/login',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData), // JSON 형식으로 데이터 전송
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 로그인 성공 시
+        navigate('/dashboard'); // 대시보드로 이동
+      } else {
+        // 서버에서 에러 반환 시
+        setError(data.message || '로그인에 실패했습니다.');
+      }
+    } catch (error) {
+      setError('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false); // 로딩 종료
     }
   };
 
@@ -60,14 +89,13 @@ function Login() {
 
   return (
     <div className="Login">
-      <header className="login-header">
-      </header>
+      <header className="login-header"></header>
       <div className="login-container">
         {isFindingPassword ? (
           <PasswordRecovery onCancel={() => setIsFindingPassword(false)} />
         ) : (
           <>
-            <div className='Login-box'>
+            <div className="Login-box">
               <h2>로그인</h2>
               <form className="login-form" onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -92,7 +120,9 @@ function Login() {
                     required
                   />
                 </div>
-                <button type="submit">로그인</button>
+                <button type="submit" disabled={isLoading}>
+                  {isLoading ? '로딩 중...' : '로그인'}
+                </button>
               </form>
               {error && <p className="error-message">{error}</p>}
               <div className="extra-buttons">
@@ -110,7 +140,8 @@ function Login() {
       <footer>
         <p>© 2024 CNU</p>
         <div className="footer-links">
-          <a href="/about">About Us</a> | <a href="/contact">Contact</a> | <a href="/privacy">Privacy Policy</a>
+          <a href="/about">About Us</a> | <a href="/contact">Contact</a> |{' '}
+          <a href="/privacy">Privacy Policy</a>
         </div>
       </footer>
     </div>
