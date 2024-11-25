@@ -32,30 +32,33 @@ function Login() {
     setError(''); // 에러 초기화
 
     try {
+      // 서버로 보낼 데이터
+      const body = `id=${encodeURIComponent(formData.username)}&pwd=${encodeURIComponent(formData.password)}`;
+
       const response = await fetch(
         'https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/auth/login',
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: JSON.stringify(formData), // JSON 형식으로 데이터 전송
+          body,
         }
       );
 
-      const data = await response.json();
+      const data = await response.json(); // 서버 응답 처리
 
       if (response.ok) {
-        // 로그인 성공 시
-        navigate('/dashboard'); // 대시보드로 이동
+        // 로그인 성공
+        navigate('/dashboard');
       } else {
-        // 서버에서 에러 반환 시
+        // 서버 에러
         setError(data.message || '로그인에 실패했습니다.');
       }
     } catch (error) {
       setError('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
     } finally {
-      setIsLoading(false); // 로딩 종료
+      setIsLoading(false);
     }
   };
 
