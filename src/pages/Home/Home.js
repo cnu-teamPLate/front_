@@ -1,9 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { IoPerson } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
 function Home() {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
   return (
     <div className="Home">
       <header className="App-header">
@@ -17,7 +23,9 @@ function Home() {
           <div className="hero-text">
             <h1>팀 프로젝트 관리 서비스</h1>
             <p>쉬운 진행 상황 체크, 목표 상기</p>
-            <button className="cta-button">지금 시작하기</button>
+            <button className="cta-button" onClick={handleLogin}>
+              지금 시작하기
+            </button>
           </div>
         </section>
         <section className="features">
