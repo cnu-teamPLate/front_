@@ -12,7 +12,7 @@ function MyPage() {
     username: 'sogang123',
     password: 'Sogang123!',
   });
-  const [editMode,setEditMode]=useState({
+  const [editMode, setEditMode] = useState({
     name: false,
     email: false,
     studentId: false,
@@ -28,8 +28,8 @@ function MyPage() {
     });
   };//name과 value 추출하여 폼 필드 값 업데이트
 
-  const toggleEditMode=(field) =>{
-    setEditMode({...editMode, [field]: !editMode[field]});
+  const toggleEditMode = (field) => {
+    setEditMode({ ...editMode, [field]: !editMode[field] });
   };
   return (
     <div className="MyPage">

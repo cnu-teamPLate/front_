@@ -49,7 +49,7 @@
 .MyPage .form-group {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-items: center;
   align-items: center;
   margin-bottom: 15px;
 }
@@ -70,8 +70,8 @@
 }
 
 .MyPage .form-group button {
-  padding: 10px 20px;
-  background-color: #cad3e5;
+  width: 100px;
+  padding: 10px 10px;
   color: #fff;
   border: none;
   border-radius: 4px;
