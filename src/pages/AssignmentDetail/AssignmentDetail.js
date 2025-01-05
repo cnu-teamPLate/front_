@@ -1,6 +1,7 @@
 import './AssignmentDetail.css';
 import React, { useState } from 'react';
 import { IoMenu, IoAddCircle, IoPerson, IoBookmark } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom';
 
 
 function AssignmentDetail() {
@@ -17,6 +18,7 @@ function AssignmentDetail() {
     const [link, setLink] = useState('https://example.com');
     const [isDeleted, setIsDeleted] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const navigate = useNavigate();
 
   
     const handleFileChange = (e) => {
@@ -33,6 +35,7 @@ function AssignmentDetail() {
   
     const handleDelete = () => {
       setIsDeleted(true);
+      navigate('/Assignment');
     };
   
     if (isDeleted) {

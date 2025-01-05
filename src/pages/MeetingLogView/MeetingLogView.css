@@ -3,17 +3,17 @@ body {
     font-family: Arial, sans-serif;}
 
 
-    .login-signup, .my-page-logout {
-        display: flex;
-        align-items: center;
-        margin-right: 1em;
-    }
+.login-signup, .my-page-logout {
+    display: flex;
+    align-items: center;
+    margin-right: 1em;
+}    
 
-    .login-signup a, .my-page-logout a {
-        color: rgb(255, 255, 255);
-        text-decoration: none;
-        margin: 0 10px;
-    }
+.login-signup a, .my-page-logout a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    margin: 0 10px;
+}
   
     .sidebar-toggle {
         position: fixed;
@@ -49,16 +49,17 @@ body {
         align-items: center;
     }
 
-    header {
+    .App-header, .MeetingLogview-header {
+        position: fixed;
+        top: 0;
+        right: 0;
         width: 100%;
-        background-color: var(--header-background-color);
-        color: var(--header-text-color);
-        padding: var(--default-padding);
-        text-align: center;
+        background-color: #A32125;
+        color: rgb(255, 255, 255);
+        padding: 1em;
         display: flex;
         justify-content: flex-end;
-        align-items: center;
-        height: var(--header-height);
+        z-index: 1000;
     }
       
     footer {

@@ -105,7 +105,7 @@ function MeetingLogView() {
   
   return (
     <div>
-      <header className="header">
+      <header className="MeetingLogview-header">
           <div className="my-page-logout">
           <IoPerson size={24} />
           <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
