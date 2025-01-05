@@ -38,7 +38,7 @@ function MyPage() {
           <Link to="/">홈으로 돌아가기</Link>
         </div>
       </header>
-      <h1>My Page</h1>
+      <h1 className = "title">My Page</h1>
       <form>
         {Object.keys(formData).map((field) => (
           <div className="form-group" key={field}>
@@ -62,7 +62,8 @@ function MyPage() {
             </button>
           </div>
         ))}
-      </form>      <footer>
+      </form>      
+      <footer className = 'Mypage-footer'>
         <p>© 2024 CNU </p>
         <div className="footer-links">
           <a href="/about">About Us</a> | <a href="/contact">Contact</a> | <a href="/privacy">Privacy Policy</a>

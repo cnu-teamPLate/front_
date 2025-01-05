@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   margin: 0;
-  padding: 20px;
+  padding: 0px;
   height: auto;
   box-sizing: border-box;
   background-color: #f8f9fa;
@@ -24,6 +24,10 @@
 
 }
 
+.title {
+  margin-bottom: 2em;
+}
+
 .header-container button {
   color: white;
   padding: 10px 20px;
@@ -39,7 +43,7 @@
 
 .MyPage form {
   width: 100%;
-  max-width: 800px;
+  max-width: 500px;
   /* 최대 넓이 설정 */
   display: flex;
   flex-direction: column;
@@ -52,13 +56,14 @@
   justify-items: center;
   align-items: center;
   margin-bottom: 15px;
+  margin-left : -13%
 }
 
 .MyPage .form-group label {
   width: 30%;
   text-align: right;
   padding-right: 10px;
-  box-sizing: border-box;
+  box-sizing: padding-box;
 }
 
 .MyPage .form-group input {
@@ -73,17 +78,17 @@
   width: 100px;
   padding: 10px 10px;
   color: #fff;
-  border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin : 0px;
   transition: background-color 0.3s ease;
 }
 
 
 footer {
-  margin-top: auto;
-  padding: 20px;
-  background-color: #e0e5ef;
+  margin-bottom: 0px;
+  padding: 0px;
+  background-color: #000000;
   width: 100%;
   text-align: center;
   font-size: 14px;

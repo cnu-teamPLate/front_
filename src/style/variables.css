@@ -67,6 +67,7 @@ header {
 
 footer {
     margin-top: auto;
+    margin-bottom: 0;
     padding: var(--default-padding);
     color: var(--footer-text-color);
     background-color: var(--footer-background-color);
