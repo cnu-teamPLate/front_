@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './SignUp.css';
@@ -15,6 +14,7 @@ function SignUp() {
         studentnumber: '',
     });
     const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false); // 서버 요청 상태 확인
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,7 +37,6 @@ function SignUp() {
             if (!formData.name) newErrors.name = "이름을 입력해주세요.";
             if (!formData.email) newErrors.email = "이메일을 입력해주세요.";
             if (!formData.phone) newErrors.phone = "전화번호를 입력해주세요.";
-            if (!formData.studentnumber) newErrors.studentnumber = "학번을 입력해주세요.";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -49,11 +48,52 @@ function SignUp() {
 
     const prevStep = () => setStep(step - 1);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateStep()) {
-            // back
-            console.log(formData);
+            setIsSubmitting(true); // 요청 시작
+            try {
+                const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: formData.name,
+                        username: formData.username,
+                        pwd: formData.password,
+                        mail: formData.email,
+                        phone: formData.phone,
+                        studentNumber: formData.studentnumber,
+                    }),
+                });
+
+                const contentType = response.headers.get('Content-Type');
+
+                if (!response.ok) {
+                    throw new Error('회원가입에 실패했습니다.');
+                }
+                if (response.ok) {
+                    if (contentType && contentType.includes('application/json')) {
+                        // JSON 응답 처리
+                        const result = await response.json();
+                        console.log('회원가입 성공:', result);
+                    } else {
+                        // 일반 텍스트 응답 처리
+                        const text = await response.text();
+                        console.log('회원가입 성공:', text);
+                    }
+                    setStep(3); // 가입 완료 단계로 이동
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText || '회원가입에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('회원가입 요청 오류:', error.message);
+                setErrors({ server: '서버 요청 중 문제가 발생했습니다. 다시 시도해주세요.' });
+            } finally {
+                setIsSubmitting(false); // 요청 종료
+            }
         }
     };
 
@@ -94,10 +134,11 @@ function SignUp() {
                         <div className="step">
                             <h3>정보 입력</h3>
                             <div className="form-group">
-                                <label htmlFor="username">아이디</label>
-                                <input type="text" id="username" name="username" value={formData.username} onChange={handleChange} required />
-                                {errors.username && <p className="error">{errors.username}</p>}
+                                <label htmlFor="studentnumber">학번</label>
+                                <input type="text" id="studentnumber" name="studentnumber" value={formData.studentnumber} onChange={handleChange} required />
+                                {errors.studentnumber && <p className="error">{errors.studentnumber}</p>}
                             </div>
+
                             <div className="form-group">
                                 <label htmlFor="password">비밀번호</label>
                                 <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required />
@@ -114,6 +155,11 @@ function SignUp() {
                                 {errors.name && <p className="error">{errors.name}</p>}
                             </div>
                             <div className="form-group">
+                                <label htmlFor="username">닉네임</label>
+                                <input type="text" id="username" name="username" value={formData.username} onChange={handleChange} required />
+                                {errors.username && <p className="error">{errors.username}</p>}
+                            </div>
+                            <div className="form-group">
                                 <label htmlFor="email">이메일</label>
                                 <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
                                 {errors.email && <p className="error">{errors.email}</p>}
@@ -123,14 +169,10 @@ function SignUp() {
                                 <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required />
                                 {errors.phone && <p className="error">{errors.phone}</p>}
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="studentnumber">학번</label>
-                                <input type="text" id="studentnumber" name="studentnumber" value={formData.studentnumber} onChange={handleChange} required />
-                                {errors.studentnumber && <p className="error">{errors.studentnumber}</p>}
-                            </div>
+
                             <div className="second-button">
                                 <button type="button" onClick={prevStep}>이전</button>
-                                <button type="button" onClick={nextStep}>다음</button>
+                                <button type="submit" disabled={isSubmitting}>다음</button>
                             </div>
                         </div>
                     )}
@@ -139,7 +181,7 @@ function SignUp() {
                             <h3>가입 완료</h3>
                             <p>가입이 완료되었습니다. 아래 버튼을 클릭하여 로그인하세요.</p>
                             <Link to="/Login">
-                                <button type="submit">회원가입 완료</button>
+                                <button type="button">회원가입 완료</button>
                             </Link>
                         </div>
                     )}
