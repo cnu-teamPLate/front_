@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
+import { Link } from 'react-router-dom';
+
 import PasswordRecovery from './PasswordRecovery';
 
 function Login() {
@@ -33,14 +35,19 @@ function Login() {
 
     try {
       // 서버로 보낼 데이터
-      const body = `id=${encodeURIComponent(formData.username)}&pwd=${encodeURIComponent(formData.password)}`;
+      // const body = `id=${encodeURIComponent(formData.username)}&pwd=${encodeURIComponent(formData.password)}`;
+      const body = JSON.stringify({
+        id: formData.username,
+        pwd: formData.password,
+      });
+
 
       const response = await fetch(
         'https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/auth/login',
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
           },
           body,
         }
@@ -92,7 +99,11 @@ function Login() {
 
   return (
     <div className="Login">
-      <header className="login-header"></header>
+      <header className="login-header">
+        <div className="return">
+          <Link to="/">홈으로 돌아가기</Link>
+        </div>
+      </header>
       <div className="login-container">
         {isFindingPassword ? (
           <PasswordRecovery onCancel={() => setIsFindingPassword(false)} />
