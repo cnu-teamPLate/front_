@@ -49,29 +49,7 @@ body {
         align-items: center;
     }
 
-    header {
-        width: 100%;
-        background-color: var(--header-background-color);
-        color: var(--header-text-color);
-        padding: var(--default-padding);
-        text-align: center;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        height: var(--header-height);
-    }
-      
-    footer {
-        margin-top: auto;
-        padding: var(--default-padding);
-        color: var(--footer-text-color);
-        background-color: var(--footer-background-color);
-        width: 100%;
-        text-align: center;
-        font-size: 14px;
-        height: var(--footer-height);
-    }
-      
+
     button {
         background-color: var(--primary-color);
         color: var(--button-text-color);

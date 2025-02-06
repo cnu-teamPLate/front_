@@ -1,6 +1,6 @@
 import './FileUploadPage.css';
 import React, { useState } from 'react';
-import { IoMenu, IoAddCircle, IoPerson } from "react-icons/io5";
+import { IoMenu, IoAddCircle} from "react-icons/io5";
 
 function FileUploadPage() {
     const [file, setFile] = useState(null);
@@ -30,12 +30,6 @@ function FileUploadPage() {
 
     return (
         <div className="file-upload-page">
-            <header className="file-upload-header">
-                <div className="my-page-logout">
-                    <IoPerson size={24} />
-                    <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-                </div>
-            </header>
             <button className="sidebar-toggle" onClick={toggleSidebar}>
                 <IoMenu size={24} />
             </button>

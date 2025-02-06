@@ -99,11 +99,6 @@ function Login() {
 
   return (
     <div className="Login">
-      <header className="login-header">
-        <div className="return">
-          <Link to="/">홈으로 돌아가기</Link>
-        </div>
-      </header>
       <div className="login-container">
         {isFindingPassword ? (
           <PasswordRecovery onCancel={() => setIsFindingPassword(false)} />
@@ -151,13 +146,6 @@ function Login() {
           </>
         )}
       </div>
-      <footer>
-        <p>© 2024 CNU</p>
-        <div className="footer-links">
-          <a href="/about">About Us</a> | <a href="/contact">Contact</a> |{' '}
-          <a href="/privacy">Privacy Policy</a>
-        </div>
-      </footer>
     </div>
   );
 }

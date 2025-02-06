@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { IoMenu, IoPerson } from "react-icons/io5";
+import { IoMenu} from "react-icons/io5";
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
-import { Link } from 'react-router-dom';
 
 
 const localizer = momentLocalizer(moment);
@@ -138,12 +137,6 @@ const Schedule = () => {
 
     return (
         <div className="Dashboard">
-            <header className="Dashboard-header">
-                <div className="my-page-logout">
-                    <IoPerson size={24} />
-                    <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-                </div>
-            </header>
             <button className="sidebar-toggle" onClick={toggleSidebar}>
                 <IoMenu size={24} />
             </button>
@@ -279,12 +272,6 @@ const Schedule = () => {
                 )}
             </div>
 
-            <footer>
-                <p>© 2024 CNU </p>
-                <div className="footer-links">
-                    <a href="/about">About Us</a> | <a href="/contact">Contact</a> | <a href="/privacy">Privacy Policy</a>
-                </div>
-            </footer>
         </div>
     );
 };

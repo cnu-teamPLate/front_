@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import './MyPage.css';
 
 function MyPage() {
@@ -65,11 +64,6 @@ function MyPage() {
 
   return (
     <div className="MyPage">
-      <header className="login-header">
-        <div className="return">
-          <Link to="/">홈으로 돌아가기</Link>
-        </div>
-      </header>
       <h1 className="title">My Page</h1>
       <form>
         {Object.keys(formData).map((field) => (
@@ -95,12 +89,6 @@ function MyPage() {
           {editMode ? '저장하기' : '수정하기'}
         </button>
       </form>
-      <footer className="Mypage-footer">
-        <p>© 2024 CNU </p>
-        <div className="footer-links">
-          <a href="/about">About Us</a> | <a href="/contact">Contact</a> | <a href="/privacy">Privacy Policy</a>
-        </div>
-      </footer>
     </div>
   );
 }

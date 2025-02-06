@@ -9,18 +9,6 @@ body {
   height: 100vh;
 }
 
-.App-header, .Dashboard-header {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%;
-  background-color: #a32125;
-  color: rgb(0, 0, 0);
-  padding: 1em;
-  display: flex;
-  justify-content: flex-end;
-  z-index: 1000;
-}
 
 .login-signup, .my-page-logout {
   display: flex;

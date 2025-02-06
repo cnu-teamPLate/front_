@@ -7,12 +7,7 @@
   box-sizing: border-box;
 }
 
-.login-header {
-  width: 100%;
-  padding: 27px;
-  text-align: center;
-  margin-bottom: 40px;
-}
+
 
 .login-container {
   width: 100%;
@@ -72,9 +67,7 @@
 
 
 
-.footer-links a:hover {
-  text-decoration: underline;
-}
+
 
 .password-recovery h2 {
   margin-bottom: 20px;

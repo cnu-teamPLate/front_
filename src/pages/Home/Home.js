@@ -1,6 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { IoPerson } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
@@ -12,13 +10,7 @@ function Home() {
   };
   return (
     <div className="Home">
-      <header className="App-header">
-        <div className="login-signup">
-          <IoPerson size={24} />
-          <Link to="/login">로그인</Link> | <Link to="/signup">회원가입</Link>
-        </div>
-      </header>
-      <main className="App-content">
+      <div className="App-content">
         <section className="hero">
           <div className="hero-text">
             <h1>팀 프로젝트 관리 서비스</h1>
@@ -79,13 +71,7 @@ function Home() {
             </div>
           </div>
         </section>
-        <footer>
-          <p>© 2024 CNU </p>
-          <div className="footer-links">
-            <a href="/about">About Us</a> | <a href="/contact">Contact</a> | <a href="/privacy">Privacy Policy</a>
-          </div>
-        </footer>
-      </main>
+      </div>
     </div>
   );
 }

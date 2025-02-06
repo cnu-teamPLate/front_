@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IoMenu, IoAddCircle, IoPerson, IoBookmark, IoSettings } from "react-icons/io5";
+import { IoMenu, IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
 import './Dashboard.css';
 
 function Dashboard() {
@@ -70,12 +70,6 @@ function Dashboard() {
 
   return (
     <div className="Dashboard">
-      <header className="Dashboard-header">
-        <div className="my-page-logout">
-          <IoPerson size={24} />
-          <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-        </div>
-      </header>
       <button className="sidebar-toggle" onClick={toggleSidebar}>
         <IoMenu size={24} />
       </button>

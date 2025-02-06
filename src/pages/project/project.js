@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IoMenu, IoPerson } from "react-icons/io5";
+import { IoMenu } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import './project.css';
 
@@ -18,12 +18,6 @@ function ProjectDetail() {
 
   return (
     <div className="ProjectDetail">
-      <header className="ProjectDetail-header">
-        <div className="my-page-logout">
-          <IoPerson size={24} />
-          <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-        </div>
-      </header>
       <button className="sidebar-toggle" onClick={toggleSidebar}>
         <IoMenu size={24} />
       </button>

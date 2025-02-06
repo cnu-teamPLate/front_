@@ -1,6 +1,6 @@
 import './AssignmentDetail.css';
 import React, { useState } from 'react';
-import { IoMenu, IoAddCircle, IoPerson, IoBookmark } from "react-icons/io5";
+import { IoMenu, IoAddCircle, IoBookmark } from "react-icons/io5";
 
 
 function AssignmentDetail() {
@@ -54,12 +54,6 @@ function AssignmentDetail() {
 
     return (
         <div className="As-detail">
-            <header className="As-detail-header">
-                <div className="my-page-logout">
-                <IoPerson size={24} />
-                <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-                </div>
-            </header>
             <button className="sidebar-toggle" onClick={toggleSidebar}>
                 <IoMenu size={24} />
             </button>

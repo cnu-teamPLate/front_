@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { IoMenu, IoPerson} from "react-icons/io5";
+import { IoMenu} from "react-icons/io5";
 import './MeetingLogView.css';
 
 function ParticipantSelector({participants = [], selectedParticipants, onParticipantChange}) {
@@ -105,12 +105,6 @@ function MeetingLogView() {
   
   return (
     <div>
-      <header className="header">
-          <div className="my-page-logout">
-          <IoPerson size={24} />
-          <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-          </div>
-      </header>
       <button className="sidebar-toggle" onClick={toggleSidebar}>
           <IoMenu size={24} />
       </button>

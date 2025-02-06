@@ -99,11 +99,6 @@ function SignUp() {
 
     return (
         <div className="SignUp">
-            <header className="signup-header">
-                <div className="return">
-                    <Link to="/">홈으로 돌아가기</Link>
-                </div>
-            </header>
             <h2>회원가입</h2>
             <div className="signup-progress">
                 <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>
@@ -187,12 +182,6 @@ function SignUp() {
                     )}
                 </form>
             </div>
-            <footer>
-                <p>© 2024 CNU </p>
-                <div className="footer-links">
-                    <a href="/about">About Us</a> | <a href="/contact">Contact</a> | <a href="/privacy">Privacy Policy</a>
-                </div>
-            </footer>
         </div>
     );
 }

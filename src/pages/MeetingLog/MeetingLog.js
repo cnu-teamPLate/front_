@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from "react-router-dom";
-import { IoMenu, IoPerson, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
+import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
 const socket = io('http://localhost:3001'); // 백엔드 서버 URL로 교체
 
@@ -106,12 +106,6 @@ function MeetingLog({ onSave }) {
 
     return (
       <div>
-        <header>
-          <div className="my-page-logout">
-            <IoPerson size={24} />
-            <a href="/mypage">마이페이지</a> | <a href="/logout">로그아웃</a>
-          </div>
-        </header>
         <button className="sidebar-toggle" onClick={toggleSidebar}>
           <IoMenu size={24} />
         </button>
