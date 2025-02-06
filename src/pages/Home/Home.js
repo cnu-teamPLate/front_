@@ -10,7 +10,6 @@ function Home() {
   };
   return (
     <div className="Home">
-      <div className="App-content">
         <section className="hero">
           <div className="hero-text">
             <h1>팀 프로젝트 관리 서비스</h1>
@@ -70,8 +69,7 @@ function Home() {
               <p>질문 2에 대한 답변</p>
             </div>
           </div>
-        </section>
-      </div>
+      </section>
     </div>
   );
 }
