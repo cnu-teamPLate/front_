@@ -2,7 +2,7 @@ import './Assignment.css';
 import React, { useState, useEffect } from 'react';
 import { IoMenu } from "react-icons/io5";
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
-import MyCalendar from '../components/Calendar';
+import SideBar from '../../components/SideBar/SideBar';
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
@@ -143,10 +143,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                 <IoMenu size={24} />
             </button>
             <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <div className="sidebar-content">
-                    <h1>Calendar</h1>
-                    <MyCalendar />
-                </div>
+                <SideBar />
             </aside>
             <main>
                 <div className="center-content">

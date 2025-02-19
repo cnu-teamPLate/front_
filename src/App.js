@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
@@ -12,9 +12,9 @@ import ProjectDetail from './pages/project/project';
 import MyPage from './pages/MyPage/MyPage';
 import Schedule from './pages/schedule/schedule';
 import FileUploadPage from './pages/FileUpload/FileUploadPage';
-import Header from './components/Header';
+import Layout from './components/Layout/Layout';
 import Footer from './components/Footer';
-
+import Header from './components/Header';
 import './App.css';
 import './style/variables.css';
 
@@ -27,41 +27,44 @@ function App() {
   const handleFormSubmit = (formData) => {
     console.log('Form submitted:', formData);
   };
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
 
   return (
     <Router>
-      <div className="App">
-
-      <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/mypage" element={<MyPage />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route
-              path="/Assignment"
-              element={
-                <Assignment
-                  onSubmit={handleFormSubmit}
-                  currentUser="1"
-                  notifications={notifications}
-                />
-              }
-              />
-            <Route path="/AssignmentDetail" element={<AssignmentDetail />} />
-            <Route path="/project-detail" element={<ProjectDetail />} />
-            <Route path="/FileUpload" element={<FileUploadPage />} />
-            <Route path="/MeetingLog" element={<MeetingLog />} />
-            <Route path="/MeetingLogView" element={<MeetingLogView />} />
-          </Routes>
-        
-        </main>
-        <Footer />
-        </div>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Header />
+              <Home />
+              <Footer />
+            </>
+          }
+        />        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/signup" element={<Layout><SignUp /></Layout>} />
+        <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+        <Route path="/mypage" element={<Layout><MyPage /></Layout>} />
+        <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
+        <Route
+          path="/Assignment"
+          element={
+            <Layout>
+              <Assignment onSubmit={handleFormSubmit} currentUser="1" notifications={notifications} />
+            </Layout>
+          }
+        />
+        <Route path="/AssignmentDetail" element={<Layout><AssignmentDetail /></Layout>} />
+        <Route path="/project-detail" element={<Layout><ProjectDetail /></Layout>} />
+        <Route path="/FileUpload" element={<Layout><FileUploadPage /></Layout>} />
+        <Route path="/MeetingLog" element={<Layout><MeetingLog /></Layout>} />
+        <Route path="/MeetingLogView" element={<Layout><MeetingLogView /></Layout>} />
+      </Routes>
     </Router>
   );
 }

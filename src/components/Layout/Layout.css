@@ -1,0 +1,53 @@
+/* 📌 전체 Layout 스타일 */
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* 화면 높이 100% 유지 */
+}
+
+/* 📌 사이드바가 열릴 때 컨텐츠 밀리도록 설정 */
+.content {
+    flex: 1;
+    padding: 20px;
+    margin-left: 0;
+    /* 기본값 */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* 📌 사이드바가 열리면 전체 컨텐츠 이동 */
+.sidebar-open {
+    margin-left: 250px;
+    /* 사이드바 너비만큼 이동 */
+}
+
+/* 📌 메인 컨텐츠 스타일 */
+main {
+    flex: 1;
+    padding: 20px;
+    background: #fff;
+}
+
+/* 📌 푸터 스타일 */
+footer {
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+/* 📌 반응형 (768px 이하일 때 사이드바 크기 조정) */
+@media screen and (max-width: 768px) {
+    .sidebar-open {
+        margin-left: 200px;
+        /* 작은 화면에서는 사이드바 크기 줄이기 */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .sidebar-open {
+        margin-left: 100px;
+        /* 모바일에서는 더 작게 */
+    }
+}

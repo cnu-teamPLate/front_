@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { IoMenu} from "react-icons/io5";
+import { IoMenu } from "react-icons/io5";
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
+import MyCalendar from '../../components/Calendar/Calendar';
 
 
 const localizer = momentLocalizer(moment);
@@ -97,13 +98,7 @@ const Schedule = () => {
         );
     };
 
-    const handleWheel = (e) => {
-        if (e.deltaY < 0) {
-            setCurrentDate(prevDate => new Date(prevDate.setDate(prevDate.getDate() - 1)));
-        } else {
-            setCurrentDate(prevDate => new Date(prevDate.setDate(prevDate.getDate() + 1)));
-        }
-    };
+
 
     const handleEventMouseOver = (event, e) => {
         setPopupContent(
@@ -127,23 +122,16 @@ const Schedule = () => {
         setPopupStyle({ display: 'none' });
     };
 
-    useEffect(() => {
-        window.addEventListener('wheel', handleWheel);
-
-        return () => {
-            window.removeEventListener('wheel', handleWheel);
-        };
-    }, []);
-
     return (
         <div className="Dashboard">
             <button className="sidebar-toggle" onClick={toggleSidebar}>
                 <IoMenu size={24} />
             </button>
-
-            <main className={`App-content ${sidebarOpen ? 'shifted' : ''}`}>
-            </main>
-
+            <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
+                <div>
+                    <MyCalendar />
+                </div>
+            </aside>
             {showPopup && (
                 <>
                     <div className="popup-backdrop" onClick={handleClosePopup}></div> {/* 팝업 외부 클릭 시 닫기 */}
