@@ -57,5 +57,5 @@
     align-items: center;
     flex-wrap: nowrap; /* 🔥 줄 바꿈 방지 */
     white-space: nowrap; /* 🔥 텍스트가 줄 바꿈되지 않도록 설정 */
-    gap: 5px;
+    gap: none;
 }

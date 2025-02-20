@@ -3,6 +3,7 @@ import './SideBar.css';
 import MyCalendar from '../Calendar/Calendar';
 
 const SideBar = ({ sidebarOpen, toggleSidebar }) => {
+    
     return (
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
             <button className="close-btn" onClick={toggleSidebar}>✖</button>
