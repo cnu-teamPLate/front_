@@ -1,9 +1,7 @@
 import './Assignment.css';
 import React, { useState, useEffect } from 'react';
-import { IoMenu } from "react-icons/io5";
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
-import SideBar from '../../components/SideBar/SideBar';
-
+import MyAssignments from '../../components/MyAssignments/MyAssignments';
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
     const [detailPlaceholder, setDetailPlaceholder] = useState('과제의 상세 설명을 적어주세요');
@@ -115,42 +113,18 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         });
     };
 
-    const myAssignment = sortData(submittedData.filter(item => item.manager === currentUser));
-    const allAssignment = sortData(submittedData);
-
+    const myAssignment = sortData(submittedData.filter(item => item.manager === currentUser)) || [];
+    const allAssignment = sortData(submittedData) || [];
+    
     const getItemClass = (deadline) => {
         const today = new Date().toISOString().split('T')[0];
         return deadline < today ? 'look-item past-deadline' : 'look-item';
     };
 
-    {
-        myAssignment.map(item => (
-            <div
-                key={item.id}
-                className={getItemClass(item.deadline)}
-            >
-                <p>{item.title}</p>
-                <p>{item.status}</p>
-            </div>
-        ))
-    }
 
     return (
         <div className="Assignment">
-{/* <button 
-    className="sidebar-toggle" 
-    onClick={() => {
-        console.log("사이드바 토글 버튼이 클릭되었습니다!");
-        toggleSidebar();
-    }}
->
-    <IoMenu size={24} />
-</button>
 
-<aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
-    {console.log(`사이드바 상태 변경됨: ${sidebarOpen ? "열림" : "닫힘"}`)}
-    <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-</aside> */}
             <main>
                 <div className="center-content">
                     <form className="As-create-form" onSubmit={handleSubmit}>
@@ -222,18 +196,10 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                         <button type="submit">생성</button>
                     </form>
                     <div className="Assignment-look">
-                        <div className="my-assignment">
-                            <h3>내 과제 보기</h3>
-                            {myAssignment.map(item => (
-                                <div
-                                    key={item.id}
-                                    className={getItemClass(item.deadline)}  // 동적으로 클래스 적용
-                                >
-                                    <p>{item.title}</p>
-                                    <p>{item.status}</p>
-                                </div>
-                            ))}
-                        </div>
+            {/* ✅ 내 과제 보기 컴포넌트 */}
+            <MyAssignments myAssignment={myAssignment} getItemClass={getItemClass} />
+
+                        
                         <div className="all-assignment">
                             <h3>전체 과제 보기</h3>
                             {allAssignment.map(item => (
