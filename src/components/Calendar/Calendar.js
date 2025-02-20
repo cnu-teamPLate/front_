@@ -7,7 +7,7 @@ const MyCalendar = () => {
 
     return (
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h2 style={{ textAlign: 'center' }}>📅 Calendar</h2>
+            <h2 style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center',marginTop:'8px',marginBottom:'33px' }}>📅 Calendar</h2>
             <Calendar
                 onChange={setValue}
                 value={value}

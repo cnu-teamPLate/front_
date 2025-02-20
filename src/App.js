@@ -13,7 +13,7 @@ import MyPage from './pages/MyPage/MyPage';
 import Schedule from './pages/schedule/schedule';
 import FileUploadPage from './pages/FileUpload/FileUploadPage';
 import Layout from './components/Layout/Layout';
-import Footer from './components/Footer';
+import Footer from './components/Footer';//사이드바가 필요없는 페이지에 필요함
 import Header from './components/Header';
 import './App.css';
 import './style/variables.css';
@@ -27,11 +27,7 @@ function App() {
   const handleFormSubmit = (formData) => {
     console.log('Form submitted:', formData);
   };
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
 
   return (
@@ -46,8 +42,28 @@ function App() {
               <Footer />
             </>
           }
-        />        <Route path="/login" element={<Layout><Login /></Layout>} />
-        <Route path="/signup" element={<Layout><SignUp /></Layout>} />
+        />        
+<Route path="/login" element={
+  <>
+    <Header />
+    <div style={{ margin: "150px 0" }}> {/* 위아래 간격 추가 */}
+      <Login />
+    </div>
+    <Footer />
+  </>
+} />
+        <Route path="/signup" element={
+          <>
+          <Header/>
+          <div style={{ margin: "100px 0" }}> {/* 위아래 간격 추가 */}
+
+            <SignUp />
+            </div>
+
+            <Footer/>
+          </>
+          }
+           />
         <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
         <Route path="/mypage" element={<Layout><MyPage /></Layout>} />
         <Route path="/schedule" element={<Layout><Schedule /></Layout>} />

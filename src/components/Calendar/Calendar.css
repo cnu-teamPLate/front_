@@ -1,7 +1,7 @@
 /* 📌 캘린더 전체 크기 조정 */
 .react-calendar {
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
     /* 기존 350px에서 400px로 확대 */
     background: white;
     border-radius: 10px;
@@ -9,20 +9,12 @@
     font-family: 'Noto Sans KR', sans-serif;
     padding: 10px;
     overflow: visible !important;
+    position:relative
     /* 잘리는 문제 방지 */
 }
 
-/* 📌 날짜가 잘리지 않도록 타일 크기 조정 */
-.react-calendar__tile {
-    color: #333;
-    padding: 15px 5px !important;
-    /* 기존보다 넉넉하게 */
-    text-align: center;
-    font-size: 16px;
-    /* 날짜 크기 증가 */
-    font-weight: bold;
-    border-radius: 5px;
-    transition: 0.2s ease-in-out;
+.react-calendar__month-view {
+    position: relative; /* 내부 요소 정렬을 위해 position 추가 */
 }
 
 /* 📌 주말 색상 (토, 일) */
@@ -33,16 +25,55 @@
 /* 📌 네비게이션 (이전/다음 버튼) */
 .react-calendar__navigation {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 10px;
+    flex-wrap: nowrap; /* 🔥 줄 바꿈 방지 */
+    white-space: nowrap; /* 🔥 텍스트가 줄 바꿈되지 않도록 설정 */
+    gap: 1px;
+    font-weight: bold;
+    position: absolute; /* 날짜 상단에 고정 */
+    top: -40px; /* 날짜 부분에 자연스럽게 포함 */
+    left: 0;
+    right: 0;
+
 }
 
 .react-calendar__navigation button {
     background: none;
     border: none;
-    font-size: 16px;
+    font-size: 13px;
     cursor: pointer;
     color: #333;
     font-weight: bold;
+}
+
+.react-calendar__navigation button:nth-child(3) {
+    position: relative;
+    flex-grow: 1;
+    left: 0%;
+    text-align: center;
+    transform-origin: center !important;
+    transform: translateX(-50%); /* 중앙 정렬 */
+    font-size: 14px;
+    font-weight: bold;
+}
+.react-calendar__navigation button:hover {
+    background: none !important;
+    color: #000000 !important;
+    transform: scale(1.2); /* ✅ 버튼이 약간 커지는 효과 */
+    transform-origin: center;
+}
+.react-calendar__navigation button:nth-child(3):hover {
+    transform: translateX(-50%); /* 중앙 정렬 */
+}
+
+/* 📌 날짜가 잘리지 않도록 타일 크기 조정 */
+.react-calendar__tile {
+    color: #333;
+    padding: 12px 3px; /* ✅ 패딩 조정 */
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
 }
