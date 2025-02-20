@@ -39,7 +39,7 @@ footer {
 .menu-btn {
     position: relative;
     top:-25%;
-    right: 87%;
+    right: 87.5%;
     transform: translateY(-50%); /* 수직 중앙 정렬 */
     
     background: none; /* 배경 제거 */
