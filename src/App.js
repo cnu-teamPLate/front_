@@ -27,12 +27,6 @@ function App() {
   const handleFormSubmit = (formData) => {
     console.log('Form submitted:', formData);
   };
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
 
   return (
     <Router>

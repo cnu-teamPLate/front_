@@ -124,9 +124,6 @@ const Schedule = () => {
 
     return (
         <div className="Dashboard">
-            <button className="sidebar-toggle" onClick={toggleSidebar}>
-                <IoMenu size={24} />
-            </button>
             <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div>
                     <MyCalendar />

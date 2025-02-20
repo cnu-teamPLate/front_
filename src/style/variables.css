@@ -166,11 +166,10 @@ button:disabled {
     padding: var(--default-padding);
     height: 100vh;
     position: fixed;
-    left: 0;
     top: 0;
 }
 
-.sidebar-toggle {
+/* .sidebar-toggle {
     position: fixed;
     top: 1em;
     left: 1em;
@@ -179,7 +178,7 @@ button:disabled {
     border: none;
     color: rgb(0, 0, 0);
     cursor: pointer;
-}
+} */
 
 .App-sidebar {
     position: fixed;

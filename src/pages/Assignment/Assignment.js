@@ -40,7 +40,6 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         fetchManagers();
     }, [currentUser]);
 
-
     const handleFocus = (field) => {
         if (field === 'title') {
             setTitlePlaceholder('');
@@ -48,7 +47,6 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
             setDetailPlaceholder('');
         }
     };
-
 
     const handleBlur = (field) => {
         if (field === 'title' && (!formData.title || formData.title.trim() === '')) {
@@ -101,11 +99,11 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         setDetailPlaceholder('과제의 상세 설명을 적어주세요');
     };
 
-
-
     const toggleSidebar = () => {
+        console.log("🚀 토글 버튼이 클릭됨!"); // ✅ 버튼이 클릭되는지 확인
         setSidebarOpen(!sidebarOpen);
     };
+    
 
     const sortData = (data) => {
         const today = new Date().toISOString().split('T')[0];
@@ -139,12 +137,20 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
 
     return (
         <div className="Assignment">
-            <button className="sidebar-toggle" onClick={toggleSidebar}>
-                <IoMenu size={24} />
-            </button>
-            <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <SideBar />
-            </aside>
+{/* <button 
+    className="sidebar-toggle" 
+    onClick={() => {
+        console.log("사이드바 토글 버튼이 클릭되었습니다!");
+        toggleSidebar();
+    }}
+>
+    <IoMenu size={24} />
+</button>
+
+<aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
+    {console.log(`사이드바 상태 변경됨: ${sidebarOpen ? "열림" : "닫힘"}`)}
+    <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+</aside> */}
             <main>
                 <div className="center-content">
                     <form className="As-create-form" onSubmit={handleSubmit}>

@@ -30,9 +30,9 @@ function FileUploadPage() {
 
     return (
         <div className="file-upload-page">
-            <button className="sidebar-toggle" onClick={toggleSidebar}>
+            {/* <button className="sidebar-toggle" onClick={toggleSidebar}>
                 <IoMenu size={24} />
-            </button>
+            </button> */}
             <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-content">
                     <p>메뉴</p>

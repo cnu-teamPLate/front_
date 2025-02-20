@@ -70,9 +70,9 @@ function Dashboard() {
 
   return (
     <div className="Dashboard">
-      <button className="sidebar-toggle" onClick={toggleSidebar}>
+      {/* <button className="sidebar-toggle" onClick={toggleSidebar}>
         <IoMenu size={24} />
-      </button>
+      </button> */}
       <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-content">
           <div className="create-project" onClick={handleCreateProject}>

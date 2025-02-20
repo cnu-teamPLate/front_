@@ -105,9 +105,6 @@ function MeetingLogView() {
   
   return (
     <div>
-      <button className="sidebar-toggle" onClick={toggleSidebar}>
-          <IoMenu size={24} />
-      </button>
       <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-content">
               <p>aa</p>
