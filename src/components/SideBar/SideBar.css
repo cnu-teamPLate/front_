@@ -33,6 +33,7 @@
 .content.sidebar-open {
     margin-left: 0;
 }
+
 /* 🔹 달력 컨테이너 */
 .calendar-container {
     width: 100%;
@@ -43,7 +44,8 @@
 
 /* 🔹 달력 너비를 80%로 설정하고 중앙 정렬 */
 .calendar-wrapper {
-    width: 85%; /* 🔥 사이드바 너비의 80% */
+    width: 85%;
+    /* 🔥 사이드바 너비의 80% */
     background: white;
     border-radius: 8px;
     padding: 10px;
@@ -55,12 +57,22 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-wrap: nowrap; /* 🔥 줄 바꿈 방지 */
-    white-space: nowrap; /* 🔥 텍스트가 줄 바꿈되지 않도록 설정 */
+    flex-wrap: nowrap;
+    /* 🔥 줄 바꿈 방지 */
+    white-space: nowrap;
+    /* 🔥 텍스트가 줄 바꿈되지 않도록 설정 */
     gap: none;
 }
+
+.todolist-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
 .sidebar .todolist-wrapper {
-    width: 85%; /* 🔥 사이드바 너비의 80% */
+    width: 85%;
     background: white;
     border-radius: 8px;
     padding: 10px;
