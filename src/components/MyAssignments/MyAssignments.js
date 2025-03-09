@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
 
@@ -23,6 +24,7 @@ const MyAssignments = ({ myAssignment = [], getItemClass, isSidebar = false  }) 
 */
 
 const MyAssignments = ({ isSidebar = false }) => {
+    const navigate = useNavigate;
     // 더미 데이터 (DB 연동 시 fetch로 대체 가능)
     const dummyAssignments = [
         {
@@ -85,6 +87,11 @@ const MyAssignments = ({ isSidebar = false }) => {
         );
     };
 
+    const handleAssignmentClick = (id) => {
+        //navigate(`/assignments/${id}`);
+        navigate(`/AssignmentDetail`);
+    };
+
     return (
         <div className={`my-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
             <h3>내 과제 보기</h3>
@@ -97,8 +104,8 @@ const MyAssignments = ({ isSidebar = false }) => {
                             onChange={() => handleCheckboxChange(item.id)}
                         />
                         <p className = "each-assignment-title"><strong>{item.title}</strong></p>
-                        <p className = "each assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
-                        <p className = "each-assignment-description">{item.description}</p>
+                        <p className = "each-assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
+                        <p className = "each-assignment-des">{item.description}</p>
                     </div>
                 ))
             ) : (

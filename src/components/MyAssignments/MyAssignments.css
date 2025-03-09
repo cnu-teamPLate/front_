@@ -5,6 +5,12 @@
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    max-height: 500px; /* 원하는 높이 설정 */
+    overflow-y: auto;
+}
+
+.assignment-head {
+    display: flex; /* 가로 정렬 */
 }
 
 /* 📌 제목 스타일 */
@@ -12,6 +18,7 @@
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 15px;
+    margin-top: 5px;
 }
 
 /* 📌 개별 과제 항목 스타일 */
@@ -24,23 +31,28 @@
     transition: 0.3s;
 }
 
+
 .finish-check {
     text-align: left;
 }
 
 /* 📌 과제 제목 */
 .each-assignment-title {
+    font-size: 18px;
     margin-top: 0.5em;
-    margin-bottom: 1em;
+    margin-bottom: 0.3em;
 }
 
 .each-assignment-kind {
-    margin: 5px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
     color: #7c7c7c;
 }
 
 .each-assignment-des {
     color: #7c7c7c;
+    margin: 10px;
 }
 
 /* ✅ 마감 기한이 임박한 과제 (동적으로 클래스 적용) */
