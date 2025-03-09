@@ -98,12 +98,12 @@ const MyAssignments = ({ isSidebar = false }) => {
             {assignments.length > 0 ? (
                 assignments.map((item) => (
                     <div key={item.id} className={getItemClass(item.deadline)}>
+                        <p className = "each-assignment-title"><strong>{item.title}</strong></p>
                         <input className = "finish-check"
                             type="checkbox"
                             checked={item.status === '완료'}
                             onChange={() => handleCheckboxChange(item.id)}
                         />
-                        <p className = "each-assignment-title"><strong>{item.title}</strong></p>
                         <p className = "each-assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
                         <p className = "each-assignment-des">{item.description}</p>
                     </div>
