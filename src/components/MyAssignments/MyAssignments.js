@@ -91,17 +91,14 @@ const MyAssignments = ({ isSidebar = false }) => {
             {assignments.length > 0 ? (
                 assignments.map((item) => (
                     <div key={item.id} className={getItemClass(item.deadline)}>
-                        <input
+                        <input className = "finish-check"
                             type="checkbox"
                             checked={item.status === '완료'}
                             onChange={() => handleCheckboxChange(item.id)}
                         />
-                        <p><strong>{item.title}</strong></p>
-                        <p>상태: {item.status}</p>
-                        <p>마감일: {item.deadline}</p>
-                        <p>유형: {item.type}</p>
-                        <p>난이도: {item.complexity}</p>
-                        <p>설명: {item.description}</p>
+                        <p className = "each-assignment-title"><strong>{item.title}</strong></p>
+                        <p className = "each assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
+                        <p className = "each-assignment-description">{item.description}</p>
                     </div>
                 ))
             ) : (

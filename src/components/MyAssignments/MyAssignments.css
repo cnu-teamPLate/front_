@@ -24,9 +24,23 @@
     transition: 0.3s;
 }
 
+.finish-check {
+    text-align: left;
+}
+
 /* 📌 과제 제목 */
-.my-assignment p {
-    margin: 5px 0;
+.each-assignment-title {
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+
+.each-assignment-kind {
+    margin: 5px;
+    color: #7c7c7c;
+}
+
+.each-assignment-des {
+    color: #7c7c7c;
 }
 
 /* ✅ 마감 기한이 임박한 과제 (동적으로 클래스 적용) */
