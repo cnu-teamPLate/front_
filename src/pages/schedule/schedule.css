@@ -1,65 +1,17 @@
-.create-schedule-button .cbutton {
-    padding: 10px 20px;
-    width: 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    position: absolute;
-    /*캘린더를 기준으로*/
-    top: 105px;
-    right: 20px;
-    /* 화면 오른쪽에 배치 */
-    z-index: 1000;
-    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
-    다른 요소들 위에 표시되도록 z-index 설정 */
+.create-schedule-button {
+    margin-left: 100px;
 }
 
-.month-version-button .mbutton {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    position: absolute;
-    /*캘린더를 기준으로*/
-    top: 105px;
-    left: 10px;
-    /* 화면 오른쪽에 배치 */
-    z-index: 1000;
-    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
-    다른 요소들 위에 표시되도록 z-index 설정 */
+.month-version-button {
+    margin-left: 100px;
 }
 
-.week-version-button .wbutton {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    position: absolute;
-    /*캘린더를 기준으로*/
-    top: 105px;
-    left: 140px;
-    z-index: 1000;
-    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
-    다른 요소들 위에 표시되도록 z-index 설정 */
+.week-version-button {
+    margin-left: 100px;
 }
 
-.when-to-meet-button .wtmbutton {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    position: absolute;
-    /*캘린더를 기준으로*/
-    top: 105px;
-    right: 150px;
-    /* 화면 오른쪽에 배치 */
-    z-index: 1000;
-    /* z-index 값이 높을수록 해당 요소가 다른 요소들 위에 표시
-    다른 요소들 위에 표시되도록 z-index 설정 */
+.when-to-meet-button {
+    margin-left: 100px;
 }
 
 .when-to-meet-calendars {
@@ -130,4 +82,21 @@
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     /* 배경 위에 팝업이 위치하도록 설정 */
+}
+
+.rbc-time-header-content {
+    display: flex;
+
+}
+
+.rbc-row rbc-time-header-cell {
+    position: absolute;
+    z-index: 2;
+}
+
+.rbc-allday-cell {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    display: none;
 }

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { IoMenu } from "react-icons/io5";
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-
 
 const localizer = momentLocalizer(moment);
 
@@ -50,7 +48,7 @@ const Schedule = () => {
 
     const handleSelectSlot = ({ start, end }) => {
         const newEventObject = {
-            title: 'Scheduled Event', // 기본 이벤트 이름
+            title: 'Event', // 기본 이벤트 이름
             start: start,
             end: end,
             location: '',
@@ -171,11 +169,11 @@ const Schedule = () => {
                 </>
             )}
 
-            <div
+            {/* <div
                 className="event-popup"
                 style={popupStyle}
                 dangerouslySetInnerHTML={{ __html: popupContent }}
-            />
+            /> */}
             <div className="calender-container">
                 <button className="create-schedule-button" onClick={handleCreateEvent}>
                     일정 생성하기
@@ -207,10 +205,8 @@ const Schedule = () => {
                         onMouseOut={handleEventMouseOut}
                     />
                 ) : (
-                    <div className="whentomeet-calendars">
-                        <button className="add-my-event" onClick={() => handleAddEvent(newEvent)}>
-                            내 일정 입력하기
-                        </button>
+                    <div className="whentomeet-calendars"> 
+                    {/*이거 지우기기*/}
                         <div className="when-to-meet-calendars">
                             <div className="calendar">
                                 <h3>Group Schedule</h3>
@@ -223,13 +219,10 @@ const Schedule = () => {
                                     date={currentDate}
                                     view="week"
                                     onSelectSlot={handleSelectSlot}  // 선택된 시간을 처리하는 함수
-                                    selectable={true}  // 선택 가능하게 설정
                                     onNavigate={(date) => setCurrentDate(date)}
                                     components={{
                                         toolbar: CustomToolbar
                                     }}
-                                    onSelectEvent={(event, e) => handleEventMouseOver(event, e)}
-                                    onMouseOut={handleEventMouseOut}
                                 />
                             </div>
                             <div className="calendar">
