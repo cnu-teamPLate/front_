@@ -1,129 +1,50 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+/* 기본 스타일 */
+.Dashboard {
+  padding: 20px;
 }
 
-.App {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-
-.login-signup, .my-page-logout {
+.create-project-btn {
   display: flex;
   align-items: center;
-  margin-right: 1em;
-}
-
-.login-signup a, .my-page-logout a {
-  color: rgb(0, 0, 0);
-  text-decoration: none;
-  margin: 0 10px;
-}
-
-.sidebar-toggle {
-  position: fixed;
-  top: 1em;
-  left: 1em;
-  z-index: 1001;
-  background: none;
+  background-color: #f1f1f1;
   border: none;
-  color: rgb(0, 0, 0);
+  padding: 12px 20px;
   cursor: pointer;
-}
-
-.App-sidebar {
-  position: fixed;
-  left: -285px;
-  top: 0;
-  width: 250px;
-  height: 100%;
-  background-color: #f8f8f8;
-  color: rgb(0, 0, 0);
-  transition: left 0.3s;
-  padding: 1em;
-  z-index: 1000;
-}
-
-.App-sidebar.open {
-  left: 0;
-}
-
-.sidebar-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.create-project {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px 0;
-}
-
-.create-project p {
-  margin-top: 5px;
-}
-
-.my-projects {
-  margin-top: 20px;
-  width: 100%;
-}
-
-.my-projects h2 {
-  text-align: center;
-  font-size: 1.5em;
-  margin-bottom: 10px;
-}
-
-.project-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 10px 0;
-  background-color: #f0f0f0;
-  padding: 10px;
+  margin-bottom: 20px;
   border-radius: 8px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
-.project-item:hover {
-  background-color: #e0e0e0;
+.create-project-btn:hover {
+  background-color: #007bff;
+  color: white;
 }
 
-.project-item p {
-  margin-top: 5px;
-}
-
-.App-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
-  padding: 2em;
-  margin-top: 60px; /* Adjust based on header height */
-  text-align: center;
+.create-project-btn p {
+  margin-left: 10px;
+  font-size: 18px;
 }
 
 .project-list {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  justify-content: center;
 }
 
 .project-card {
   background-color: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   padding: 20px;
-  border-radius: 5px;
-  width: 300px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  width: calc(50% - 20px);
+  box-sizing: border-box;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: left;
-  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
 }
 
 .project-card-header {
@@ -132,109 +53,142 @@ body {
   align-items: center;
 }
 
-.project-card h2 {
+.project-card-header h2 {
   margin: 0;
-  font-size: 1.5em;
+  font-size: 20px;
 }
 
-.project-card p {
-  margin-top: 1em;
+.project-controls {
+  display: flex;
+  gap: 15px;
 }
 
 .project-link {
-  color: #6200ee;
-  text-decoration: none;
   display: block;
-  margin-top: 1em;
-  text-align: right;
+  margin-top: 10px;
+  color: #007bff;
 }
 
-.contribution-graph {
-  margin-top: 5px;
-  background-color: #e0e0e0;
-  height: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.contribution-bar {
-  height: 100%;
-  color: white;
-  text-align: center;
-  line-height: 20px;
-  border-radius: 10px;
-  transition: width 0.3s ease;
-  background-color: rgba(163, 33, 37, 1);
-}
-
-
-.popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-inner {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 400px;
-  text-align: center;
-  overflow-y: auto;
-  max-height: 90%;
-}
-
-.popup-inner h2 {
-  margin-bottom: 20px;
-}
-
-.popup-inner label {
-  display: block;
-  margin-bottom: 10px;
-  text-align: left;
-  font-weight: bold;
-}
-
-.popup-inner input {
-  width: calc(100% - 20px);
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-.popup-inner button {
-  padding: 10px 20px;
-  margin: 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-}
-
-.popup-inner button:last-child {
-  background-color: #dc3545;
-}
-
-.popup-inner ul {
+.team-members ul {
   list-style-type: none;
   padding: 0;
 }
 
-.popup-inner ul li {
-  padding: 5px 0;
-  margin-bottom: 10px;
+.team-members li {
+  margin: 5px 0;
+}
+
+.contribution-graph {
+  background-color: #f1f1f1;
+  width: 100%;
+  height: 10px;
+  margin-top: 5px;
+}
+
+.contribution-bar {
+  height: 100%;
+  text-align: center;
+  line-height: 10px;
+  color: #fff;
   font-weight: bold;
 }
 
-.shifted {
-  margin-left: 250px; /* To shift the main content when the sidebar is open */
+.popup-inner {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 80vh; /* 최대 높이를 화면의 80%로 제한 */
+  overflow-y: auto; /* 높이가 넘칠 경우 스크롤 추가 */
 }
+
+.popup-inner h2 {
+  margin-top: 0;
+  font-size: 24px;
+  text-align: center;
+  color: #333;
+}
+
+.popup-inner label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #555;
+}
+
+.popup-inner input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.popup-inner input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.popup-inner .button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.popup-inner button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.popup-inner button:hover {
+  opacity: 0.8;
+}
+
+.popup-inner button.cancel-btn {
+  background-color: #ccc;
+  color: #fff;
+}
+
+.popup-inner button.cancel-btn:hover {
+  background-color: #999;
+}
+
+.popup-inner button.submit-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.popup-inner button.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.added-members {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.added-members ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.added-members li {
+  font-size: 14px;
+  color: #555;
+}
+
+.added-members h4 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
