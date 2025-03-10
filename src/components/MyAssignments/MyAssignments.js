@@ -97,16 +97,20 @@ const MyAssignments = ({ isSidebar = false }) => {
             <h3>내 과제 보기</h3>
             {assignments.length > 0 ? (
                 assignments.map((item) => (
-                    <div key={item.id} className={getItemClass(item.deadline)}>
-                        <p className = "each-assignment-title"><strong>{item.title}</strong></p>
-                        <input className = "finish-check"
-                            type="checkbox"
-                            checked={item.status === '완료'}
-                            onChange={() => handleCheckboxChange(item.id)}
-                        />
-                        <p className = "each-assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
-                        <p className = "each-assignment-des">{item.description}</p>
-                    </div>
+                    <a href="/AssignmentDetail" className="click-assignment">
+                        <div key={item.id} className={getItemClass(item.deadline)}>
+                            <div className = "each">
+                                <p className = "each-assignment-title"><strong>{item.title}</strong></p>
+                                <p className = "each-assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
+                                <p className = "each-assignment-des">{item.description}</p>
+                            </div>
+                            <input className = "finish-check"
+                                type="checkbox"
+                                checked={item.status === '완료'}
+                                onChange={() => handleCheckboxChange(item.id)}
+                            />
+                        </div>
+                    </a>
                 ))
             ) : (
                 <p>등록된 과제가 없습니다.</p>

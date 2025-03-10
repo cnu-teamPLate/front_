@@ -18,6 +18,12 @@
     margin-top: 5px;
 }
 
+.click-assignment {
+text-decoration: none;
+  color: inherit;
+  display: inline-block;
+}
+
 /* 📌 개별 과제 항목 스타일 */
 .my-assignment div {
     padding: 10px;
@@ -25,12 +31,26 @@
     background: white;
     border-radius: 5px;
     transition: 0.3s;
+    z-index: 0;
+    position: relative;
 }
 
 
 .finish-check {
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    width: 15px;
+    height: 15px;
     text-align: right;
+    z-index: 2;
+}
+
+.each {
+    transition: none;
     z-index: 1;
+    transform: none!important;
+    box-shadow: none!important;
 }
 
 /* 📌 과제 제목 */
