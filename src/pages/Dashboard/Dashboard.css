@@ -1,100 +1,8 @@
+/* 기본 스타일 */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-}
-
-.App {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-
-.login-signup, .my-page-logout {
-  display: flex;
-  align-items: center;
-  margin-right: 1em;
-}
-
-.login-signup a, .my-page-logout a {
-  color: rgb(0, 0, 0);
-  text-decoration: none;
-  margin: 0 10px;
-}
-
-.sidebar-toggle {
-  position: fixed;
-  top: 1em;
-  left: 1em;
-  z-index: 1001;
-  background: none;
-  border: none;
-  color: rgb(0, 0, 0);
-  cursor: pointer;
-}
-
-.App-sidebar {
-  position: fixed;
-  left: -285px;
-  top: 0;
-  width: 250px;
-  height: 100%;
-  background-color: #f8f8f8;
-  color: rgb(0, 0, 0);
-  transition: left 0.3s;
-  padding: 1em;
-  z-index: 1000;
-}
-
-.App-sidebar.open {
-  left: 0;
-}
-
-.sidebar-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.create-project {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px 0;
-}
-
-.create-project p {
-  margin-top: 5px;
-}
-
-.my-projects {
-  margin-top: 20px;
-  width: 100%;
-}
-
-.my-projects h2 {
-  text-align: center;
-  font-size: 1.5em;
-  margin-bottom: 10px;
-}
-
-.project-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 10px 0;
-  background-color: #f0f0f0;
-  padding: 10px;
-  border-radius: 8px;
-  transition: background-color 0.3s;
-}
-
-.project-item:hover {
-  background-color: #e0e0e0;
-}
-
-.project-item p {
-  margin-top: 5px;
+  background-color: #f8f8f8; 
 }
 
 .App-content {
@@ -104,26 +12,66 @@ body {
   align-items: center;
   flex-grow: 1;
   padding: 2em;
-  margin-top: 60px; /* Adjust based on header height */
+  margin-top: 60px; 
   text-align: center;
 }
 
+button {
+  padding: 25px 30px;
+  margin: 10px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-add-project {
+  background-color: #800020; 
+}
+
+.btn-add-project:hover {
+  background-color: #6c0010; 
+}
+
+.btn-add-subject {
+  background-color: #9b1b30; 
+}
+
+.btn-add-subject:hover {
+  background-color: #7a1622; 
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* 프로젝트 리스트 */
 .project-list {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .project-card {
   background-color: #fff;
   border: 1px solid #ddd;
   padding: 20px;
-  border-radius: 5px;
-  width: 300px;
+  border-radius: 8px;
+  width: 280px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: left;
   position: relative;
+  transition: transform 0.3s ease;
+}
+
+.project-card:hover {
+  transform: scale(1.05);
 }
 
 .project-card-header {
@@ -142,32 +90,38 @@ body {
 }
 
 .project-link {
-  color: #6200ee;
+  color: #800020; /* 버건디 색 */
   text-decoration: none;
   display: block;
   margin-top: 1em;
   text-align: right;
 }
 
-.contribution-graph {
-  margin-top: 5px;
-  background-color: #e0e0e0;
-  height: 20px;
-  border-radius: 10px;
-  overflow: hidden;
+.project-controls {
+  cursor: pointer;
+  color: #800020; 
+  font-size: 18px;
 }
 
-.contribution-bar {
-  height: 100%;
-  color: white;
-  text-align: center;
-  line-height: 20px;
-  border-radius: 10px;
-  transition: width 0.3s ease;
-  background-color: rgba(163, 33, 37, 1);
+.project-controls:hover {
+  color: #6c0010; 
 }
 
+/* 팀원 목록 */
+.team-members {
+  margin-top: 10px;
+}
 
+.team-members ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.team-members li {
+  margin-bottom: 5px;
+}
+
+/* 팝업 스타일 */
 .popup {
   position: fixed;
   top: 0;
@@ -178,6 +132,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
 }
 
 .popup-inner {
@@ -194,14 +149,16 @@ body {
   margin-bottom: 20px;
 }
 
-.popup-inner label {
-  display: block;
-  margin-bottom: 10px;
-  text-align: left;
-  font-weight: bold;
+.popup-inner input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
-.popup-inner input {
+.popup-inner select {
   width: calc(100% - 20px);
   padding: 10px;
   margin-top: 5px;
@@ -215,26 +172,55 @@ body {
   margin: 10px;
   border: none;
   border-radius: 5px;
-  background-color: #007bff;
+  background-color: #800020; /* 버건디 색상 */
   color: white;
   cursor: pointer;
+}
+
+.popup-inner button:hover {
+  background-color: #6c0010; /* Hover 시 버건디 색상 변화 */
 }
 
 .popup-inner button:last-child {
   background-color: #dc3545;
 }
 
-.popup-inner ul {
-  list-style-type: none;
-  padding: 0;
+.popup-inner button:last-child:hover {
+  background-color: #c82333;
 }
 
-.popup-inner ul li {
-  padding: 5px 0;
+/* 팀원 검색 */
+input[type="text"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* 프로젝트 수정 팝업 내용 */
+.project-edit-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* 팀원 추가 버튼 */
+.add-team-member-button {
+  background-color: #ffc107;
+}
+
+.add-team-member-button:hover {
+  background-color: #e0a800;
+}
+
+/* 과목 추가 팝업 스타일 */
+.subject-popup-inner {
+  padding: 20px;
+}
+
+.subject-popup-inner input {
   margin-bottom: 10px;
-  font-weight: bold;
-}
-
-.shifted {
-  margin-left: 250px; /* To shift the main content when the sidebar is open */
 }
