@@ -99,8 +99,8 @@ const AllAssignments = ({ isSidebar = false }) => {
     };
 
     return (
-        <div className={`my-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
-            <h3>내 과제 보기</h3>
+        <div className={`all-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
+            <h3>전체 과제 보기</h3>
             {assignments.length > 0 ? (
                 assignments.map((item) => (
                     <a href="/AssignmentDetail" className="click-assignment">
@@ -126,4 +126,4 @@ const AllAssignments = ({ isSidebar = false }) => {
 };
 
 
-export default MyAssignments;
+export default AllAssignments;
