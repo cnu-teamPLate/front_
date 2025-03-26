@@ -28,32 +28,37 @@ const AllAssignments = ({ isSidebar = false }) => {
     // 더미 데이터 (DB 연동 시 fetch로 대체 가능)
     const dummyAssignments = [
         {
-            id: 1,
-            taskName: 'React 프로젝트',
-            category: '코딩',
-            complexity: '어려움',
-            deadline: '2025-03-15',
-            description: 'React를 사용하여 TODO 리스트 웹 앱을 개발하는 과제입니다.',
-            assignee : '김지훈',
-            status: '미완료'
+            taskId: '',
+            id: '',
+            projId: '',
+            role: '',
+            cate: '',
+            level: '',
+            date: '',
+            detail: '',
+            checkBox: ''
         },
         {
-            id: 2,
-            title: 'JS 알고리즘 문제 풀기',
-            status: '완료',
-            deadline: '2025-03-10',
-            type: '알고리즘',
-            complexity: '보통',
-            description: 'JavaScript를 사용하여 알고리즘 문제를 해결하세요.'
+            taskId: '',
+            id: '',
+            projId: '',
+            role: '',
+            cate: '',
+            level: '',
+            date: '',
+            detail: '',
+            checkBox: ''
         },
         {
-            id: 3,
-            title: 'CSS 레이아웃 연습',
-            status: '미완료',
-            deadline: '2025-03-20',
-            type: '디자인',
-            complexity: '쉬움',
-            description: 'CSS Flexbox와 Grid를 사용하여 레이아웃을 구성하세요.'
+            taskId: '',
+            id: '',
+            projId: '',
+            role: '',
+            cate: '',
+            level: '',
+            date: '',
+            detail: '',
+            checkBox: ''
         }
     ];
 
@@ -73,23 +78,23 @@ const AllAssignments = ({ isSidebar = false }) => {
     }, []);
 
     // 마감일 기준으로 CSS 클래스 적용
-    const getItemClass = (deadline) => {
+    const getItemClass = (date) => {
         const today = new Date();
-        const dueDate = new Date(deadline);
+        const dueDate = new Date(date);
         return dueDate < today ? 'overdue' : 'upcoming';
     };
 
     // 체크박스 클릭 시 완료/미완료 상태 변경
-    const handleCheckboxChange = (id) => {
+    const handleCheckboxChange = (taskId) => {
         setAssignments((prevAssignments) =>
             prevAssignments.map((item) =>
-                item.id === id ? { ...item, status: item.status === '미완료' ? '완료' : '미완료' } : item
+                item.taskId === taskId ? { ...item, status: item.status === '미완료' ? '완료' : '미완료' } : item
             )
         );
     };
 
-    const handleAssignmentClick = (id) => {
-        //navigate(`/assignments/${id}`);
+    const handleAssignmentClick = (taskId) => {
+        //navigate(`/assignments/${taskId}`);
         navigate(`/AssignmentDetail`);
     };
 
