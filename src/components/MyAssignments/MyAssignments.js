@@ -10,7 +10,7 @@ const MyAssignments = ({ myAssignment = [], getItemClass, isSidebar = false  }) 
             <h3>내 과제 보기</h3>
             {myAssignment.length > 0 ? (
                 myAssignment.map((item) => (
-                    <div key={item.id} className={getItemClass(item.deadline)}>
+                    <div key={item.id} className={getItemClass(item.date)}>
                         <p>{item.title}</p>
                         <p>{item.status}</p>
                     </div>
@@ -26,30 +26,35 @@ const MyAssignments = ({ myAssignment = [], getItemClass, isSidebar = false  }) 
 const MyAssignments = ({ isSidebar = false }) => {
     const navigate = useNavigate;
     // 더미 데이터 (DB 연동 시 fetch로 대체 가능)
+    // id가 본인 id 와 일치하는 경우에만 띄우게끔
     const dummyAssignments = [
         {
-            id: 1,
-            title: 'React 프로젝트',
-            status: '미완료',
-            deadline: '2025-03-15',
-            type: '코딩',
-            complexity: '어려움',
-            description: 'React를 사용하여 TODO 리스트 웹 앱을 개발하는 과제입니다.'
+            taskId: '1',
+            id: '20241099',
+            projId: '',
+            role: '개발',
+            cate: '코딩',
+            level: '1',
+            date: '2025-03-15',
+            detail: '어쩌구 이러쿵 저러쿵 쌸라',
+            checkBox: '1'
         },
         {
-            id: 2,
-            title: 'JS 알고리즘 문제 풀기',
-            status: '완료',
-            deadline: '2025-03-10',
-            type: '알고리즘',
-            complexity: '보통',
-            description: 'JavaScript를 사용하여 알고리즘 문제를 해결하세요.'
+            taskId: '2',
+            id: '20241099',
+            projId: '',
+            role: '',
+            cate: '',
+            level: '',
+            date: '',
+            detail: '',
+            checkBox: ''
         },
         {
             id: 3,
             title: 'CSS 레이아웃 연습',
             status: '미완료',
-            deadline: '2025-03-20',
+            date: '2025-03-20',
             type: '디자인',
             complexity: '쉬움',
             description: 'CSS Flexbox와 Grid를 사용하여 레이아웃을 구성하세요.'
@@ -72,9 +77,9 @@ const MyAssignments = ({ isSidebar = false }) => {
     }, []);
 
     // 마감일 기준으로 CSS 클래스 적용
-    const getItemClass = (deadline) => {
+    const getItemClass = (date) => {
         const today = new Date();
-        const dueDate = new Date(deadline);
+        const dueDate = new Date(date);
         return dueDate < today ? 'overdue' : 'upcoming';
     };
 
@@ -98,11 +103,11 @@ const MyAssignments = ({ isSidebar = false }) => {
             {assignments.length > 0 ? (
                 assignments.map((item) => (
                     <a href="/AssignmentDetail" className="click-assignment">
-                        <div key={item.id} className={getItemClass(item.deadline)}>
+                        <div key={item.id} className={getItemClass(item.date)}>
                             <div className = "each">
-                                <p className = "each-assignment-title"><strong>{item.title}</strong></p>
-                                <p className = "each-assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
-                                <p className = "each-assignment-des">{item.description}</p>
+                                <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
+                                <p className = "each-assignment-kind">{item.cate} / {item.level} / {item.date}</p>
+                                <p className = "each-assignment-des">{item.detail}</p>
                             </div>
                             <input className = "finish-check"
                                 type="checkbox"

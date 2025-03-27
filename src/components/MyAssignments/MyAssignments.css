@@ -19,10 +19,18 @@
 }
 
 .click-assignment {
-text-decoration: none;
+    text-decoration: none;
   color: inherit;
   display: inline-block;
+  width: 360px;
+  height:150px;
+  margin-bottom: 10px;
 }
+.overdue,.upcoming {
+    width: 360px;
+    height: 150px;
+}
+
 
 /* 📌 개별 과제 항목 스타일 */
 .my-assignment div {

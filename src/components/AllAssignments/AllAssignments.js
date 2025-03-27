@@ -28,15 +28,15 @@ const AllAssignments = ({ isSidebar = false }) => {
     // 더미 데이터 (DB 연동 시 fetch로 대체 가능)
     const dummyAssignments = [
         {
-            taskId: '',
-            id: '',
-            projId: '',
-            role: '',
-            cate: '',
-            level: '',
-            date: '',
-            detail: '',
-            checkBox: ''
+            taskId: '1',
+            id: '1',
+            projId: '1',
+            role: '1',
+            cate: '1',
+            level: '1',
+            date: '1',
+            detail: '1',
+            checkBox: '1'
         },
         {
             taskId: '',
@@ -104,17 +104,19 @@ const AllAssignments = ({ isSidebar = false }) => {
             {assignments.length > 0 ? (
                 assignments.map((item) => (
                     <a href="/AssignmentDetail" className="click-assignment">
-                        <div key={item.id} className={getItemClass(item.deadline)}>
+                        <div key={item.id} className={getItemClass(item.date)}>
                             <div className = "each">
-                                <p className = "each-assignment-title"><strong>{item.title}</strong></p>
-                                <p className = "each-assignment-kind">{item.type} / {item.complexity} / {item.deadline}</p>
-                                <p className = "each-assignment-des">{item.description}</p>
+                                <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
+                                <p className = "each-assignment-kind">{item.role} / {item.cate} / {item.level} / {item.date}</p>
+                                <p className = "each-assignment-des">{item.detail}</p>
                             </div>
+                            {/*}
                             <input className = "finish-check"
                                 type="checkbox"
-                                checked={item.status === '완료'}
+                                checked={item.checkBox === '1'}
                                 onChange={() => handleCheckboxChange(item.id)}
                             />
+                            */}
                         </div>
                     </a>
                 ))

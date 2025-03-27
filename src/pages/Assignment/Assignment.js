@@ -2,40 +2,69 @@ import './Assignment.css';
 import React, { useState, useEffect } from 'react';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 import MyAssignments from '../../components/MyAssignments/MyAssignments';
+import AllAssignments from '../../components/AllAssignments/AllAssignments';
+
+//const urlParams = "./task/view?projId=CSE00001&id=20241099"
+//const projId = urlParams.get("projectId");
+//const userId = urlParams.get("id");
+
+/*fetch(getAssignment, {
+    method : "GET",
+    headers : {
+        "Content-Type": "application/json"
+    }
+})
+.then(response => {
+    if(!response.ok) {
+        throw {
+            messeage: "오류 메시지",
+            checkbox : 400,
+            cate: "bad_request"
+        };
+    }
+    return response.json();
+})
+.then(data => console.log(data))
+.catch(error => {
+    console.error('Error:', error);
+    alert(`Error ${error.checkbox}: ${error.message}`);
+});
+*/
+
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
     const [detailPlaceholder, setDetailPlaceholder] = useState('과제의 상세 설명을 적어주세요');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [formData, setFormData] = useState({
-        title: '',
-        detail: '',
-        manager: '',
-        type: '',
-        diff: '',
-        deadline: ''
+        "taskName": "발표 준비",
+        "category": "피피티",
+        "complexity": 3,
+        "deadline": "2025-02-10T23:59:59",
+        "description": "팀 프로젝트 정리",
+        "assignee": "김지훈"
     })
 
     const [submittedData, setSubmittedData] = useState([]);
 
-    const [managers, setManagers] = useState([]);
+    const [ids, setids] = useState([]);
 
     useEffect(() => {
-        const fetchManagers = async () => {
+        const fetchids = async () => {
             try {
-                const response = await fetch('/api/managers');
+                const response = await fetch('/api/ids');
                 if (!response.ok) {
                     throw new Error('Network reponse was not ok');
                 }
                 const data = await response.json();
-                const userManagers = data.filter(manager => manager.userId === currentUser);
-                setManagers(userManagers);
+                const userids = data.filter(id => id.userId === currentUser);
+                setids(userids);
             } catch (error) {
-                console.error('Error fetching managers:', error);
-                setManagers([]);
+                console.error('Error fetching ids:', error);
+                setids([]);
             }
         };
-        fetchManagers();
+        fetchids();
     }, [currentUser]);
 
     const handleFocus = (field) => {
@@ -64,10 +93,10 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
 
     const newSubmittedData = {
         ...formData,
-        deadline: formData.deadline || '미정',
-        manager: formData.manager,
-        status: '미완료', // 기본 상태 설정
-        id: new Date().getTime(), // 고유한 ID 생성
+        date: formData.date || '미정',
+        id: formData.id,
+        checkbox: '0', // 기본 상태 설정
+        date: new Date().getTime(), // 고유한 ID 생성
     };
 
     const handleSubmit = (e) => {
@@ -75,10 +104,10 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         console.log('Current formData:', formData);
         const submittedData = {
             ...formData,
-            deadline: formData.deadline || '미정',
-            manager: formData.manager,
-            status: '미완료',
-            id: new Date().getTime(),
+            date: formData.date || '미정',
+            id: formData.id,
+            checkbox: '0',
+            date: new Date().getTime(),
         };
         console.log(submittedData);
 
@@ -88,10 +117,10 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         setFormData({
             title: '',
             detail: '',
-            manager: '',
-            type: '',
-            diff: '',
-            deadline: ''
+            id: '',
+            cate: '',
+            level: '',
+            date: ''
         });
         setTitlePlaceholder('과제명을 적어주세요');
         setDetailPlaceholder('과제의 상세 설명을 적어주세요');
@@ -106,19 +135,19 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
     const sortData = (data) => {
         const today = new Date().toISOString().split('T')[0];
         return data.sort((a, b) => {
-            if (a.deadline < today && b.deadline < today) return new Date(b.deadline) - new Date(a.deadline);
-            if (a.deadline < today) return -1;
-            if (b.deadline < today) return 1;
-            return new Date(a.deadline) - new Date(b.deadline);
+            if (a.date < today && b.date < today) return new Date(b.date) - new Date(a.date);
+            if (a.date < today) return -1;
+            if (b.date < today) return 1;
+            return new Date(a.date) - new Date(b.date);
         });
     };
 
-    const myAssignment = sortData(submittedData.filter(item => item.manager === currentUser)) || [];
+    const myAssignment = sortData(submittedData.filter(item => item.id === currentUser)) || [];
     const allAssignment = sortData(submittedData) || [];
     
-    const getItemClass = (deadline) => {
+    const getItemClass = (date) => {
         const today = new Date().toISOString().split('T')[0];
-        return deadline < today ? 'look-item past-deadline' : 'look-item';
+        return date < today ? 'look-item past-date' : 'look-item';
     };
 
 
@@ -130,20 +159,20 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                     <form className="As-create-form" onSubmit={handleSubmit}>
                         <div className="setting-list">
                             <select
-                                name='manager'
-                                value={formData.manager}
+                                name='id'
+                                value={formData.id}
                                 onChange={handleChange}
                             >
                                 <option value="">담당자</option>
-                                {managers.map((manager) => (
-                                    <option key={manager.id} value={manager.name}>
-                                        {manager.name}
+                                {ids.map((id) => (
+                                    <option key={id.id} value={id.name}>
+                                        {id.name}
                                     </option>
                                 ))}
                             </select>
                             <select
-                                name='type'
-                                value={formData.type}
+                                name='cate'
+                                value={formData.cate}
                                 onChange={handleChange}
                             >
                                 <option value="">과제분류</option>
@@ -152,25 +181,25 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                                 {/*이부분도 분류 대강 짠 다음에 추가해야함*/}
                             </select>
                             <select
-                                name='diff'
-                                value={formData.diff}
+                                name='level'
+                                value={formData.level}
                                 onChange={handleChange}
                             >
-                                <option value="미정">과제 복잡도</option>
-                                <option value="간단함">간단함</option>
-                                <option value="복잡함">복잡함</option>
+                                <option value='-'>과제 복잡도</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
                             </select>
                             <input
-                                type='date'
-                                name='deadline'
-                                value={formData.deadline}
+                                type="date"
+                                name='date'
+                                value={formData.date}
                                 onChange={handleChange}
                             />
                         </div>
                         <div className="container">
                             <div className="As-title">
                                 <textarea
-                                    type="text"
+                                    cate="text"
                                     name="title"
                                     value={formData.title}
                                     placeholder={titlePlaceholder}
@@ -193,26 +222,28 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                                 />
                             </div>
                         </div>
-                        <button type="submit">생성</button>
+                        <button className="submit-button">생성</button>
                     </form>
                     <div className="Assignment-look">
             {/* ✅ 내 과제 보기 컴포넌트 */}
             <MyAssignments myAssignment={myAssignment} getItemClass={getItemClass} />
+            <AllAssignments allAssignment={allAssignment} getItemClass={getItemClass} />
 
                         
-                        <div className="all-assignment">
+                        {/*<div className="all-assignment">
                             <h3>전체 과제 보기</h3>
                             {allAssignment.map(item => (
                                 <div
                                     key={item.id}
-                                    className={getItemClass(item.deadline)}
+                                    className={getItemClass(item.date)}
                                 >
                                     <p>{item.title}</p>
-                                    <p>{item.manager}</p>
-                                    <p>{item.status}</p>
+                                    <p>{item.id}</p>
+                                    <p>{item.checkbox}</p>
                                 </div>
                             ))}
                         </div>
+                        */}
                     </div>
                     <NotificationPopup notifications={notifications} />
                 </div>

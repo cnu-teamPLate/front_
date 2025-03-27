@@ -1,5 +1,5 @@
-/* 📌 MyAssignments 스타일 */
-.my-assignment {
+/* 📌.allAssignments 스타일 */
+.all-assignment {
     background: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
@@ -11,7 +11,7 @@
 
 
 /* 📌 제목 스타일 */
-.my-assignment h3 {
+.all-assignment h3 {
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 15px;
@@ -22,10 +22,18 @@
 text-decoration: none;
   color: inherit;
   display: inline-block;
+  width: 360px;
+  height:150px;
+  margin-bottom: 10px;
+}
+
+.overdue,.upcoming {
+    width: 360px;
+    height: 150px;
 }
 
 /* 📌 개별 과제 항목 스타일 */
-.my-assignment div {
+.all-assignment div {
     padding: 10px;
     margin-bottom: 10px;
     background: white;
@@ -74,23 +82,23 @@ text-decoration: none;
 }
 
 /* ✅ 마감 기한이 임박한 과제 (동적으로 클래스 적용) */
-.my-assignment .urgent {
+.all-assignment .urgent {
     border-left-color: #ff4d4d; /* 빨간색 테두리 */
     background: #ffe6e6;
 }
 
 /* ✅ 완료된 과제 */
-.my-assignment .completed {
+.all-assignment .completed {
     border-left-color: #28a745; /* 초록색 테두리 */
     background: #e6ffe6;
 }
 
 /* ✅ 과제 항목 hover 효과 */
-.my-assignment div:hover {
+.all-assignment div:hover {
     transform: scale(1.02);
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
 }
-.sidebar .my-assignment {
+.sidebar .all-assignment {
     padding: 12px 3px; /* ✅ 패딩 조정 */
     text-align: center;
     font-size: 16px;
