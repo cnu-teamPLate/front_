@@ -74,6 +74,23 @@ const MyAssignments = ({ isSidebar = false }) => {
     // 컴포넌트 마운트 시 데이터 로드
     useEffect(() => {
         fetchAssignments();
+        /*
+        fetch()
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("데이터를 불러오지 못했습니다.");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                const filteredAssignments = data.filter(
+                    (item) => item.id === loggedId//바꿀거임
+                );
+                setAssignments(filteredAssignments);
+            })
+            .catch(error) => setError(error.message))
+            .finally(() => setLoading(false));
+        */
     }, []);
 
     // 마감일 기준으로 CSS 클래스 적용
@@ -102,6 +119,7 @@ const MyAssignments = ({ isSidebar = false }) => {
             <h3>내 과제 보기</h3>
             {assignments.length > 0 ? (
                 assignments.map((item) => (
+                    //로그인 아이디가 동일하면 표시하도록 수정해야함
                     <a href="/AssignmentDetail" className="click-assignment">
                         <div key={item.id} className={getItemClass(item.date)}>
                             <div className = "each">
