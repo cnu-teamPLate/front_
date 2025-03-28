@@ -4,8 +4,9 @@ import { NotificationPopup } from '../../components/NotificationPopup/Notificati
 import MyAssignments from '../../components/MyAssignments/MyAssignments';
 import AllAssignments from '../../components/AllAssignments/AllAssignments';
 
-/* 실사용 시 이쪽 코드를 사용
 const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+/* 실사용 시 이쪽 코드를 사용
+
 const urlParams = new URLSearchParams(window.location.search);
 const projId = urlParams.get("projectId");
 const id = urlParams.get("id");
@@ -133,28 +134,51 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         date: new Date().getTime(), // 고유한 ID 생성
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Current formData:', formData);
+    const handleSubmit = async (event) => {
+        event.preventDefault(); //기본 폼 제출 동작
+
         const submittedData = {
-            ...formData,
-            date: formData.date || '미정',
-            id: formData.id,
-            checkbox: '0',
-            date: new Date().getTime(),
+            taskName: formData.taskName,
+            cate: formData.cate,
+            level: formData.level,
+            date: formData.date,
+            description: formData.description,
+            assignee: formData.assignee,
         };
         console.log(submittedData);
+        
+        try {
+            const response = await fetch(`${baseURL}/task/post`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
 
-        setSubmittedData((prevData) => [...prevData, newSubmittedData]);
+            });
+            if(response.ok) {
+                const responseData = await response.json();
+                console.log('서버 응답:', responseData);
+                alert('200 ok');
+            }else {
+                if (response.status === 400) {
+                    alert("bad_request");
+                }
+            };
+        } catch (error) {
+            console.error('네트워크 오류 또는 기타 예외:', error);
+            alert('서버와 연결할 수 없습니다.');
+        }
 
-        onSubmit(formData);
+        //onSubmit(formData);
         setFormData({
-            title: '',
-            detail: '',
-            id: '',
+            taskName: '',
             cate: '',
             level: '',
-            date: ''
+            date: '',
+            description: '',
+            assignee: ''
         });
         setTitlePlaceholder('과제명을 적어주세요');
         setDetailPlaceholder('과제의 상세 설명을 적어주세요');
