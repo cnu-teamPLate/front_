@@ -4,11 +4,21 @@ import { NotificationPopup } from '../../components/NotificationPopup/Notificati
 import MyAssignments from '../../components/MyAssignments/MyAssignments';
 import AllAssignments from '../../components/AllAssignments/AllAssignments';
 
-//const urlParams = "./task/view?projId=CSE00001&id=20241099"
-//const projId = urlParams.get("projectId");
-//const userId = urlParams.get("id");
+/* 실사용 시 이쪽 코드를 사용
+const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+const urlParams = new URLSearchParams(window.location.search);
+const projId = urlParams.get("projectId");
+const id = urlParams.get("id");
+const getAssignment = `${baseURL}/task/view?projId=${projId}&id=${id}`;
+*/
 
-/*fetch(getAssignment, {
+const testURL ="http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
+const urlParams = new URLSearchParams(new URL(testURL).search);
+const projectId = urlParams.get("projId");
+const id = urlParams.get("id");
+const getAssignment = `${testURL}`;
+
+fetch(getAssignment, {
     method : "GET",
     headers : {
         "Content-Type": "application/json"
@@ -29,7 +39,7 @@ import AllAssignments from '../../components/AllAssignments/AllAssignments';
     console.error('Error:', error);
     alert(`Error ${error.checkbox}: ${error.message}`);
 });
-*/
+
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
