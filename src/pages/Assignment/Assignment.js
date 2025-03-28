@@ -53,7 +53,31 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         "deadline": "2025-02-10T23:59:59",
         "description": "팀 프로젝트 정리",
         "assignee": "김지훈"
-    })
+    });
+
+    const categoryOptions = [  
+        { value: "", label: "과제분류" },  
+        { value: "발표", label: "발표" },  
+        { value: "자료조사", label: "자료조사" }, 
+        { value: "피피티", label: "피피티" }
+        // 추가 옵션도 여기서 정의 가능  
+        // { value: "새로운분류", label: "새로운분류" },  
+    ];
+
+    const levelOptions = [
+        { value: "", label: "난이도"},
+        { value: 1, label: "쉬움"},
+        { value: 2, label: "보통"},
+        { value: 3, label: "어려움"}
+    ];
+
+    const assigneeOptions = [
+        { value: "", label: "담당자"},
+        { value: "김지훈", label: "김지훈"},
+        { value: "박서준", label: "박서준"},
+        { value: "이수민", label: "이수민"}
+        //여기는 나중에 프로젝트 참여자들 명단 데이터를 불러와서 표시하게 해야함
+    ];
 
     const [submittedData, setSubmittedData] = useState([]);
 
@@ -160,7 +184,6 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         return date < today ? 'look-item past-date' : 'look-item';
     };
 
-
     return (
         <div className="Assignment">
 
@@ -169,14 +192,13 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                     <form className="As-create-form" onSubmit={handleSubmit}>
                         <div className="setting-list">
                             <select
-                                name='id'
-                                value={formData.id}
+                                name='assignee'
+                                value={formData.assignee}
                                 onChange={handleChange}
                             >
-                                <option value="">담당자</option>
-                                {ids.map((id) => (
-                                    <option key={id.id} value={id.name}>
-                                        {id.name}
+                                {assigneeOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
                                     </option>
                                 ))}
                             </select>
@@ -185,19 +207,22 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                                 value={formData.cate}
                                 onChange={handleChange}
                             >
-                                <option value="">과제분류</option>
-                                <option vlaue="발표">발표</option>
-                                <option vlaue="자료조사">자료조사</option>
-                                {/*이부분도 분류 대강 짠 다음에 추가해야함*/}
+                                {categoryOptions.map((option)=> (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
                             </select>
                             <select
                                 name='level'
                                 value={formData.level}
                                 onChange={handleChange}
                             >
-                                <option value='-'>과제 복잡도</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
+                                {levelOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
                             </select>
                             <input
                                 type="date"
