@@ -126,13 +126,13 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         }));
     };
 
-    const newSubmittedData = {
+    /*const newSubmittedData = {
         ...formData,
         date: formData.date || '미정',
         id: formData.id,
         checkbox: '0', // 기본 상태 설정
         date: new Date().getTime(), // 고유한 ID 생성
-    };
+    };*/
 
     const handleSubmit = async (event) => {
         event.preventDefault(); //기본 폼 제출 동작
