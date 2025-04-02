@@ -5,7 +5,53 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-/* ========== 1) 날짜 선택 달력 ========== */
+
+// 더미 이벤트 데이터 (예시)
+const dummyEvents = [
+    {
+        userId: "20211079",
+        projId: "cse00001",
+        start: "2025-01-14T09:00:00.000Z",
+        end: "2025-01-14T10:00:00.000Z",
+        title: "Dummy Event 1"
+    },
+    {
+        userId: "20211080",
+        projId: "cse00001",
+        start: "2025-01-14T09:15:00.000Z",
+        end: "2025-01-14T09:45:00.000Z",
+        title: "Dummy Event 2"
+    },
+    {
+        userId: "20211079",
+        projId: "cse00001",
+        start: "2025-01-14T10:00:00.000Z",
+        end: "2025-01-14T10:30:00.000Z",
+        title: "Dummy Event 3"
+    },
+    {
+        userId: "20211080",
+        projId: "cse00001",
+        start: "2025-01-14T10:15:00.000Z",
+        end: "2025-01-14T11:00:00.000Z",
+        title: "Dummy Event 4"
+    },
+    {
+        userId: "20211079",
+        projId: "cse00001",
+        start: "2025-01-14T11:00:00.000Z",
+        end: "2025-01-14T12:00:00.000Z",
+        title: "Dummy Event 5"
+    }
+];
+
+// 사용자 정보 매핑 (userId -> 사용자 이름)
+const userInfo = {
+    "20211079": "Alice",
+    "20211080": "Bob"
+};
+
+/* 1) 날짜 선택 달력 */
 function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates }) {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
@@ -62,7 +108,124 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
-/* ========== 2) 15분 단위 시간 선택 그리드 ========== */
+/* 2) 읽기 전용 Availability Matrix */
+function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events }) {
+    const parseTime = (timeStr) => {
+        const [hourMinute, ampm] = timeStr.split(' ');
+        let [hour, minute] = hourMinute.split(':').map(Number);
+        if (ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
+        if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
+        return { hour, minute };
+    };
+
+    const getTimeSlots = (startTimeStr, endTimeStr) => {
+        const slots = [];
+        const start = parseTime(startTimeStr);
+        const end = parseTime(endTimeStr);
+        let current = new Date(2000, 0, 1, start.hour, start.minute, 0);
+        const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);
+        while (current <= endDate) {
+            let hours = current.getHours();
+            const minutes = current.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            if (hours === 0) hours = 12;
+            const minuteStr = minutes === 0 ? '00' : minutes;
+            slots.push(`${hours}:${minuteStr} ${ampm}`);
+            current = new Date(current.getTime() + 15 * 60000);
+        }
+        return slots;
+    };
+
+    const timeSlots = getTimeSlots(earliestTime, latestTime);
+
+    const getCellDateTime = (dateStr, timeSlot) => {
+        const { hour, minute } = parseTime(timeSlot);
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day, hour, minute, 0);
+    };
+
+    const getUsersForCell = (dateStr, timeSlot) => {
+        const cellTime = getCellDateTime(dateStr, timeSlot);
+        const overlappingEvents = events.filter(event => {
+            const eventStart = new Date(event.start);
+            const eventEnd = new Date(event.end);
+            return cellTime >= eventStart && cellTime < eventEnd;
+        });
+        const names = overlappingEvents.map(event => userInfo[event.userId]).filter(Boolean);
+        return [...new Set(names)];
+    };
+
+    return (
+        <div className="availability-matrix">
+            <div className="matrix-header" style={{ display: 'flex' }}>
+                <div
+                    className="matrix-header-cell"
+                    style={{
+                        width: '100px',
+                        border: '1px solid #ccc',
+                        padding: '6px',
+                        textAlign: 'center',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    Time
+                </div>
+                {selectedDates.map(date => (
+                    <div
+                        key={date}
+                        className="matrix-header-cell"
+                        style={{
+                            flex: 1,
+                            border: '1px solid #ccc',
+                            padding: '6px',
+                            textAlign: 'center',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {date}
+                    </div>
+                ))}
+            </div>
+            {timeSlots.map(slot => (
+                <div key={slot} className="matrix-row" style={{ display: 'flex' }}>
+                    <div
+                        className="matrix-row-label"
+                        style={{
+                            width: '100px',
+                            border: '1px solid #ccc',
+                            padding: '6px',
+                            textAlign: 'center',
+                            fontWeight: '600'
+                        }}
+                    >
+                        {slot}
+                    </div>
+                    {selectedDates.map(date => {
+                        const users = getUsersForCell(date, slot);
+                        return (
+                            <div
+                                key={`${date}-${slot}`}
+                                className="matrix-cell"
+                                style={{
+                                    flex: 1,
+                                    border: '1px solid #ccc',
+                                    padding: '6px',
+                                    minHeight: '40px',
+                                    textAlign: 'center'
+                                }}
+                            >
+                                {users.join(', ')}
+                            </div>
+                        );
+                    })}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/* 3) 드래그 가능한 Time Selection Grid */
 function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTimes, selectedTimes }) {
     const [isDragging, setIsDragging] = useState(false);
     const [toggleTo, setToggleTo] = useState(false);
@@ -81,7 +244,6 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     const endDate = parseTime(latestTime);
     const timeSlots = [];
     const tempDate = new Date(startDate);
-
     while (tempDate <= endDate) {
         const hh = tempDate.getHours();
         const mm = tempDate.getMinutes();
@@ -116,7 +278,6 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
 
     return (
         <div className="time-selection-grid" onMouseUp={handleMouseUp}>
-            {/* 헤더 (시간 레이블 + 날짜들) */}
             <div className="time-grid-header">
                 <div className="time-header-cell">Time</div>
                 {selectedDates.map((date) => (
@@ -125,8 +286,6 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
                     </div>
                 ))}
             </div>
-
-            {/* 시간 슬롯별 행 */}
             {timeSlots.map((slot) => (
                 <div key={slot} className="time-grid-row">
                     <div className="time-row-label">{slot}</div>
@@ -148,9 +307,8 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     );
 }
 
-/* ========== 3) 다중 Step으로 날짜/시간 선택 + 이벤트 제목 입력 ========== */
+/* 4) WhenToMeetGrid: 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit }) {
-
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
 
@@ -164,76 +322,64 @@ function WhenToMeetGrid({ onExit }) {
     const [latestTime, setLatestTime] = useState('5:00 PM');
     const [timeZone, setTimeZone] = useState('Asia/Seoul');
 
-    // 유효성 검사 함수
     const validateStep = () => {
         const newErrors = {};
         if (step === 1) {
-            // Step1: 이벤트 제목 필수
             if (!eventTitle.trim()) {
                 newErrors.eventTitle = '제목을 입력해주세요.';
-            }
-            else if (selectedDates.length === 0) {
+            } else if (selectedDates.length === 0) {
                 newErrors.selectedDates = '최소 한 날짜는 선택해주세요.';
             }
-
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    // 단계 이동
     const nextStep = () => {
         if (validateStep()) {
             setStep(step + 1);
         }
     };
+
     const prevStep = () => {
         setStep(step - 1);
     };
 
-    // 날짜 선택/해제
     const handleSelectDate = (dateKey) => {
-        setSelectedDates((prev) => {
-            if (prev.includes(dateKey)) {
-                return prev.filter((d) => d !== dateKey);
-            } else {
-                return [...prev, dateKey];
-            }
-        });
+        setSelectedDates((prev) =>
+            prev.includes(dateKey) ? prev.filter((d) => d !== dateKey) : [...prev, dateKey]
+        );
     };
 
     const handleSelectTimes = (cellKey, shouldSelect) => {
         setSelectedTimes((prev) => {
             if (shouldSelect) {
-                // 이미 포함되어 있지 않으면 추가
                 if (!prev.includes(cellKey)) {
                     return [...prev, cellKey];
                 }
                 return prev;
             } else {
-                // 해제
                 return prev.filter((item) => item !== cellKey);
             }
         });
     };
-    // 최종 이벤트 생성- 실제 프로젝트에서는 서버로 전송하거나, 다음 페이지로 이동
+
     const handleCreateEvent = () => {
         if (!validateStep()) return;
         alert(`
-        이벤트 제목: ${eventTitle}
-        선택된 날짜: ${selectedDates.join(', ')}
-        선택된 시간: ${selectedTimes.join(', ')}
-        타임존: ${timeZone}
-      `);
+      이벤트 제목: ${eventTitle}
+      선택된 날짜: ${selectedDates.join(', ')}
+      선택된 시간: ${selectedTimes.join(', ')}
+      타임존: ${timeZone}
+    `);
     };
 
     return (
         <div className="new-event-container">
-            {/* STEP 1: 이벤트 제목 입력 */}
             {step === 1 && (
                 <>
                     <div className="step-container">
-                        <button className='back' onClick={onExit}>뒤로 가기</button>
+                        <button className="back" onClick={onExit}>뒤로 가기</button>
                         <h1>Create New Event</h1>
                         <label>
                             Event Title:
@@ -258,7 +404,7 @@ function WhenToMeetGrid({ onExit }) {
                             selectedDates={selectedDates}
                             onSelectDate={handleSelectDate}
                         />
-                        <div className='errors'>
+                        <div className="errors">
                             {errors.eventTitle && <p className="error">{errors.eventTitle}</p>}
                             {errors.selectedDates && <p className="error">{errors.selectedDates}</p>}
                         </div>
@@ -268,10 +414,7 @@ function WhenToMeetGrid({ onExit }) {
                         <div className="time-options">
                             <label>
                                 No earlier than:
-                                <select
-                                    value={earliestTime}
-                                    onChange={(e) => setEarliestTime(e.target.value)}
-                                >
+                                <select value={earliestTime} onChange={(e) => setEarliestTime(e.target.value)}>
                                     <option value="6:00 AM">6:00 AM</option>
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
@@ -290,15 +433,11 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-
                                 </select>
                             </label>
                             <label>
                                 No later than:
-                                <select
-                                    value={latestTime}
-                                    onChange={(e) => setLatestTime(e.target.value)}
-                                >
+                                <select value={latestTime} onChange={(e) => setLatestTime(e.target.value)}>
                                     <option value="6:00 AM">6:00 AM</option>
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
@@ -321,58 +460,50 @@ function WhenToMeetGrid({ onExit }) {
                             </label>
                             <label>
                                 Time Zone:
-                                <select
-                                    value={timeZone}
-                                    onChange={(e) => setTimeZone(e.target.value)}
-                                >
+                                <select value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
                                     <option value="Asia/Seoul">Asia/Seoul</option>
                                     <option value="America/New_York">America/New_York</option>
                                     <option value="Europe/London">Europe/London</option>
                                 </select>
                             </label>
                         </div>
-
                         <div className="navigation-buttons">
                             <button onClick={nextStep}>Next</button>
                         </div>
                     </div>
                 </>
             )}
-
             {step === 2 && (
                 <>
                     <div className="step-container">
-                        <button className='back' onClick={onExit}>뒤로 가기</button>
-                        <TimeSelectionGrid
-                            selectedDates={selectedDates}
-                            earliestTime={earliestTime}
-                            latestTime={latestTime}
-                            selectedTimes={selectedTimes}
-                            onSelectTimes={handleSelectTimes}
-                        />
+                        <button className="back" onClick={onExit}>뒤로 가기</button>
+                        <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
+                            <TimeSelectionGrid
+                                selectedDates={selectedDates}
+                                earliestTime={earliestTime}
+                                latestTime={latestTime}
+                                selectedTimes={selectedTimes}
+                                onSelectTimes={handleSelectTimes}
+                            />
+                            <AvailabilityMatrix
+                                selectedDates={selectedDates}
+                                earliestTime={earliestTime}
+                                latestTime={latestTime}
+                                events={dummyEvents}
+                            />
+                        </div>
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={handleCreateEvent}>Ready? Create Event</button>
                         </div>
                     </div>
                 </>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 }
-/* ─── react‑big‑calendar 관련 커스텀 컴포넌트 ─────────────────────────── */
-// 사용자 정보 (예시)
-const userInfo = {
-    "20211079": {
-        name: "Alice",
-    },
-    "20211080": {
-        name: "Bob",
-    },
-    // 추가 사용자 정보…
-};
 
+/* 5) react-big-calendar 관련 커스텀 컴포넌트 */
 const EventComponent = ({ event }) => {
     const user = userInfo[event.userId];
     return (
@@ -393,7 +524,7 @@ const EventComponent = ({ event }) => {
 
 const localizer = momentLocalizer(moment);
 
-/* ─── Schedule 메인 컴포넌트 ─────────────────────────────────────────── */
+/* 6) Schedule 메인 컴포넌트 */
 const Schedule = () => {
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -406,14 +537,11 @@ const Schedule = () => {
         attendees: '',
         agenda: ''
     });
-    const exitWhenToMeet = () => {
-        setWhenToMeet(false);
-    };
+    const [whenToMeet, setWhenToMeet] = useState(false);
     const [view, setView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
-    const [whenToMeet, setWhenToMeet] = useState(false);
 
     const currentUser = { id: "20211079" };
     const currentProject = { id: "cse00001" };
@@ -453,10 +581,8 @@ const Schedule = () => {
         );
 
         if (existing) {
-            // 이미 선택된 경우 선택 취소 (이벤트 제거)
             setEvents(events.filter(event => event !== existing));
         } else {
-            // 선택되지 않은 경우 이벤트 추가 (타이틀은 'Available'로 표시)
             const newEventObject = {
                 title: 'Available',
                 start,
@@ -521,6 +647,11 @@ const Schedule = () => {
 
     const handleEventMouseOut = () => {
         setPopupStyle({ display: 'none' });
+    };
+
+    // onExit 함수는 WhenToMeetGrid에서 onExit prop으로 전달됨
+    const exitWhenToMeet = () => {
+        setWhenToMeet(false);
     };
 
     return (
@@ -622,4 +753,5 @@ const Schedule = () => {
         </div>
     );
 };
+
 export default Schedule;
