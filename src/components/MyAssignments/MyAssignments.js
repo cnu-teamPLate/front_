@@ -3,61 +3,43 @@ import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
 
-/*
-const MyAssignments = ({ myAssignment = [], getItemClass, isSidebar = false  }) => {
-    return (
-        <div className={`my-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
-            <h3>내 과제 보기</h3>
-            {myAssignment.length > 0 ? (
-                myAssignment.map((item) => (
-                    <div key={item.id} className={getItemClass(item.date)}>
-                        <p>{item.title}</p>
-                        <p>{item.status}</p>
-                    </div>
-                ))
-            ) : (
-                <p>등록된 과제가 없습니다.</p>
-            )}
-        </div>
-    );
-};
-*/
-
 const MyAssignments = ({ isSidebar = false }) => {
     const navigate = useNavigate;
     // 더미 데이터 (DB 연동 시 fetch로 대체 가능)
     // id가 본인 id 와 일치하는 경우에만 띄우게끔
     const dummyAssignments = [
         {
-            taskId: '1',
-            id: '20241099',
-            projId: '',
-            role: '개발',
-            cate: '코딩',
-            level: '1',
-            date: '2025-03-15',
-            detail: '어쩌구 이러쿵 저러쿵 쌸라',
-            checkBox: '1'
+            "taskId": 1,
+            "id": "20240000",
+            "projId": "CSE00001",
+            "name": "김지홍",
+            "cate": "발표",
+            "level": 1,
+            "date": "1739620235.000000000",
+            "detail": "이러쿵",
+            "checkBox": 1
         },
         {
-            taskId: '2',
-            id: '20241099',
-            projId: '',
-            role: '',
-            cate: '',
-            level: '',
-            date: '',
-            detail: '',
-            checkBox: ''
+            "taskId": 2,
+            "id": "00000000",
+            "projId": "CSE00001",
+            "name": "김서강",
+            "cate": "PPT",
+            "level": 2,
+            "date": '1739620236.000000000',
+            "detail": "어쩌구",
+            "checkBox": 0
         },
         {
-            id: 3,
-            title: 'CSS 레이아웃 연습',
-            status: '미완료',
-            date: '2025-03-20',
-            type: '디자인',
-            complexity: '쉬움',
-            description: 'CSS Flexbox와 Grid를 사용하여 레이아웃을 구성하세요.'
+            "taskId": 3,
+            "id": "20241099",
+            "projId": "CSE00001",
+            "name": "홍길동",
+            "cate": "PPT",
+            "level": 2,
+            "date": "1739620234.000000000",
+            "detail": "Spring Boot API 개발",
+            "checkBox": 0
         }
     ];
 
@@ -102,17 +84,42 @@ const MyAssignments = ({ isSidebar = false }) => {
 
     // 체크박스 클릭 시 완료/미완료 상태 변경
     const handleCheckboxChange = (id) => {
-        setAssignments((prevAssignments) =>
-            prevAssignments.map((item) =>
-                item.id === id ? { ...item, status: item.status === '미완료' ? '완료' : '미완료' } : item
-            )
-        );
+        setAssignments((prevAssignments) => {
+            const updatedAssignments = prevAssignments.map((item) =>
+                item.id === id ? { ...item, checkBox: item.checkBox === 0 ? 1 : 0 } : item
+            );
+            return updatedAssignments.sort((a,b) => {
+                if(a.checkBox === 0 && b.checkBox === 1) return -1;
+                if(a.checkBox === 1 && b.checkBox === 0) return 1;
+
+                const dateA = new Date(a.date * 1000);
+                const dateB = new Date(b.date * 1000);
+                return dateA - dateB;
+            });
+                
+        
+        });
     };
 
     const handleAssignmentClick = (id) => {
         //navigate(`/assignments/${id}`);
         navigate(`/AssignmentDetail`);
     };
+
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp * 1000); // 초 단위를 밀리초로 변환
+        return date.toLocaleString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false, // 24시간 형식
+        });
+    };
+    //이거 allassignment에도 적용시켜야함... 근데 코드 어차피 통일되어있는데 그냥 
+    // all assignment에 있는 걸 갖다가 필터만 걸어서 my로 쓰면 안되나...
+    
 
     return (
         <div className={`my-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
@@ -124,12 +131,12 @@ const MyAssignments = ({ isSidebar = false }) => {
                         <div key={item.id} className={getItemClass(item.date)}>
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
-                                <p className = "each-assignment-kind">{item.cate} / {item.level} / {item.date}</p>
+                                <p className = "each-assignment-kind">{item.cate} / {item.level} / {formatDate(item.date)}</p>
                                 <p className = "each-assignment-des">{item.detail}</p>
                             </div>
                             <input className = "finish-check"
                                 type="checkbox"
-                                checked={item.status === '완료'}
+                                checked={item.checkBox === 1}
                                 onChange={() => handleCheckboxChange(item.id)}
                             />
                         </div>
