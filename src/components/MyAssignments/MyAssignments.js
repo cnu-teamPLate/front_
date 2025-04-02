@@ -2,6 +2,9 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
+const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+//const getAssignment = `${baseURL}/task/view?projId=${projId}&id=${id}`;
+
 const testURL ="http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
 const urlParams = new URLSearchParams(new URL(testURL).search);
 const projectId = urlParams.get("projId");
@@ -82,35 +85,66 @@ const MyAssignments = ({ isSidebar = false }) => {
         */
     }, []);
 
-    // 마감일 기준으로 CSS 클래스 적용
-    const getItemClass = (date) => {
-        const today = new Date();
-        const dueDate = new Date(date);
-        return dueDate < today ? 'overdue' : 'upcoming';
-    };
+    
 
     // 체크박스 클릭 시 완료/미완료 상태 변경
-    const handleCheckboxChange = (taskId) => {
+    const handleCheckboxChange = async(taskId) => {
         setAssignments((prevAssignments) => {
             const updatedAssignments = prevAssignments.map((item) =>
                 item.taskId === taskId ? { ...item, checkBox: item.checkBox === 0 ? 1 : 0 } : item
             );
-            return updatedAssignments.sort((a,b) => {
-                if(a.checkBox === 0 && b.checkBox === 1) return -1;
-                if(a.checkBox === 1 && b.checkBox === 0) return 1;
 
+            // 마감일 기준으로 CSS 클래스 적용
+            const getItemClass = (date) => {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const dueDate = new Date(date*1000);
+                return dueDate < today ? 'overdue' : 'upcoming';
+            };
+
+            const finalAssignments = updatedAssignments.map((item) => ({
+                ...item,
+                itemClass: getItemClass(item.date) // ✅ 각 항목에 itemClass 추가
+            }));
+    
+            // ✅ 정렬: 완료된 항목은 아래로, 미완료 항목은 위로
+            finalAssignments.sort((a, b) => {
+                if (a.checkBox === 0 && b.checkBox === 1) return -1;
+                if (a.checkBox === 1 && b.checkBox === 0) return 1;
+    
+                // 마감일 기준 정렬 (가까운 날짜가 위로)
                 const dateA = new Date(a.date * 1000);
                 const dateB = new Date(b.date * 1000);
                 return dateA - dateB;
             });
-                
-        
+    
+            return finalAssignments;
+            //!!마감일에 가까운 과제에 빨간 스트로크 거는게 안되고 있음
         });
+        try {
+            const response = await fetch(`${baseURL}/task/${taskId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    checkBox: assignments.find((item)=> item.taskId === taskId) ?.checkBox === 0 ? 1 : 0,
+                }),
+            });
+            if (response.ok) {
+                console.log("✅ 과제 완료 상태 업데이트 성공!");
+            } else {
+                console.error("❌ 과제 완료 상태 업데이트 실패!");
+            }
+        } catch (error) {
+            console.error("🚨 서버 요청 중 오류 발생:", error);
+        }
+        
     };
 
     //원래는 해당 과제의 taskId에 맞는 걸로 넘어가야함
-    const handleAssignmentClick = (id) => {
-        //navigate(`/assignments/${id}`);
+    const handleAssignmentClick = (taskId) => {
+        //navigate(`/assignments/${taskId}`);
         navigate(`/AssignmentDetail`);
     };
 
@@ -146,7 +180,7 @@ const MyAssignments = ({ isSidebar = false }) => {
                 .filter((item) => String(item.id) === currentId)
                 .map((item) => (
                     <a href="/AssignmentDetail" className="click-assignment">
-                        <div key={item.taskId} className={getItemClass(item.date)}>
+                        <div key={item.taskId} className={item.itemClass}>
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
                                 <p className = "each-assignment-kind">{item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>

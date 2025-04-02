@@ -20,7 +20,7 @@ const AllAssignments = ({ isSidebar = false }) => {
             "name": "김지홍",
             "cate": "발표",
             "level": 1,
-            "date": "2025-01-01",
+            "date": "1232847931",
             "detail": "이러쿵",
             "checkBox": 1
         },
@@ -31,7 +31,7 @@ const AllAssignments = ({ isSidebar = false }) => {
             "name": "김서강",
             "cate": "PPT",
             "level": 2,
-            "date": '2025-01-01',
+            "date": '172839281',
             "detail": "어쩌구",
             "checkBox": 0
         },
