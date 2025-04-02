@@ -279,16 +279,44 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     return (
         <div className="time-selection-grid" onMouseUp={handleMouseUp}>
             <div className="time-grid-header">
-                <div className="time-header-cell">Time</div>
+                <div className="time-header-cell"
+                    style={{
+                        width: '100px',
+                        border: '1px solid #ccc',
+                        padding: '6px',
+                        textAlign: 'center',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    Time</div>
                 {selectedDates.map((date) => (
-                    <div key={date} className="date-header-cell">
+                    <div key={date}
+                        className="date-header-cell"
+                        style={{
+                            flex: 1,
+                            border: '1px solid #ccc',
+                            padding: '6px',
+                            textAlign: 'center',
+                            fontWeight: 'bold'
+                        }}
+                    >
                         {date}
                     </div>
                 ))}
             </div>
             {timeSlots.map((slot) => (
                 <div key={slot} className="time-grid-row">
-                    <div className="time-row-label">{slot}</div>
+                    <div className="time-row-label"
+                        style={{
+                            width: '100px',
+                            border: '1px solid #ccc',
+                            padding: '6px',
+                            textAlign: 'center',
+                            fontWeight: '600'
+                        }}
+                    >
+                        {slot}
+                    </div>
                     {selectedDates.map((date) => {
                         const cellKey = `${date}-${slot}`;
                         const isSelected = selectedTimes.includes(cellKey);
@@ -296,14 +324,24 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
                             <div
                                 key={cellKey}
                                 className={`time-slot ${isSelected ? 'selected' : ''}`}
+                                style={{
+                                    flex: 1,
+                                    border: '1px solid #ccc',
+                                    padding: '6px',
+                                    minHeight: '40px',
+                                    textAlign: 'center'
+                                }}
+
                                 onMouseDown={() => handleMouseDown(date, slot)}
                                 onMouseEnter={() => handleMouseEnter(date, slot)}
                             />
                         );
-                    })}
+                    })
+                    }
                 </div>
-            ))}
-        </div>
+            ))
+            }
+        </div >
     );
 }
 

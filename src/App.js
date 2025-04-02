@@ -11,10 +11,6 @@ import MeetingLogView from './pages/MeetingLogView/MeetingLogView';
 import ProjectDetail from './pages/project/project';
 import MyPage from './pages/MyPage/MyPage';
 import Schedule from './pages/schedule/schedule';
-import AvailabilityMatrix from './pages/schedule/AvailabilityMatrix';
-import DatePickerGrid from './pages/schedule/DatePickerGrid';
-import dummyEvents from './pages/schedule/dummyData';
-import TimeSelectionGrid from './pages/schedule/TimeSelectionGrid';
 import FileUploadPage from './pages/FileUpload/FileUploadPage';
 import Layout from './components/Layout/Layout';
 import Footer from './components/Footer';//사이드바가 필요없는 페이지에 필요함
@@ -69,10 +65,6 @@ function App() {
         <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
         <Route path="/mypage" element={<Layout><MyPage /></Layout>} />
         <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
-        <Route path="/Availability" element={<Layout><AvailabilityMatrix /></Layout>} />
-        <Route path="/DatePickerGrid" element={<Layout><DatePickerGrid /></Layout>} />
-        <Route path="/dummyData" element={<Layout><dummyData /></Layout>} />
-        <Route path="/TimeSelectionGrid" element={<Layout><TimeSelectionGrid /></Layout>} />
 
         <Route
           path="/Assignment"
