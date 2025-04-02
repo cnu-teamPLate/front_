@@ -159,12 +159,10 @@ function WhenToMeetGrid() {
             if (!eventTitle.trim()) {
                 newErrors.eventTitle = '제목을 입력해주세요.';
             }
-        } else if (step === 2) {
-            // Step2: 최소 한 날짜 선택
-            if (selectedDates.length === 0) {
+            else if (selectedDates.length === 0) {
                 newErrors.selectedDates = '최소 한 날짜는 선택해주세요.';
             }
-        } else if (step === 3) {
+        } else if (step === 2) {
             if (selectedTimes.length === 0) {
                 newErrors.selectedTimes = '최소 한 시간은 포함시켜주세요.';
             }
@@ -208,7 +206,7 @@ function WhenToMeetGrid() {
         });
     };
 
-    // 최종 이벤트 생성
+    // 최종 이벤트 생성- 실제 프로젝트에서는 서버로 전송하거나, 다음 페이지로 이동
     const handleCreateEvent = () => {
         if (!validateStep()) return;
         alert(`
@@ -217,7 +215,6 @@ function WhenToMeetGrid() {
         선택된 시간: ${selectedTimes.join(', ')}
         타임존: ${timeZone}
       `);
-        // 실제 프로젝트에서는 서버로 전송하거나, 다음 페이지로 이동
     };
 
     return (
@@ -236,18 +233,6 @@ function WhenToMeetGrid() {
                                 placeholder="Enter event title"
                             />
                         </label>
-                        {errors.eventTitle && <p className="error">{errors.eventTitle}</p>}
-                    </div>
-                    <div className="navigation-buttons">
-                        <button onClick={nextStep}>Next</button>
-                    </div>
-                </>
-            )}
-
-            {/* STEP 2: 날짜 선택 */}
-            {step === 2 && (
-                <>
-                    <div className="step-container">
                         <h2>What dates might work?</h2>
                         <p>Click and drag dates to select in the calendar</p>
                         <DatePickerGrid
@@ -262,8 +247,12 @@ function WhenToMeetGrid() {
                             selectedDates={selectedDates}
                             onSelectDate={handleSelectDate}
                         />
-
-                        {errors.selectedDates && <p className="error">{errors.selectedDates}</p>}
+                        <div className='errors'>
+                            {errors.eventTitle && <p className="error">{errors.eventTitle}</p>}
+                            {errors.selectedDates && <p className="error">{errors.selectedDates}</p>}
+                        </div>
+                    </div>
+                    <div className="step2-container">
                         <h2>What times might work?</h2>
                         <div className="time-options">
                             <label>
@@ -333,15 +322,13 @@ function WhenToMeetGrid() {
                         </div>
 
                         <div className="navigation-buttons">
-                            <button onClick={prevStep}>Back</button>
                             <button onClick={nextStep}>Next</button>
                         </div>
                     </div>
                 </>
             )}
 
-            {/* STEP 3: 시간 선택 + 타임존 + 최종 생성 */}
-            {step === 3 && (
+            {step === 2 && (
                 <>
                     <div className="step-container">
 
@@ -360,8 +347,9 @@ function WhenToMeetGrid() {
                         </div>
                     </div>
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 /* ─── react‑big‑calendar 관련 커스텀 컴포넌트 ─────────────────────────── */
@@ -369,11 +357,9 @@ function WhenToMeetGrid() {
 const userInfo = {
     "20211079": {
         name: "Alice",
-        color: "#FF5733"
     },
     "20211080": {
         name: "Bob",
-        color: "#33A1FF"
     },
     // 추가 사용자 정보…
 };
@@ -383,7 +369,6 @@ const EventComponent = ({ event }) => {
     return (
         <div
             style={{
-                backgroundColor: user ? user.color : '#cccccc',
                 borderRadius: '5px',
                 padding: '2px 4px',
                 display: 'flex',
