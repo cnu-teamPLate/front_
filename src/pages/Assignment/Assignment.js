@@ -173,12 +173,12 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
 
         //onSubmit(formData);
         setFormData({
-            taskName: '',
-            cate: '',
-            level: '',
-            date: '',
-            description: '',
-            assignee: ''
+            "taskName": '',
+            "category": '',
+            "complexity": '',
+            "deadline": '',
+            "description": '',
+            "assignee": ''
         });
         setTitlePlaceholder('과제명을 적어주세요');
         setDetailPlaceholder('과제의 상세 설명을 적어주세요');
@@ -227,8 +227,8 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                                 ))}
                             </select>
                             <select
-                                name='cate'
-                                value={formData.cate}
+                                name='category'
+                                value={formData.category}
                                 onChange={handleChange}
                             >
                                 {categoryOptions.map((option)=> (
@@ -238,8 +238,8 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                                 ))}
                             </select>
                             <select
-                                name='level'
-                                value={formData.level}
+                                name='complexity'
+                                value={formData.complexity}
                                 onChange={handleChange}
                             >
                                 {levelOptions.map((option) => (
@@ -250,8 +250,8 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                             </select>
                             <input
                                 type="date"
-                                name='date'
-                                value={formData.date}
+                                name='deadline'
+                                value={formData.deadline}
                                 onChange={handleChange}
                             />
                         </div>
