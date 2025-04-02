@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
+//폼 입력 시 난이도를 어떤 걸 선택하냐에 따라 숫자 값으로 전달해야줘야함
 
 const MyAssignments = ({ isSidebar = false }) => {
     const navigate = useNavigate;
@@ -120,6 +121,14 @@ const MyAssignments = ({ isSidebar = false }) => {
     //이거 allassignment에도 적용시켜야함... 근데 코드 어차피 통일되어있는데 그냥 
     // all assignment에 있는 걸 갖다가 필터만 걸어서 my로 쓰면 안되나...
     
+    const getComplexityLabel = (complexity) => {
+        const labels = {
+            1: "쉬움",
+            2: "보통",
+            3: "어려움"
+        };
+        return labels[complexity] || "알 수 없음"; // 예외 처리
+    };
 
     return (
         <div className={`my-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
@@ -131,7 +140,7 @@ const MyAssignments = ({ isSidebar = false }) => {
                         <div key={item.id} className={getItemClass(item.date)}>
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
-                                <p className = "each-assignment-kind">{item.cate} / {item.level} / {formatDate(item.date)}</p>
+                                <p className = "each-assignment-kind">{item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>
                                 <p className = "each-assignment-des">{item.detail}</p>
                             </div>
                             <input className = "finish-check"
