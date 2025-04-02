@@ -100,3 +100,122 @@
     pointer-events: none;
     display: none;
 }
+
+.new-event-container {
+    width: 1000px;
+    margin: 20px auto;
+    font-family: sans-serif;
+}
+
+.selection-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* 날짜 선택 달력 */
+.date-selection {
+    width: 400px;
+}
+
+.date-selection h2 {
+    margin-bottom: 0.5rem;
+}
+
+.date-picker-grid {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 1rem;
+}
+
+.month-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.weekdays,
+.days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.weekdays div {
+    font-weight: bold;
+}
+
+.day-cell {
+    border: 1px solid #ddd;
+    padding: 8px 0;
+    cursor: pointer;
+}
+
+.day-cell.empty {
+    background-color: #f9f9f9;
+    cursor: default;
+}
+
+.day-cell.selected {
+    background-color: #90ee90;
+}
+
+/* 시간 선택 */
+.time-selection {
+    width: 500px;
+}
+
+.time-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.time-selection-grid {
+    border: 1px solid #ccc;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.time-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.time-slot {
+    border-bottom: 1px solid #eee;
+    padding: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.time-slot.selected {
+    background-color: #90ee90;
+}
+
+.slot-label {
+    font-size: 0.9rem;
+}
+
+/* 그룹 표시 예시 */
+.time-slot-group {
+    border-bottom: 1px solid #eee;
+    padding: 8px;
+    user-select: none;
+}
+
+.time-slot-group.available {
+    background-color: #90ee90;
+}
+
+.time-slot-group.unavailable {
+    background-color: #d3d3d3;
+}
+
+.ready-button {
+    margin-top: 1rem;
+}
+
+/* 전반적 UI 개선을 위해 필요에 따라 스타일 추가 */
