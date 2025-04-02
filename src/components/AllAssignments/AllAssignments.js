@@ -71,17 +71,48 @@ const AllAssignments = ({ isSidebar = false }) => {
     };
 
     // 체크박스 클릭 시 완료/미완료 상태 변경
-    const handleCheckboxChange = (taskId) => {
-        setAssignments((prevAssignments) =>
-            prevAssignments.map((item) =>
-                item.taskId === taskId ? { ...item, status: item.status === '미완료' ? '완료' : '미완료' } : item
-            )
-        );
+    const handleCheckboxChange = (id) => {
+        setAssignments((prevAssignments) => {
+            const updatedAssignments = prevAssignments.map((item) =>
+                item.id === id ? { ...item, checkBox: item.checkBox === 0 ? 1 : 0 } : item
+            );
+            return updatedAssignments.sort((a,b) => {
+                if(a.checkBox === 0 && b.checkBox === 1) return -1;
+                if(a.checkBox === 1 && b.checkBox === 0) return 1;
+
+                const dateA = new Date(a.date * 1000);
+                const dateB = new Date(b.date * 1000);
+                return dateA - dateB;
+            });
+                
+        
+        });
     };
 
     const handleAssignmentClick = (taskId) => {
         //navigate(`/assignments/${taskId}`);
         navigate(`/AssignmentDetail`);
+    };
+
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp * 1000); // 초 단위를 밀리초로 변환
+        return date.toLocaleString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false, // 24시간 형식
+        });
+    };
+
+    const getComplexityLabel = (complexity) => {
+        const labels = {
+            1: "쉬움",
+            2: "보통",
+            3: "어려움"
+        };
+        return labels[complexity] || "알 수 없음"; // 예외 처리
     };
 
     return (
@@ -93,14 +124,14 @@ const AllAssignments = ({ isSidebar = false }) => {
                         <div key={item.id} className={getItemClass(item.date)}>
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
-                                <p className = "each-assignment-kind">{item.name} / {item.cate} / {item.level} / {item.date}</p>
+                                <p className = "each-assignment-kind">{item.name} / {item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>
                                 <p className = "each-assignment-des">{item.detail}</p>
                             </div>
                             {
                                 //체크박스 값이 0인게 미완료인가? -> 0일 경우 위로, 1일 경우 아래로 가도록 코드 짜기
                             <input className = "finish-check"
                                 type="checkbox"
-                                checked={item.checkBox === '1'}
+                                checked={item.checkBox === 1}
                                 onChange={() => handleCheckboxChange(item.id)}
                             />
                             }

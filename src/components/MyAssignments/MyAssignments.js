@@ -2,6 +2,12 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
+const testURL ="http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
+const urlParams = new URLSearchParams(new URL(testURL).search);
+const projectId = urlParams.get("projId");
+const currentId = urlParams.get("id");
+const getAssignment = `${testURL}`;
+
 //폼 입력 시 난이도를 어떤 걸 선택하냐에 따라 숫자 값으로 전달해야줘야함
 
 const MyAssignments = ({ isSidebar = false }) => {
@@ -11,7 +17,7 @@ const MyAssignments = ({ isSidebar = false }) => {
     const dummyAssignments = [
         {
             "taskId": 1,
-            "id": "20240000",
+            "id": "20241099",
             "projId": "CSE00001",
             "name": "김지홍",
             "cate": "발표",
@@ -44,8 +50,8 @@ const MyAssignments = ({ isSidebar = false }) => {
         }
     ];
 
-    // 과제 데이터 상태 관리
-    const [assignments, setAssignments] = useState([]);
+    // 과제 데이터 상태 관리 -> 나중에는 데이터를 직접 받아와야함 (밑에 코드))
+    const [assignments, setAssignments] = useState(dummyAssignments);
 
     // 데이터 로드 함수 (DB 연동 시 fetch로 변경 가능)
     const fetchAssignments = async () => {
@@ -84,10 +90,10 @@ const MyAssignments = ({ isSidebar = false }) => {
     };
 
     // 체크박스 클릭 시 완료/미완료 상태 변경
-    const handleCheckboxChange = (id) => {
+    const handleCheckboxChange = (taskId) => {
         setAssignments((prevAssignments) => {
             const updatedAssignments = prevAssignments.map((item) =>
-                item.id === id ? { ...item, checkBox: item.checkBox === 0 ? 1 : 0 } : item
+                item.taskId === taskId ? { ...item, checkBox: item.checkBox === 0 ? 1 : 0 } : item
             );
             return updatedAssignments.sort((a,b) => {
                 if(a.checkBox === 0 && b.checkBox === 1) return -1;
@@ -102,6 +108,7 @@ const MyAssignments = ({ isSidebar = false }) => {
         });
     };
 
+    //원래는 해당 과제의 taskId에 맞는 걸로 넘어가야함
     const handleAssignmentClick = (id) => {
         //navigate(`/assignments/${id}`);
         navigate(`/AssignmentDetail`);
@@ -120,6 +127,7 @@ const MyAssignments = ({ isSidebar = false }) => {
     };
     //이거 allassignment에도 적용시켜야함... 근데 코드 어차피 통일되어있는데 그냥 
     // all assignment에 있는 걸 갖다가 필터만 걸어서 my로 쓰면 안되나...
+    //일단 이미 늦었으니 시간이 덜 걸리는 쪽으로 하자...
     
     const getComplexityLabel = (complexity) => {
         const labels = {
@@ -134,10 +142,11 @@ const MyAssignments = ({ isSidebar = false }) => {
         <div className={`my-assignment ${isSidebar ? 'in-sidebar' : ''}`}>
             <h3>내 과제 보기</h3>
             {assignments.length > 0 ? (
-                assignments.map((item) => (
-                    //로그인 아이디가 동일하면 표시하도록 수정해야함
+                assignments
+                .filter((item) => String(item.id) === currentId)
+                .map((item) => (
                     <a href="/AssignmentDetail" className="click-assignment">
-                        <div key={item.id} className={getItemClass(item.date)}>
+                        <div key={item.taskId} className={getItemClass(item.date)}>
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
                                 <p className = "each-assignment-kind">{item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>
@@ -146,7 +155,7 @@ const MyAssignments = ({ isSidebar = false }) => {
                             <input className = "finish-check"
                                 type="checkbox"
                                 checked={item.checkBox === 1}
-                                onChange={() => handleCheckboxChange(item.id)}
+                                onChange={() => handleCheckboxChange(item.taskId)}
                             />
                         </div>
                     </a>

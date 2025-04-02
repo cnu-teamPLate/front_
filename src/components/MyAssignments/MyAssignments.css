@@ -31,6 +31,15 @@
     height: 150px;
 }
 
+.upcoming {
+    stroke: tomato;
+    stroke-width: 1em;
+}
+
+.overdue {
+    stroke: #7c7c7c;
+}
+
 
 /* 📌 개별 과제 항목 스타일 */
 .my-assignment div {
@@ -82,16 +91,19 @@
 }
 
 /* ✅ 마감 기한이 임박한 과제 (동적으로 클래스 적용) */
+/*
 .my-assignment .urgent {
-    border-left-color: #ff4d4d; /* 빨간색 테두리 */
+    border-left-color: #ff4d4d; 
     background: #ffe6e6;
-}
+}*/
 
 /* ✅ 완료된 과제 */
+/*
 .my-assignment .completed {
-    border-left-color: #28a745; /* 초록색 테두리 */
+    border-left-color: #28a745;
     background: #e6ffe6;
 }
+*/
 
 /* ✅ 과제 항목 hover 효과 */
 .my-assignment div:hover {

@@ -84,6 +84,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
 
     const [ids, setids] = useState([]);
 
+    //여기가 무슨 코드지?
     useEffect(() => {
         const fetchids = async () => {
             try {
@@ -139,9 +140,9 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
 
         const submittedData = {
             taskName: formData.taskName,
-            cate: formData.cate,
-            level: formData.level,
-            date: formData.date,
+            cate: formData.category,
+            complexity: formData.complexity,
+            deadline: formData.deadline,
             description: formData.description,
             assignee: formData.assignee,
         };
