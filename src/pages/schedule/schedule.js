@@ -93,21 +93,20 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
         tempDate.setMinutes(tempDate.getMinutes() + 15);
     }
 
-    const handleMouseDown = (index) => {
+    const handleMouseDown = (date, slot) => {
         setIsDragging(true);
-        const timeLabel = timeSlots[index];
-        const isSelected = selectedTimes.includes(timeLabel);
+        const cellKey = `${date}-${slot}`;
+        const isSelected = selectedTimes.includes(cellKey);
         setToggleTo(!isSelected);
-        onSelectTimes(timeLabel, !isSelected);
+        onSelectTimes(cellKey, !isSelected);
     };
 
-    const handleMouseEnter = (index) => {
-        if (isDragging) {
-            const timeLabel = timeSlots[index];
-            const isSelected = selectedTimes.includes(timeLabel);
-            if (toggleTo !== isSelected) {
-                onSelectTimes(timeLabel, toggleTo);
-            }
+    const handleMouseEnter = (date, slot) => {
+        if (!isDragging) return;
+        const cellKey = `${date}-${slot}`;
+        const isSelected = selectedTimes.includes(cellKey);
+        if (toggleTo !== isSelected) {
+            onSelectTimes(cellKey, toggleTo);
         }
     };
 
@@ -117,27 +116,41 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
 
     return (
         <div className="time-selection-grid" onMouseUp={handleMouseUp}>
-            <div className="time-grid">
-                {timeSlots.map((slot, index) => {
-                    const isSelected = selectedTimes.includes(slot);
-                    return (
-                        <div
-                            key={slot}
-                            className={`time-slot ${isSelected ? 'selected' : ''}`}
-                            onMouseDown={() => handleMouseDown(index)}
-                            onMouseEnter={() => handleMouseEnter(index)}
-                        >
-                            <span className="slot-label">{slot}</span>
-                        </div>
-                    );
-                })}
+            {/* 헤더 (시간 레이블 + 날짜들) */}
+            <div className="time-grid-header">
+                <div className="time-header-cell">Time</div>
+                {selectedDates.map((date) => (
+                    <div key={date} className="date-header-cell">
+                        {date}
+                    </div>
+                ))}
             </div>
+
+            {/* 시간 슬롯별 행 */}
+            {timeSlots.map((slot) => (
+                <div key={slot} className="time-grid-row">
+                    <div className="time-row-label">{slot}</div>
+                    {selectedDates.map((date) => {
+                        const cellKey = `${date}-${slot}`;
+                        const isSelected = selectedTimes.includes(cellKey);
+                        return (
+                            <div
+                                key={cellKey}
+                                className={`time-slot ${isSelected ? 'selected' : ''}`}
+                                onMouseDown={() => handleMouseDown(date, slot)}
+                                onMouseEnter={() => handleMouseEnter(date, slot)}
+                            />
+                        );
+                    })}
+                </div>
+            ))}
         </div>
     );
 }
 
 /* ========== 3) 다중 Step으로 날짜/시간 선택 + 이벤트 제목 입력 ========== */
-function WhenToMeetGrid() {
+function WhenToMeetGrid({ onExit }) {
+
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
 
@@ -162,10 +175,7 @@ function WhenToMeetGrid() {
             else if (selectedDates.length === 0) {
                 newErrors.selectedDates = '최소 한 날짜는 선택해주세요.';
             }
-        } else if (step === 2) {
-            if (selectedTimes.length === 0) {
-                newErrors.selectedTimes = '최소 한 시간은 포함시켜주세요.';
-            }
+
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -192,20 +202,20 @@ function WhenToMeetGrid() {
         });
     };
 
-    // 시간대 선택/해제
-    const handleSelectTimes = (timeLabel, shouldSelect) => {
+    const handleSelectTimes = (cellKey, shouldSelect) => {
         setSelectedTimes((prev) => {
             if (shouldSelect) {
-                if (!prev.includes(timeLabel)) {
-                    return [...prev, timeLabel];
+                // 이미 포함되어 있지 않으면 추가
+                if (!prev.includes(cellKey)) {
+                    return [...prev, cellKey];
                 }
                 return prev;
             } else {
-                return prev.filter((t) => t !== timeLabel);
+                // 해제
+                return prev.filter((item) => item !== cellKey);
             }
         });
     };
-
     // 최종 이벤트 생성- 실제 프로젝트에서는 서버로 전송하거나, 다음 페이지로 이동
     const handleCreateEvent = () => {
         if (!validateStep()) return;
@@ -223,6 +233,7 @@ function WhenToMeetGrid() {
             {step === 1 && (
                 <>
                     <div className="step-container">
+                        <button className='back' onClick={onExit}>뒤로 가기</button>
                         <h1>Create New Event</h1>
                         <label>
                             Event Title:
@@ -331,7 +342,7 @@ function WhenToMeetGrid() {
             {step === 2 && (
                 <>
                     <div className="step-container">
-
+                        <button className='back' onClick={onExit}>뒤로 가기</button>
                         <TimeSelectionGrid
                             selectedDates={selectedDates}
                             earliestTime={earliestTime}
@@ -339,8 +350,6 @@ function WhenToMeetGrid() {
                             selectedTimes={selectedTimes}
                             onSelectTimes={handleSelectTimes}
                         />
-                        {errors.selectedTimes && <p className="error">{errors.selectedTimes}</p>}
-
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={handleCreateEvent}>Ready? Create Event</button>
@@ -397,6 +406,9 @@ const Schedule = () => {
         attendees: '',
         agenda: ''
     });
+    const exitWhenToMeet = () => {
+        setWhenToMeet(false);
+    };
     const [view, setView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [popupContent, setPopupContent] = useState('');
@@ -566,39 +578,39 @@ const Schedule = () => {
             )}
 
             <div className="calender-container">
-                <button className="create-schedule-button" onClick={handleCreateEvent}>
-                    일정 생성하기
-                </button>
-                <button className="month-version-button" onClick={handleMonthVersion}>
-                    월별 일정보기
-                </button>
-                <button className="week-version-button" onClick={handleWeekVersion}>
-                    주간 일정보기
-                </button>
-                <button className="when-to-meet-button" onClick={handleWhenToMeet}>
-                    시간 맞추기
-                </button>
-
-                {/* whenToMeet 상태에 따라 react‑big‑calendar 또는 커스텀 그리드 렌더링 */}
                 {!whenToMeet ? (
-                    <Calendar
-                        localizer={localizer}
-                        events={events}
-                        startAccessor="start"
-                        endAccessor="end"
-                        style={{ height: 500 }}
-                        date={currentDate}
-                        view={view}
-                        onView={(view) => setView(view)}
-                        onNavigate={(date) => setCurrentDate(date)}
-                        components={{
-                            toolbar: CustomToolbar
-                        }}
-                        onSelectEvent={(event, e) => handleEventMouseOver(event, e)}
-                        onMouseOut={handleEventMouseOut}
-                    />
+                    <>
+                        <div className="buttons">
+                            <button className="create-schedule-button" onClick={handleCreateEvent}>
+                                일정 생성하기
+                            </button>
+                            <button className="month-version-button" onClick={handleMonthVersion}>
+                                월별 일정보기
+                            </button>
+                            <button className="week-version-button" onClick={handleWeekVersion}>
+                                주간 일정보기
+                            </button>
+                            <button className="when-to-meet-button" onClick={handleWhenToMeet}>
+                                시간 맞추기
+                            </button>
+                        </div>
+                        <Calendar
+                            localizer={localizer}
+                            events={events}
+                            startAccessor="start"
+                            endAccessor="end"
+                            style={{ height: 500 }}
+                            date={currentDate}
+                            view={view}
+                            onView={(view) => setView(view)}
+                            onNavigate={(date) => setCurrentDate(date)}
+                            components={{ toolbar: CustomToolbar }}
+                            onSelectEvent={(event, e) => handleEventMouseOver(event, e)}
+                            onMouseOut={handleEventMouseOut}
+                        />
+                    </>
                 ) : (
-                    <WhenToMeetGrid />
+                    <WhenToMeetGrid onExit={exitWhenToMeet} />
                 )}
             </div>
 
@@ -610,5 +622,4 @@ const Schedule = () => {
         </div>
     );
 };
-
 export default Schedule;

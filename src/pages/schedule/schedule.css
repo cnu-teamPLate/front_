@@ -1,64 +1,80 @@
-.create-schedule-button {
-    margin-left: 100px;
+/* Global Styles */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+    /* 원하는 폰트로 변경 가능 */
+    background-color: #f7f7f7;
+    color: #333;
 }
 
-.month-version-button {
-    margin-left: 100px;
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-.week-version-button {
-    margin-left: 100px;
+/* Button Group and Common Button Styles */
+.button-group {
+    display: flex;
+    gap: 10px;
+    /* 버튼 사이 간격 */
+    margin-bottom: 20px;
+    align-items: center;
 }
 
-.when-to-meet-button {
-    margin-left: 100px;
+.button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    background-color: #4A90E2;
+    /* 기본 파란색 */
+    color: #fff;
 }
 
+.button:hover {
+    background-color: #357ABD;
+}
+
+.button:active {
+    transform: scale(0.98);
+}
+
+/* 추가 버튼 종류 (필요 시) */
+.button--secondary {
+    background-color: #7ED321;
+}
+
+.button--danger {
+    background-color: #D0021B;
+}
+
+
+
+/* When-to-Meet Calendars Layout */
 .when-to-meet-calendars {
     display: flex;
     justify-content: space-around;
-    /* 캘린더 사이에 공간을 고르게 분배 */
     align-items: flex-start;
-    /* 캘린더들이 위쪽 정렬되도록 */
     gap: 20px;
-    /* 두 캘린더 사이의 간격 */
     margin-top: 20px;
+    background-color: #fff;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .when-to-meet-calendars .calendar {
     flex: 1;
-    /* 캘린더가 동일한 비율로 크기를 차지하도록 */
     min-width: 400px;
-    /* 캘린더 최소 너비 설정 */
 }
 
-.add-event-button .abutton {
-    padding: 10px 20px;
-    margin: 10px 5px;
-    /* 버튼 사이 간격 추가 */
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    /* 마우스 호버 시 배경색 변환 */
-    width: 100px;
-    /* 버튼 크기 고정 */
-}
-
-.cancel-button .cbutton {
-    padding: 10px 20px;
-    margin: 10px 5px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100px;
-}
-
+/* Popup Styles */
 .popup-backdrop {
     position: fixed;
     top: 0;
@@ -66,9 +82,7 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    /* 반투명 검은색 배경 */
     z-index: 999;
-    /* 팝업 창 뒤에 위치하도록 설정 */
 }
 
 .popup {
@@ -76,56 +90,74 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    padding: 30px 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
-    /* 배경 위에 팝업이 위치하도록 설정 */
+    width: 400px;
+    max-width: 90%;
 }
 
+/* Calendar Header Styles */
 .rbc-time-header-content {
     display: flex;
-
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px 4px 0 0;
 }
 
-.rbc-row rbc-time-header-cell {
-    position: absolute;
+.rbc-row .rbc-time-header-cell {
+    position: relative;
     z-index: 2;
+    padding: 5px;
+    background-color: #fff;
+    border-right: 1px solid #eee;
 }
 
 .rbc-allday-cell {
-    position: relative;
-    z-index: 1;
-    pointer-events: none;
     display: none;
 }
 
+/* New Event Container */
 .new-event-container {
     width: 1000px;
     margin: 20px auto;
-    font-family: sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
 }
 
 .selection-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 20px;
 }
 
-/* 날짜 선택 달력 */
+/* Date Selection Styles */
 .date-selection {
     width: 400px;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
 }
 
 .date-selection h2 {
+    margin-top: 0;
     margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .date-picker-grid {
-    border: 1px solid #ccc;
-    padding: 10px;
     margin-top: 1rem;
+    border: none;
+    padding: 10px;
 }
 
 .month-label {
@@ -144,13 +176,23 @@
 }
 
 .weekdays div {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .day-cell {
     border: 1px solid #ddd;
     padding: 8px 0;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
+}
+
+.day-cell:hover {
+    background-color: #e6f7ff;
+}
+
+.day-cell.selected {
+    background-color: #90ee90;
 }
 
 .day-cell.empty {
@@ -158,13 +200,20 @@
     cursor: default;
 }
 
-.day-cell.selected {
-    background-color: #90ee90;
-}
-
-/* 시간 선택 */
+/* Time Selection Styles */
 .time-selection {
     width: 500px;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.time-selection h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .time-options {
@@ -174,9 +223,14 @@
 }
 
 .time-selection-grid {
-    border: 1px solid #ccc;
+    border: none;
     max-height: 400px;
     overflow-y: auto;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.05);
+    user-select: none;
 }
 
 .time-grid {
@@ -189,6 +243,12 @@
     padding: 8px;
     cursor: pointer;
     user-select: none;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
+}
+
+.time-slot:hover {
+    background-color: #e6f7ff;
 }
 
 .time-slot.selected {
@@ -197,25 +257,112 @@
 
 .slot-label {
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
-/* 그룹 표시 예시 */
 .time-slot-group {
     border-bottom: 1px solid #eee;
     padding: 8px;
     user-select: none;
+    border-radius: 4px;
 }
 
 .time-slot-group.available {
-    background-color: #90ee90;
+    background-color: #c8facc;
 }
 
 .time-slot-group.unavailable {
-    background-color: #d3d3d3;
+    background-color: #f2f2f2;
 }
 
 .ready-button {
     margin-top: 1rem;
+    text-align: right;
 }
 
-/* 전반적 UI 개선을 위해 필요에 따라 스타일 추가 */
+/* Add Event and Cancel Button Styles */
+.add-event-button .abutton,
+.cancel-button .cbutton {
+    padding: 10px 20px;
+    margin: 10px 5px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100px;
+}
+
+.cancel-button .cbutton {
+    background-color: #D0021B;
+    color: #fff;
+}
+
+.cancel-button .cbutton:hover {
+    background-color: #B10015;
+}
+
+.time-header-cell,
+.date-header-cell {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Flexbox 버전: 시간 헤더 및 날짜 헤더를 가로 배치 */
+.time-grid-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 4px;
+}
+
+.time-header-cell {
+    width: 100px;
+    /* 시간 레이블 고정폭 */
+    padding: 6px;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    /* 너비 고정 */
+}
+
+.date-header-cell {
+    flex: 1;
+    /* 남은 공간을 균등 분배 */
+    padding: 6px;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* 각 시간 슬롯 행: 1열(Time) + N열(날짜) */
+.time-grid-row {
+    display: grid;
+    grid-template-columns: 100px repeat(auto-fit, minmax(80px, 1fr));
+    gap: 2px;
+    border-bottom: 1px dashed #eee;
+}
+
+.time-row-label {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* 실제 드래그 선택하는 셀 */
+.time-slot {
+    border: 1px solid #ccc;
+    height: 40px;
+    /* 칸 높이 조절 */
+    cursor: pointer;
+}
+
+/* 선택된 셀에 배경색 표시 */
+.time-slot.selected {
+    background-color: #90ee90;
+}
