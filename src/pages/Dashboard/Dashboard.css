@@ -1,8 +1,100 @@
-/* 기본 스타일 */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f8f8f8; 
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+
+.login-signup, .my-page-logout {
+  display: flex;
+  align-items: center;
+  margin-right: 1em;
+}
+
+.login-signup a, .my-page-logout a {
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.sidebar-toggle {
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  z-index: 1001;
+  background: none;
+  border: none;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+}
+
+.App-sidebar {
+  position: fixed;
+  left: -285px;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  background-color: #f8f8f8;
+  color: rgb(0, 0, 0);
+  transition: left 0.3s;
+  padding: 1em;
+  z-index: 1000;
+}
+
+.App-sidebar.open {
+  left: 0;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.create-project {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.create-project p {
+  margin-top: 5px;
+}
+
+.my-projects {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.my-projects h2 {
+  text-align: center;
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.project-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.project-item:hover {
+  background-color: #e0e0e0;
+}
+
+.project-item p {
+  margin-top: 5px;
 }
 
 .App-content {
@@ -12,7 +104,7 @@ body {
   align-items: center;
   flex-grow: 1;
   padding: 2em;
-  margin-top: 60px; 
+  margin-top: 60px; /* Adjust based on header height */
   text-align: center;
 }
 
@@ -55,23 +147,17 @@ button {
   flex-wrap: wrap;
   gap: 20px;
   justify-content: center;
-  margin-top: 20px;
 }
 
 .project-card {
   background-color: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   padding: 20px;
-  border-radius: 8px;
-  width: 280px;
+  border-radius: 5px;
+  width: 300px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: left;
   position: relative;
-  transition: transform 0.3s ease;
-}
-
-.project-card:hover {
-  transform: scale(1.05);
 }
 
 .project-card-header {
@@ -80,36 +166,22 @@ button {
   align-items: center;
 }
 
-.project-card h2 {
+.project-card-header h2 {
   margin: 0;
-  font-size: 1.5em;
-}
-
-.project-card p {
-  margin-top: 1em;
-}
-
-.project-link {
-  color: #800020; /* 버건디 색 */
-  text-decoration: none;
-  display: block;
-  margin-top: 1em;
-  text-align: right;
+  font-size: 20px;
 }
 
 .project-controls {
-  cursor: pointer;
-  color: #800020; 
-  font-size: 18px;
+  display: flex;
+  gap: 15px;
 }
 
-.project-controls:hover {
-  color: #6c0010; 
-}
-
-/* 팀원 목록 */
-.team-members {
+.project-link {
+  color: #6200ee;
+  text-decoration: none;
+  display: block;
   margin-top: 10px;
+  color: #007bff;
 }
 
 .team-members ul {
@@ -118,10 +190,28 @@ button {
 }
 
 .team-members li {
-  margin-bottom: 5px;
+  margin: 5px 0;
 }
 
-/* 팝업 스타일 */
+.contribution-graph {
+  margin-top: 5px;
+  background-color: #e0e0e0;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.contribution-bar {
+  height: 100%;
+  color: white;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  background-color: rgba(163, 33, 37, 1);
+}
+
+
 .popup {
   position: fixed;
   top: 0;
@@ -132,30 +222,53 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
 .popup-inner {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 400px;
-  text-align: center;
-  overflow-y: auto;
-  max-height: 90%;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 80vh; /* 최대 높이를 화면의 80%로 제한 */
+  overflow-y: auto; /* 높이가 넘칠 경우 스크롤 추가 */
 }
 
 .popup-inner h2 {
-  margin-bottom: 20px;
+  margin-top: 0;
+  font-size: 24px;
+  text-align: center;
+  color: #333;
+}
+
+.popup-inner label {
+  display: block;
+  margin-bottom: 10px;
+  text-align: left;
+  font-weight: bold;
 }
 
 .popup-inner input {
-  width: calc(100% - 20px);
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border-radius: 5px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
   border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.popup-inner input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.popup-inner .button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 .popup-inner select {
@@ -168,11 +281,12 @@ button {
 }
 
 .popup-inner button {
-  padding: 10px 20px;
-  margin: 10px;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 6px;
   border: none;
   border-radius: 5px;
-  background-color: #800020; /* 버건디 색상 */
+  background-color: #007bff;
   color: white;
   cursor: pointer;
 }
@@ -181,46 +295,20 @@ button {
   background-color: #6c0010; /* Hover 시 버건디 색상 변화 */
 }
 
-.popup-inner button:last-child {
-  background-color: #dc3545;
+.popup-inner button.submit-btn:hover {
+  background-color: #0056b3;
 }
 
-.popup-inner button:last-child:hover {
-  background-color: #c82333;
+.popup-inner ul {
+  list-style-type: none;
+  padding: 0;
 }
 
-/* 팀원 검색 */
-input[type="text"] {
-  width: calc(100% - 20px);
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-/* 프로젝트 수정 팝업 내용 */
-.project-edit-section {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-/* 팀원 추가 버튼 */
-.add-team-member-button {
-  background-color: #ffc107;
-}
-
-.add-team-member-button:hover {
-  background-color: #e0a800;
-}
-
-/* 과목 추가 팝업 스타일 */
-.subject-popup-inner {
-  padding: 20px;
-}
-
-.subject-popup-inner input {
+.popup-inner ul li {
+  padding: 5px 0;
   margin-bottom: 10px;
+}
+
+.shifted {
+  margin-left: 250px; /* To shift the main content when the sidebar is open */
 }
