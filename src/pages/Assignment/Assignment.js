@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import './Assignment.css';
 import React, { useState, useEffect } from 'react';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
