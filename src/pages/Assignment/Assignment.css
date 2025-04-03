@@ -73,7 +73,7 @@
 }
 
 .submit-button {
-    margin-top: 0em;
+    margin-top: 0px!important;
 }
 
 .setting-list {
@@ -149,6 +149,7 @@
     border-style: none;
 }
 
+
 .Assignment-look {
     width: 920px;
     display: flex;
@@ -168,6 +169,7 @@
     height: 500px;
     border-radius: 10px;
 }
+/*
 
 .look-item {
     border: 1px solid gray;
@@ -179,3 +181,4 @@
 .look-item.past-deadline {
     border-color: red;
 }
+    */
