@@ -69,13 +69,13 @@ function Login() {
     }
   };
 
-  const handleLogout = () => {
-    setFormData({
-      username: '',
-      password: '',
-    });
-    setError('');
-  };
+  // const handleLogout = () => {
+  //   setFormData({
+  //     username: '',
+  //     password: '',
+  //   });
+  //   setError('');
+  // };
 
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {

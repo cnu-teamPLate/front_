@@ -13,33 +13,33 @@ const id = urlParams.get("id");
 const getAssignment = `${baseURL}/task/view?projId=${projId}&id=${id}`;
 */
 
-const testURL ="http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
+const testURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
 const urlParams = new URLSearchParams(new URL(testURL).search);
 const projectId = urlParams.get("projId");
 const id = urlParams.get("id");
 const getAssignment = `${testURL}`;
 
 fetch(getAssignment, {
-    method : "GET",
-    headers : {
+    method: "GET",
+    headers: {
         "Content-Type": "application/json"
     }
 })
-.then(response => {
-    if(!response.ok) {
-        throw {
-            messeage: "오류 메시지",
-            checkbox : 400,
-            cate: "bad_request"
-        };
-    }
-    return response.json();
-})
-.then(data => console.log(data))
-.catch(error => {
-    console.error('Error:', error);
-    alert(`Error ${error.checkbox}: ${error.message}`);
-});
+    .then(response => {
+        if (!response.ok) {
+            throw {
+                messeage: "오류 메시지",
+                checkbox: 400,
+                cate: "bad_request"
+            };
+        }
+        return response.json();
+    })
+    .then(data => console.log(data))
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`Error ${error.checkbox}: ${error.message}`);
+    });
 
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
@@ -56,27 +56,27 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         "assignee": "김지훈"
     });
 
-    const categoryOptions = [  
-        { value: "", label: "과제분류" },  
-        { value: "발표", label: "발표" },  
-        { value: "자료조사", label: "자료조사" }, 
+    const categoryOptions = [
+        { value: "", label: "과제분류" },
+        { value: "발표", label: "발표" },
+        { value: "자료조사", label: "자료조사" },
         { value: "피피티", label: "피피티" }
         // 추가 옵션도 여기서 정의 가능  
         // { value: "새로운분류", label: "새로운분류" },  
     ];
 
     const levelOptions = [
-        { value: "", label: "난이도"},
-        { value: 1, label: "쉬움"},
-        { value: 2, label: "보통"},
-        { value: 3, label: "어려움"}
+        { value: "", label: "난이도" },
+        { value: 1, label: "쉬움" },
+        { value: 2, label: "보통" },
+        { value: 3, label: "어려움" }
     ];
 
     const assigneeOptions = [
-        { value: "", label: "담당자"},
-        { value: "김지훈", label: "김지훈"},
-        { value: "박서준", label: "박서준"},
-        { value: "이수민", label: "이수민"}
+        { value: "", label: "담당자" },
+        { value: "김지훈", label: "김지훈" },
+        { value: "박서준", label: "박서준" },
+        { value: "이수민", label: "이수민" }
         //여기는 나중에 프로젝트 참여자들 명단 데이터를 불러와서 표시하게 해야함
     ];
 
@@ -147,22 +147,22 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
             assignee: formData.assignee,
         };
         console.log(submittedData);
-        
+
         try {
             const response = await fetch(`${baseURL}/task/post`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
 
-            });
-            if(response.ok) {
+                });
+            if (response.ok) {
                 const responseData = await response.json();
                 console.log('서버 응답:', responseData);
                 alert('200 ok');
-            }else {
+            } else {
                 if (response.status === 400) {
                     alert("bad_request");
                 }
@@ -189,7 +189,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         console.log("🚀 토글 버튼이 클릭됨!"); // ✅ 버튼이 클릭되는지 확인
         setSidebarOpen(!sidebarOpen);
     };
-    
+
 
     const sortData = (data) => {
         const today = new Date().toISOString().split('T')[0];
@@ -203,7 +203,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
 
     const myAssignment = sortData(submittedData.filter(item => item.id === currentUser)) || [];
     const allAssignment = sortData(submittedData) || [];
-    
+
     const getItemClass = (date) => {
         const today = new Date().toISOString().split('T')[0];
         return date < today ? 'look-item past-date' : 'look-item';
@@ -232,7 +232,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                                 value={formData.category}
                                 onChange={handleChange}
                             >
-                                {categoryOptions.map((option)=> (
+                                {categoryOptions.map((option) => (
                                     <option key={option.value} value={option.value}>
                                         {option.label}
                                     </option>
@@ -285,11 +285,11 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
                         <button className="submit-button">생성</button>
                     </form>
                     <div className="Assignment-look">
-            {/* ✅ 내 과제 보기 컴포넌트 */}
-            <MyAssignments myAssignment={myAssignment} getItemClass={getItemClass} />
-            <AllAssignments allAssignment={allAssignment} getItemClass={getItemClass} />
+                        {/* ✅ 내 과제 보기 컴포넌트 */}
+                        <MyAssignments myAssignment={myAssignment} getItemClass={getItemClass} isSidebar={false} />
+                        <AllAssignments allAssignment={allAssignment} getItemClass={getItemClass} />
 
-                        
+
                         {/*<div className="all-assignment">
                             <h3>전체 과제 보기</h3>
                             {allAssignment.map(item => (

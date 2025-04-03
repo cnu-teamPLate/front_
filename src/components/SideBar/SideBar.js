@@ -15,7 +15,7 @@ const SideBar = ({ sidebarOpen }) => {
             </div>
             <div className='todo-list container'>
                 <div className='todolist wrapper'>
-                    <MyAssignments/>
+                    <MyAssignments isSidebar={true} />
                 </div>
             </div>
         </aside>
