@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+//import { io } from 'socket.io-client';
 import { useNavigate } from "react-router-dom";
 import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
-const socket = io('http://localhost:3001'); // 백엔드 서버 URL로 교체
+//const socket = io('http://localhost:3001'); // 백엔드 서버 URL로 교체
 
 
 function ParticipantSelector({ participants }) {
@@ -82,7 +82,7 @@ function MeetingLog({ onSave }) {
       ];
       setParticipants(mockData);
     };
-
+/*
     useEffect(() => {
       fetchMockParticipants();
 
@@ -102,7 +102,7 @@ function MeetingLog({ onSave }) {
       const newText = e.target.value;
       setRealTimeText(newText);
       socket.emit('edit', newText); // 서버로 변경된 텍스트 전송
-    };
+    };*/
 
     return (
       <div>
@@ -126,7 +126,7 @@ function MeetingLog({ onSave }) {
             <ParticipantSelector participants={participants} />
             <textarea
               value={realTimeText}
-              onChange={handleEditorChange}
+              //onChange={handleEditorChange}
               placeholder="회의 내용을 입력하세요"
               rows={10}
               cols={50}

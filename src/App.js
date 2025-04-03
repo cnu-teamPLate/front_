@@ -40,31 +40,32 @@ function App() {
               <Footer />
             </>
           }
-        />        
-<Route path="/login" element={
-  <>
-    <Header />
-    <div style={{ margin: "150px 0" }}> {/* 위아래 간격 추가 */}
-      <Login />
-    </div>
-    <Footer />
-  </>
-} />
+        />
+        <Route path="/login" element={
+          <>
+            <Header />
+            <div style={{ margin: "150px 0" }}> {/* 위아래 간격 추가 */}
+              <Login />
+            </div>
+            <Footer />
+          </>
+        } />
         <Route path="/signup" element={
           <>
-          <Header/>
-          <div style={{ margin: "100px 0" }}> {/* 위아래 간격 추가 */}
+            <Header />
+            <div style={{ margin: "100px 0" }}> {/* 위아래 간격 추가 */}
 
-            <SignUp />
+              <SignUp />
             </div>
 
-            <Footer/>
+            <Footer />
           </>
-          }
-           />
+        }
+        />
         <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
         <Route path="/mypage" element={<Layout><MyPage /></Layout>} />
         <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
+
         <Route
           path="/Assignment"
           element={
