@@ -173,11 +173,6 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         setDetailPlaceholder('과제의 상세 설명을 적어주세요');
     };
 
-    const toggleSidebar = () => {
-        console.log("토글 버튼이 클릭됨!");
-        setSidebarOpen(!sidebarOpen);
-    };
-
     const sortData = (data) => {
         const today = new Date().toISOString().split('T')[0];
         return data.sort((a, b) => {
