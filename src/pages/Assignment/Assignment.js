@@ -49,6 +49,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [formData, setFormData] = useState({
+        
         "taskName": "",
         "category": "",
         "complexity": 1,
@@ -56,6 +57,11 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         "description": "",
         "assignee": ""
     });
+    const categoryOptions = [
+        { value: "", label: "과제분류" },
+        { value: "발표", label: "발표" },
+        { value: "자료조사", label: "자료조사" },
+        { value: "피피티", label: "피피티" }
         // 추가 옵션도 여기서 정의 가능  
         // { value: "새로운분류", label: "새로운분류" },  
 
