@@ -5,8 +5,22 @@
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    max-height: 500px; /* 원하는 높이 설정 */
+    max-height: 500px;
+    /* 원하는 높이 설정 */
     overflow-y: auto;
+}
+
+/* 📌 MyAssignments 스타일 */
+.my-assignment.in-sidebar {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    max-height: 50% !important;
+    max-width: 37%;
+    /* 50%에서 30%로 줄임 */
+
 }
 
 
@@ -20,13 +34,15 @@
 
 .click-assignment {
     text-decoration: none;
-  color: inherit;
-  display: inline-block;
-  width: 360px;
-  height:150px;
-  margin-bottom: 10px;
+    color: inherit;
+    display: inline-block;
+    width: 360px;
+    height: 150px;
+    margin-bottom: 10px;
 }
-.overdue,.upcoming {
+
+.overdue,
+.upcoming {
     width: 360px;
     height: 150px;
 }
@@ -66,8 +82,8 @@
 .each {
     transition: none;
     z-index: 1;
-    transform: none!important;
-    box-shadow: none!important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 /* 📌 과제 제목 */
@@ -90,31 +106,54 @@
     margin: 10px;
 }
 
-/* ✅ 마감 기한이 임박한 과제 (동적으로 클래스 적용) */
-/*
-.my-assignment .urgent {
-    border-left-color: #ff4d4d; 
-    background: #ffe6e6;
-}*/
-
-/* ✅ 완료된 과제 */
-/*
-.my-assignment .completed {
-    border-left-color: #28a745;
-    background: #e6ffe6;
-}
-*/
-
 /* ✅ 과제 항목 hover 효과 */
 .my-assignment div:hover {
     transform: scale(1.02);
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
 }
+
 .sidebar .my-assignment {
-    padding: 12px 3px; /* ✅ 패딩 조정 */
+    padding: 10px 5px;
+    /* ✅ 패딩 조정 */
     text-align: center;
-    font-size: 16px;
+    font-size: 6px;
     font-weight: bold;
     border-radius: 5px;
     transition: 0.2s ease-in-out;
+}
+
+
+/* =========================================
+   2) 사이드바 버전 (my-assignment.in-sidebar)
+========================================= */
+.my-assignment.in-sidebar {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+/* 사이드바 내의 제목 */
+.my-assignment.in-sidebar h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* 사이드바 내에서는 과제 항목을 좀 더 간소화 */
+.my-assignment.in-sidebar .each-assignment-kind,
+.my-assignment.in-sidebar .each-assignment-des {
+    display: none;
+    /* 제목만 보여주고 싶다면 숨김 */
+}
+
+/* 사이드바 내 카드 폭 */
+.my-assignment.in-sidebar .click-assignment {
+    width: 160px;
+}
+
+/* 사이드바 내 체크박스 크기/위치 조정 */
+.my-assignment.in-sidebar .finish-check {
+    top: 8px;
+    right: 8px;
+    transform: scale(1.0);
 }

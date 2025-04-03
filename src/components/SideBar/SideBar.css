@@ -1,40 +1,47 @@
 /* 기본적으로 사이드바 숨김 */
 .sidebar {
+    /* 추가: 화면에 고정하기 위한 설정 */
+    position: fixed;
+    top: 0;
+    left: -280px;
+
     width: 280px;
     /* 사이드바 너비 */
     height: 100vh;
-    /* 화면 높이 전체 */
+    /* 전체 화면 높이 */
     background: #f5f5f5;
-    /* 연한 회색 배경 */
     padding: 20px;
     border-right: 2px solid #ddd;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+
     display: flex;
     flex-direction: column;
     align-items: center;
-    top: 0;
-    left: -280px;
+
     transition: left 0.3s ease-in-out;
     z-index: 1000;
+    /* 오버레이 시 콘텐츠 위로 올라오도록 */
 }
 
 /* 사이드바가 열릴 때 */
 .sidebar.open {
     left: 0;
-    /* ✅ 보이도록 설정 */
+    /* 오른쪽으로 열림 */
 }
 
-/* 📌 콘텐츠 (본문) 스타일 */
+/* 콘텐츠 (본문) 스타일 */
 .content {
+    /* 사이드바와 동일하게 트랜지션을 맞춰줍니다 */
     transition: margin-left 0.3s ease-in-out;
 }
 
-/* ✅ 사이드바가 열려도 콘텐츠는 움직이지 않도록 margin 제거 */
+/* 사이드바가 열렸을 때 콘텐츠를 오른쪽으로 밀고 싶다면 */
 .content.sidebar-open {
-    margin-left: 0;
+    margin-left: 280px;
+    /* 사이드바 너비만큼 밀기 */
 }
 
-/* 🔹 달력 컨테이너 */
+/* 달력 컨테이너 */
 .calendar-container {
     width: 100%;
     display: flex;
@@ -42,39 +49,32 @@
     margin-top: 10px;
 }
 
-/* 🔹 달력 너비를 80%로 설정하고 중앙 정렬 */
+/* 달력 래퍼 */
 .calendar-wrapper {
     width: 85%;
-    /* 🔥 사이드바 너비의 80% */
     background: white;
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 🔹 "2025년 2월"을 한 줄로 유지하도록 설정 */
+/* "2025년 2월" 한 줄 유지 */
 .react-calendar__navigation {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;
-    /* 🔥 줄 바꿈 방지 */
     white-space: nowrap;
-    /* 🔥 텍스트가 줄 바꿈되지 않도록 설정 */
-    gap: none;
 }
 
+/* 할 일 리스트 영역 컨테이너 */
 .todolist-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
     margin-top: 10px;
 }
 
-.sidebar .todolist-wrapper {
-    width: 85%;
-    background: white;
+.todolist-wrapper {
+    background-color: #fff;
     border-radius: 8px;
     padding: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }

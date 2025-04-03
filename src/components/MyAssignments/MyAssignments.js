@@ -14,7 +14,7 @@ const getAssignment = `${testURL}`;
 //폼 입력 시 난이도를 어떤 걸 선택하냐에 따라 숫자 값으로 전달해야줘야함
 
 const MyAssignments = ({ isSidebar = false }) => {
-    const navigate = useNavigate;
+    const navigate = useNavigate();
     // 더미 데이터 (DB 연동 시 fetch로 대체 가능)
     // id가 본인 id 와 일치하는 경우에만 띄우게끔
     const dummyAssignments = [
