@@ -19,13 +19,13 @@ const projectId = urlParams.get("projId");
 const id = urlParams.get("id");
 const getAssignment = `${testURL}`;
 
-/*여기 오류 해결해야함
 fetch(getAssignment, {
     method: "GET",
     headers: {
         "Content-Type": "application/json"
     }
 })
+<<<<<<< HEAD
      .then(response => {
         if (!response.ok) {
             throw {
@@ -42,6 +42,23 @@ fetch(getAssignment, {
         alert(`Error ${error.checkbox}: ${error.message}`);
     });
 */
+=======
+.then(response => {
+    if(!response.ok) {
+        throw {
+            messeage: "오류 메시지",
+            checkbox : 400,
+            cate: "bad_request"
+        };
+    }
+    return response.json();
+})
+.then(data => console.log(data))
+.catch(error => {
+    console.error('Error:', error);
+    alert(`Error ${error.checkbox}: ${error.message}`);
+});
+>>>>>>> parent of 772c0a8 (assignment 수정)
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
@@ -49,6 +66,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [formData, setFormData] = useState({
+<<<<<<< HEAD
         
         "taskName": "",
         "category": "",
@@ -61,6 +79,20 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         { value: "", label: "과제분류" },
         { value: "발표", label: "발표" },
         { value: "자료조사", label: "자료조사" },
+=======
+        "taskName": "발표 준비",
+        "category": "피피티",
+        "complexity": 3,
+        "deadline": "2025-02-10T23:59:59",
+        "description": "팀 프로젝트 정리",
+        "assignee": "김지훈"
+    });
+
+    const categoryOptions = [  
+        { value: "", label: "과제분류" },  
+        { value: "발표", label: "발표" },  
+        { value: "자료조사", label: "자료조사" }, 
+>>>>>>> parent of 772c0a8 (assignment 수정)
         { value: "피피티", label: "피피티" }
         // 추가 옵션도 여기서 정의 가능  
         // { value: "새로운분류", label: "새로운분류" },  
