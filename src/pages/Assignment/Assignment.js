@@ -19,6 +19,7 @@ const projectId = urlParams.get("projId");
 const id = urlParams.get("id");
 const getAssignment = `${testURL}`;
 
+/*여기 오류 해결해야함
 fetch(getAssignment, {
     method : "GET",
     headers : {
@@ -40,6 +41,7 @@ fetch(getAssignment, {
     console.error('Error:', error);
     alert(`Error ${error.checkbox}: ${error.message}`);
 });
+*/
 
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
@@ -48,14 +50,14 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [formData, setFormData] = useState({
-        "taskName": "발표 준비",
-        "category": "피피티",
-        "complexity": 3,
-        "deadline": "2025-02-10T23:59:59",
-        "description": "팀 프로젝트 정리",
-        "assignee": "김지훈"
+        "taskName": "",
+        "category": "",
+        "complexity": 1,
+        "deadline": "",
+        "description": "",
+        "assignee": ""
     });
-
+    
     const categoryOptions = [  
         { value: "", label: "과제분류" },  
         { value: "발표", label: "발표" },  
