@@ -43,7 +43,7 @@ function Login() {
 
 
       const response = await fetch(
-        'https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/auth/login',
+        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/login',
         {
           method: 'POST',
           headers: {
