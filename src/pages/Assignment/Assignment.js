@@ -26,6 +26,22 @@ fetch(getAssignment, {
         "Content-Type": "application/json"
     }
 })
+     .then(response => {
+        if (!response.ok) {
+            throw {
+                messeage: "오류 메시지",
+                checkbox: 400,
+                cate: "bad_request"
+            };
+        }
+        return response.json();
+    })
+    .then(data => console.log(data))
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`Error ${error.checkbox}: ${error.message}`);
+    });
+*/
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
@@ -39,10 +55,9 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         "deadline": "",
         "description": "",
         "assignee": ""
-    });{ value: "피피티", label: "피피티" }
+    });
         // 추가 옵션도 여기서 정의 가능  
         // { value: "새로운분류", label: "새로운분류" },  
-    ];
 
     const levelOptions = [
         { value: "", label: "난이도" },
