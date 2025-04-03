@@ -83,23 +83,23 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
     const [ids, setids] = useState([]);
 
     // 현재 사용자와 관련된 ID를 불러오는 useEffect
-    useEffect(() => {
-        const fetchids = async () => {
-            try {
-                const response = await fetch('/api/ids');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                const userids = data.filter(item => item.userId === currentUser);
-                setids(userids);
-            } catch (error) {
-                console.error('Error fetching ids:', error);
-                setids([]);
-            }
-        };
-        fetchids();
-    }, [currentUser]);
+    // useEffect(() => {
+    //     const fetchids = async () => {
+    //         try {
+    //             const response = await fetch('/api/ids');
+    //             if (!response.ok) {
+    //                 throw new Error('Network response was not ok');
+    //             }
+    //             const data = await response.json();
+    //             const userids = data.filter(item => item.userId === currentUser);
+    //             setids(userids);
+    //         } catch (error) {
+    //             console.error('Error fetching ids:', error);
+    //             setids([]);
+    //         }
+    //     };
+    //     fetchids();
+    // }, [currentUser]);
 
     const handleFocus = (field) => {
         if (field === 'taskName') {
