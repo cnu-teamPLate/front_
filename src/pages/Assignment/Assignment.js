@@ -58,6 +58,10 @@ fetch(getAssignment, {
     console.error('Error:', error);
     alert(`Error ${error.checkbox}: ${error.message}`);
 });
+<<<<<<< HEAD
+>>>>>>> parent of 772c0a8 (assignment 수정)
+=======
+
 >>>>>>> parent of 772c0a8 (assignment 수정)
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
@@ -66,6 +70,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [formData, setFormData] = useState({
+<<<<<<< HEAD
 <<<<<<< HEAD
         
         "taskName": "",
@@ -87,6 +92,15 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         "description": "팀 프로젝트 정리",
         "assignee": "김지훈"
     });
+=======
+        "taskName": "발표 준비",
+        "category": "피피티",
+        "complexity": 3,
+        "deadline": "2025-02-10T23:59:59",
+        "description": "팀 프로젝트 정리",
+        "assignee": "김지훈"
+    });
+>>>>>>> parent of 772c0a8 (assignment 수정)
 
     const categoryOptions = [  
         { value: "", label: "과제분류" },  
