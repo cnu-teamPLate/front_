@@ -18,6 +18,7 @@ const urlParams = new URLSearchParams(new URL(testURL).search);
 const projectId = urlParams.get("projId");
 const id = urlParams.get("id");
 const getAssignment = `${testURL}`;
+/*
 
 fetch(getAssignment, {
     method: "GET",
@@ -40,6 +41,7 @@ fetch(getAssignment, {
         console.error('Error:', error);
         alert(`Error ${error.checkbox}: ${error.message}`);
     });
+    */
 
 function Assignment({ onSubmit = () => { }, currentUser = "", notifications = [] }) {
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
