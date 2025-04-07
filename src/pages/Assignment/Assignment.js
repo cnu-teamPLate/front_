@@ -183,7 +183,7 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         });
     };
 
-    const myAssignment = sortData(submittedData.filter(item => item.id === currentUser)) || [];
+    const myAssignment = sortData(submittedData) || [];
     const allAssignment = sortData(submittedData) || [];
 
     const getItemClass = (date) => {
