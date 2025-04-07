@@ -43,13 +43,14 @@ function Login() {
 
 
       const response = await fetch(
-        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/login',
+        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/login',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body,
+          body: body,
+          credentials: 'include'
         }
       );
 
