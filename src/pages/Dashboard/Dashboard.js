@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
 import './Dashboard.css';
@@ -32,6 +32,18 @@ function Dashboard() {
       [name]: value,
     });
   };
+  useEffect(() => {
+    const handleGlobalKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        handleSubmit(event);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [formData]);
+
   const [formData, setFormData] = useState({
     id: '',
     pwd: '',
