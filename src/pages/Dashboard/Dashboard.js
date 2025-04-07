@@ -54,8 +54,6 @@ function Dashboard() {
     setIsLoading(true); // 로딩 시작
     setError(''); // 에러 초기화
     try {
-      // 서버로 보낼 데이터
-      // const body = `id=${encodeURIComponent(formData.username)}&pwd=${encodeURIComponent(formData.password)}`;
       const body = JSON.stringify({
         id: formData.username,
         pwd: formData.password,
@@ -65,7 +63,7 @@ function Dashboard() {
       const response = await fetch(
         'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html#/projects/view?userId=20241121',
         {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -77,11 +75,17 @@ function Dashboard() {
       const data = await response.json();
 
       if (response.ok) {
-        navigate('/dashboard');
+        const data = await response.json();
+        console.log('Fetch successful:', data); // Log the response data
+        setProjects(data); // Update the state with the fetched data
+        navigate('/dashboard'); // Navigate to the dashboard page
       } else {
-        setError(data.message || '로그인에 실패했습니다.');
+        const data = await response.json();
+        console.log('Fetch failed:', data); // Log the error response data
+        setError(data.message || 'null'); // Display the error message
       }
     } catch (error) {
+      console.error('Error connecting to server:', error); // Log any fetch errors
       setError('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
