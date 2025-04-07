@@ -32,6 +32,11 @@ function Dashboard() {
       [name]: value,
     });
   };
+  const [formData, setFormData] = useState({
+    id: '',
+    pwd: '',
+  });
+
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
       if (event.key === 'Enter') {
@@ -44,10 +49,6 @@ function Dashboard() {
     };
   }, [formData]);
 
-  const [formData, setFormData] = useState({
-    id: '',
-    pwd: '',
-  });
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true); // 로딩 시작
