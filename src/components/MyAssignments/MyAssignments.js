@@ -179,8 +179,9 @@ const MyAssignments = ({ isSidebar = false }) => {
                 assignments
                 .filter((item) => String(item.id) === currentId)
                 .map((item) => (
-                    <a href="/AssignmentDetail" className="click-assignment">
-                        <div key={item.taskId} className={item.itemClass}>
+                    <div key={item.taskId} className={item.itemClass}>
+                        <a href="/AssignmentDetail" className="click-assignment">
+                        
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
                                 <p className = "each-assignment-kind">{item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>
@@ -191,8 +192,9 @@ const MyAssignments = ({ isSidebar = false }) => {
                                 checked={item.checkBox === 1}
                                 onChange={() => handleCheckboxChange(item.taskId)}
                             />
-                        </div>
-                    </a>
+                        
+                        </a>
+                    </div>
                 ))
             ) : (
                 <p>등록된 과제가 없습니다.</p>

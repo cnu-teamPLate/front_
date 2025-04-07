@@ -53,7 +53,7 @@ function SignUp() {
         if (validateStep()) {
             setIsSubmitting(true); // 요청 시작
             try {
-                const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/auth/register', {
+                const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ function SignUp() {
                         id: formData.name,
                         username: formData.username,
                         pwd: formData.password,
-                        mail: formData.email,
+                        email: formData.email,
                         phone: formData.phone,
                         studentNumber: formData.studentnumber,
                     }),
@@ -71,7 +71,10 @@ function SignUp() {
                 const contentType = response.headers.get('Content-Type');
 
                 if (!response.ok) {
-                    throw new Error('회원가입에 실패했습니다.');
+                    throw {
+                        message: "Username is taken!",
+                        checkbox: 400
+                    };
                 }
                 if (response.ok) {
                     if (contentType && contentType.includes('application/json')) {

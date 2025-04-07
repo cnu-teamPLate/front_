@@ -15,41 +15,6 @@
     text-decoration: none;
     margin: 0 10px;
 }
-
-.sidebar-toggle {
-    position: fixed;
-    top: 1em;
-    left: 1em;
-    z-index: 1001;
-    background: none;
-    border: none;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
-}
-
-.App-sidebar {
-    position: fixed;
-    left: -285px !important;
-    top: 0;
-    width: 250px;
-    height: 100%;
-    background-color: #f8f8f8;
-    color: rgb(0, 0, 0);
-    transition: left 0.3s;
-    padding: 1em;
-    z-index: 1000;
-}
-
-.App-sidebar.open {
-    left: 0;
-}
-
-.sidebar-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 *,
 *::before,
 *::after {

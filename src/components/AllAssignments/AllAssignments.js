@@ -120,8 +120,9 @@ const AllAssignments = ({ isSidebar = false }) => {
             <h3>전체 과제 보기</h3>
             {assignments.length > 0 ? (
                 assignments.map((item) => (
-                    <a href="/AssignmentDetail" className="click-assignment">
-                        <div key={item.id} className={getItemClass(item.date)}>
+                    <div key={item.id} className={getItemClass(item.date)}>
+                        <a href="/AssignmentDetail" className="click-assignment">
+                        
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
                                 <p className = "each-assignment-kind">{item.name} / {item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>
@@ -135,8 +136,9 @@ const AllAssignments = ({ isSidebar = false }) => {
                                 onChange={() => handleCheckboxChange(item.id)}
                             />
                             }
-                        </div>
-                    </a>
+                        
+                        </a>
+                    </div>
                 ))
             ) : (
                 <p>등록된 과제가 없습니다.</p>
