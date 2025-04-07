@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { IoMenu, IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom';
+import { IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
 import './Dashboard.css';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
+  const [showProjectPopup, setShowProjectPopup] = useState(false); // Fix missing state
+  const [showSubjectPopup, setShowSubjectPopup] = useState(false); // Fix missing state
+  const [showEditPopup, setShowEditPopup] = useState(false); // Fix missing state
+  const [selectedProject, setSelectedProject] = useState(null); // Fix missing state
   const [newProject, setNewProject] = useState({
     projName: '',
     goal: '',
@@ -13,7 +18,62 @@ function Dashboard() {
     subjectId: '',
     teamMembers: []
   });
+  const navigate = useNavigate(); // Initialize useNavigate
+  const [studentID, setStudentID] = useState(''); // Fix missing state
+  const [subjects, setSubjects] = useState([]); // Fix missing state
+  const [newTeamMemberId, setNewTeamMemberId] = useState(''); // Fix missing state
 
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewProject({
+      ...newProject,
+      [name]: value,
+    });
+  };
+  const [formData, setFormData] = useState({
+    id: '',
+    pwd: '',
+  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true); // 로딩 시작
+    setError(''); // 에러 초기화
+    try {
+      // 서버로 보낼 데이터
+      // const body = `id=${encodeURIComponent(formData.username)}&pwd=${encodeURIComponent(formData.password)}`;
+      const body = JSON.stringify({
+        id: formData.username,
+        pwd: formData.password,
+      });
+
+
+      const response = await fetch(
+        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html#/projects/view?userId=20241121',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: body,
+          credentials: 'include'
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        navigate('/dashboard');
+      } else {
+        setError(data.message || '로그인에 실패했습니다.');
+      }
+    } catch (error) {
+      setError('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   // 프로젝트 생성 팝업 열기
   const handleCreateProject = () => {
     setShowProjectPopup(true);
@@ -63,11 +123,11 @@ function Dashboard() {
   };
 
   const handleAddTeamMember = () => {
-    const contribution = Math.floor(Math.random() * 100); 
+    const contribution = Math.floor(Math.random() * 100);
     const newMember = {
       id: studentID,
       contribution,
-      color: `rgba(188, 13, 18, ${contribution / 100})`, 
+      color: `rgba(188, 13, 18, ${contribution / 100})`,
     };
     setNewProject(prevProject => ({
       ...prevProject,
@@ -88,12 +148,11 @@ function Dashboard() {
     setSubjects([...subjects, newSubject]);
     handleCloseSubjectPopup();
   };
-
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
   return (
     <div className="Dashboard">
-      {/* <button className="sidebar-toggle" onClick={toggleSidebar}>
-        <IoMenu size={24} />
-      </button> */}
       <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-content">
           <div className="create-project" onClick={handleCreateProject}>
@@ -236,6 +295,6 @@ function Dashboard() {
       )}
     </div>
   );
-}
 
+}
 export default Dashboard;

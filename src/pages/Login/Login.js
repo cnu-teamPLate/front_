@@ -25,39 +25,39 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.username || !formData.password) {
-      setError('아이디와 비밀번호를 입력해주세요.');
-      return;
-    }
-
     setIsLoading(true); // 로딩 시작
     setError(''); // 에러 초기화
 
     try {
-      // 서버로 보낼 데이터
-      // const body = `id=${encodeURIComponent(formData.username)}&pwd=${encodeURIComponent(formData.password)}`;
       const body = JSON.stringify({
         id: formData.username,
         pwd: formData.password,
       });
 
+      // 쿼리 파라미터에 userId 추가
+      const url = new URL('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html#/projects/view');
+      url.searchParams.append('userId', '20241121'); // userId를 쿼리 파라미터로 추가
 
-      const response = await fetch(
-        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body,
-        }
-      );
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+        credentials: 'include',
+      });
 
       const data = await response.json(); // 서버 응답 처리
 
       if (response.ok) {
-        // 로그인 성공
-        navigate('/dashboard');
+        if (data) {
+          // 로그인 성공 및 반환된 데이터 처리
+          navigate('/dashboard');
+          console.log(data); // 서버에서 반환된 데이터 로그 (디버깅용)
+        } else {
+          // 실패한 경우
+          setError('로그인에 실패했습니다. 서버에서 반환된 값이 없습니다.');
+        }
       } else {
         // 서버 에러
         setError(data.message || '로그인에 실패했습니다.');
@@ -68,7 +68,6 @@ function Login() {
       setIsLoading(false);
     }
   };
-
   // const handleLogout = () => {
   //   setFormData({
   //     username: '',
