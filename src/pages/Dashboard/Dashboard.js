@@ -49,6 +49,11 @@ function Dashboard() {
     };
   }, [formData]);
 
+  //여기 써야 작동함
+  fetch(
+    'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/projects/view?userId=20241121',
+  ).then(resp => console.log(resp.json()));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true); // 로딩 시작
@@ -61,16 +66,9 @@ function Dashboard() {
 
 
       const response = await fetch(
-        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/swagger-ui/index.html#/projects/view?userId=20241121',
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: body,
-          credentials: 'include'
-        }
+        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/projects/view?userId=20241121',
       );
+      console.log(response.json());
 
       const data = await response.json();
 
