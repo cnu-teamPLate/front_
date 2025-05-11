@@ -3,32 +3,30 @@ import axios from 'axios';
 import './Login.css';
 
 function PasswordRecovery({ onCancel }) {
-  const [name, setName] = useState('');
-  const [studentId, setStudentId] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const handleNameChange = (e) => {
-    setName(e.target.value);
-  };
-
-  const handleStudentIdChange = (e) => {
-    setStudentId(e.target.value);
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('/api/recover-password', {
-        name,
-        studentId,
-      });
-      setPassword(response.data.password);
-      setError('');
-    } catch (error) {
-      setError('비밀번호를 찾을 수 없습니다. 이름과 학번을 확인해주세요.');
-      setPassword('');
+      const response = await axios.post(
+        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/send-password-mail',
+        { email }
+      );
+
+      if (response.status === 200) {
+        setMessage('비밀번호 재설정 이메일이 전송되었습니다.');
+        setError('');
+      }
+    } catch (err) {
+      setError('이메일 전송에 실패했습니다. 올바른 이메일인지 확인해주세요.');
+      setMessage('');
     }
   };
 
@@ -37,22 +35,20 @@ function PasswordRecovery({ onCancel }) {
       <h2>비밀번호 찾기</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>이름:</label>
-          <input type="text" value={name} onChange={handleNameChange} required />
+          <label style={{ marginLeft: '10px' }}>이메일:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={handleEmailChange}
+            required
+          />
         </div>
-        <div>
-          <label>학번:</label>
-          <input type="text" value={studentId} onChange={handleStudentIdChange} required />
-        </div>
-        <button type="submit">비밀번호 찾기</button>
+        <button type="submit">이메일 발송</button>
       </form>
-      {password && (
-        <div>
-          <h2>비밀번호:</h2>
-          <p>{password}</p>
-        </div>
-      )}
+
+      {message && <p style={{ color: 'green' }}>{message}</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      
       <button onClick={onCancel}>뒤로가기</button>
     </div>
   );

@@ -6,15 +6,12 @@
   padding: 0px;
   height: auto;
   box-sizing: border-box;
-  background-color: #f8f9fa;
+
 }
 
 .title {
   margin-bottom: 2em;
 }
-
-
-
 
 .MyPage form {
   width: 100%;

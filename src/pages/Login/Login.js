@@ -51,6 +51,10 @@ function Login() {
 
       if (response.ok) {
         if (data) {
+          // userId를 localStorage에 저장
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('userName', data.name);
+
           // 로그인 성공 및 반환된 데이터 처리
           navigate('/dashboard');
           console.log(data); // 서버에서 반환된 데이터 로그 (디버깅용)

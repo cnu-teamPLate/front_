@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Header = ({ toggleSidebar }) => {
+  const userId = localStorage.getItem('userId') // 로컬 스토리지에서 userId 불러오기
+
   return (
     <header className="header">
-      {/* ✅ toggleSidebar가 있을 때만 토글 버튼 렌더링 */}
+      {/* 사이드바 토글 버튼 */}
       {toggleSidebar && (
         <button
           className="menu-btn"
@@ -16,7 +18,16 @@ const Header = ({ toggleSidebar }) => {
           ☰
         </button>
       )}
+
+      {/* 홈으로 돌아가기 */}
       <Link to="/Dashboard">홈으로 돌아가기</Link>
+
+      {/* 로그인된 경우에만 마이페이지 버튼 표시 */}
+      {userId && (
+        <Link to={`/MyPage/${userId}`} style={{ marginLeft: '20px' }}>
+          마이페이지
+        </Link>
+      )}
     </header>
   );
 };
