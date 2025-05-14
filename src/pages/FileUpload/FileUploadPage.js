@@ -7,14 +7,14 @@ function FileUploadPage() {
     const [selectedTaskIndex, setSelectedTaskIndex] = useState(null);
     const [statusMessage, setStatusMessage] = useState('');
     const [formData, setFormData] = useState({
-        docs:{
+        docs:JSON.stringify({
           id : '20241121',
           projId : 'cse00001',
           title : '',
           detail : '',
           category : '1',
           url: '1',
-        },
+        }),
         file : '',
     })
 
@@ -41,25 +41,20 @@ function FileUploadPage() {
   };
   
     const handleFileChange = (e) => {
-      const newFiles = Array.from(e.target.files);
-      setFiles(prev => {
-          const updatedFiles = [...prev, ...newFiles];
-          setFormData({
-              ...formData,
-              file: updatedFiles, // 파일 데이터를 formData에 추가합니다.
-          });
-          return updatedFiles;
+      const file = e.target.files[0];
+      setFiles([file]);
+      setFormData({
+            ...formData,
+            file: file, // 파일 데이터를 formData에 추가합니다.
       });
   };
   
-  const handleDelete = (index) => {
-    setFiles(prev => {
-        const updatedFiles = prev.filter((_, i) => i !== index);
-        setFormData({
-            ...formData,
-            file: updatedFiles, // 삭제 후 파일 상태를 업데이트합니다.
-        });
-        return updatedFiles;
+
+  const handleDelete = () => {
+    setFiles([]); // 파일 삭제
+    setFormData({
+        ...formData,
+        file: '', // formData에서 파일 초기화
     });
 };
 
@@ -70,6 +65,8 @@ function FileUploadPage() {
     const handleSubmit = async (e) => {
       e.preventDefault();
       console.log("업로드 버튼이 클릭되었습니다"); 
+
+
   
       try {
         const projectExists = await checkIfProjectExists(formData.projectId);
@@ -130,11 +127,11 @@ function FileUploadPage() {
               </label>
             </div>
             <ul className="file-list">
-              {files.map((file, index) => (
-                <li key={index}>
-                  {file.name} <button onClick={() => handleDelete(index)}>삭제</button>
-                </li>
-              ))}
+                {files.length > 0 && (
+                    <li>
+                        {files[0].name} <button onClick={handleDelete}>삭제</button>
+                    </li>
+                )}
             </ul>
             <div className='description'>
                 <input type='text' placeholder='제목을 입력해주세요' name='title' value={formData.docs.title} onChange={handleInputChange}/>
