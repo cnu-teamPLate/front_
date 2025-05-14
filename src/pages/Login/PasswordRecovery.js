@@ -16,7 +16,7 @@ function PasswordRecovery({ onCancel }) {
 
     try {
       const response = await axios.post(
-        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/send-password-mail',
+        'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/send-password-mail',
         { email }
       );
 
