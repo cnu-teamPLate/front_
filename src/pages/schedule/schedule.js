@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -358,7 +360,6 @@ function WhenToMeetGrid({ onExit }) {
     // 시간 범위 & 타임존
     const [earliestTime, setEarliestTime] = useState('9:00 AM');
     const [latestTime, setLatestTime] = useState('5:00 PM');
-    const [timeZone, setTimeZone] = useState('Asia/Seoul');
 
     const validateStep = () => {
         const newErrors = {};
@@ -401,16 +402,8 @@ function WhenToMeetGrid({ onExit }) {
             }
         });
     };
+    const navigate = useNavigate();
 
-    const handleCreateEvent = () => {
-        if (!validateStep()) return;
-        alert(`
-      이벤트 제목: ${eventTitle}
-      선택된 날짜: ${selectedDates.join(', ')}
-      선택된 시간: ${selectedTimes.join(', ')}
-      타임존: ${timeZone}
-    `);
-    };
 
     return (
         <div className="new-event-container">
@@ -496,14 +489,6 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="11:00 PM">11:00 PM</option>
                                 </select>
                             </label>
-                            <label>
-                                Time Zone:
-                                <select value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
-                                    <option value="Asia/Seoul">Asia/Seoul</option>
-                                    <option value="America/New_York">America/New_York</option>
-                                    <option value="Europe/London">Europe/London</option>
-                                </select>
-                            </label>
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={nextStep}>Next</button>
@@ -527,12 +512,12 @@ function WhenToMeetGrid({ onExit }) {
                                 selectedDates={selectedDates}
                                 earliestTime={earliestTime}
                                 latestTime={latestTime}
-                                events={dummyEvents}
+                                events={dummyEvents} //여기를 벡엔드에서 받아야함
                             />
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
-                            <button onClick={handleCreateEvent}>Ready? Create Event</button>
+                            <button onClick={() => navigate('/schedule')}>Next</button>
                         </div>
                     </div>
                 </>
@@ -573,7 +558,8 @@ const Schedule = () => {
         end: '',
         location: '',
         attendees: '',
-        agenda: ''
+        agenda: '',
+        category: '',
     });
     const [whenToMeet, setWhenToMeet] = useState(false);
     const [view, setView] = useState('month');
@@ -734,6 +720,11 @@ const Schedule = () => {
                             <textarea
                                 value={newEvent.agenda}
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
+                            />
+                            <label>카테고리:</label>
+                            <textarea
+                                value={newEvent.category}
+                                onChange={(e) => setNewEvent({ ...newEvent, categoty: e.target.value })}
                             />
                             <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
                                 일정 추가
