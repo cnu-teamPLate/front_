@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -105,6 +105,7 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
 }
 
 function AvailabilityMatrix({ selectedDates, start, end, events }) {
+    const [hoveredUsers, setHoveredUsers] = useState([]);
     const parseTime = (timeStr) => {
         const [hourMinute, ampm] = timeStr.split(' ');
         let [hour, minute] = hourMinute.split(':').map(Number);
@@ -150,6 +151,13 @@ function AvailabilityMatrix({ selectedDates, start, end, events }) {
         const names = overlappingEvents.map(event => userInfo[event.userId]).filter(Boolean);
         return [...new Set(names)];
     };
+    const calculateCellColor = (userCount) => {
+        // 최대 사용자 수에 비례하여 색상 결정 (최대 9명 가능)
+        const maxCount = 9;
+        const intensity = Math.min(userCount / maxCount, 1);
+        return `rgba(0, 200, 0, ${intensity})`;
+    };
+
 
     return (
         <div className="availability-matrix">
@@ -164,7 +172,11 @@ function AvailabilityMatrix({ selectedDates, start, end, events }) {
                         fontWeight: 'bold'
                     }}
                 >
-                    Time
+                    {selectedDates.map(date => (
+                        <div key={date} className="matrix-header-cell" style={{ flex: 1, fontWeight: 'bold' }}>
+                            {date}
+                        </div>
+                    ))}
                 </div>
                 {selectedDates.map(date => (
                     <div
@@ -203,19 +215,32 @@ function AvailabilityMatrix({ selectedDates, start, end, events }) {
                                 key={`${date}-${slot}`}
                                 className="matrix-cell"
                                 style={{
+
                                     flex: 1,
-                                    border: '1px solid #ccc',
-                                    padding: '6px',
+                                    backgroundColor: calculateCellColor(users.length),
                                     minHeight: '40px',
-                                    textAlign: 'center'
+                                    position: 'relative'
                                 }}
-                            >
-                                {users.join(', ')}
+                                onMouseEnter={() => setHoveredUsers(users)}
+                                onMouseLeave={() => setHoveredUsers([])}                            >
+                                {users.length > 0 ? (
+                                    <span>{users.length}명 가능</span>
+                                ) : null}
                             </div>
                         );
                     })}
                 </div>
             ))}
+            {hoveredUsers.length > 0 && (
+                <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
+                    <h4>가능한 사용자</h4>
+                    <ul>
+                        {hoveredUsers.map(user => (
+                            <li key={user}>{user}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }
@@ -393,6 +418,10 @@ function WhenToMeetGrid({ onExit }) {
         };
 
         try {
+            if (!process.env.REACT_APP_API_URL) {
+                console.warn("API URL이 지정되지 않았습니다.");
+                return;
+            }
             const response = await fetch(
                 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
                 {
@@ -603,8 +632,8 @@ function WhenToMeetGrid({ onExit }) {
         </div>
     );
 };
+//-----------------여기까지가 웬투밋-----------------------------------------------------------------
 
-/* 5) react-big-calendar 관련 커스텀 컴포넌트 */
 const EventComponent = ({ event }) => {
     const user = userInfo[event.userId];
     return (
@@ -663,9 +692,6 @@ const Schedule = () => {
         setWhenToMeet(true);
     };
 
-    const handleAddEvent = (eventObject) => {
-        setEvents([...events, eventObject]);
-    };
 
     const handleSelectSlot = ({ start, end }) => {
         const userId = currentUser.id;
@@ -734,6 +760,7 @@ const Schedule = () => {
        <div>시간: ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}</div>
        <div>장소: ${event.location}</div>
        <div>대상: ${event.attendees}</div>
+       <div>카테고리: ${event.category}</div>
        <div>안건:</div>
        <ul>
           ${event.agenda.split('\n').map((item, idx) => `<li key=${idx}>${item}</li>`).join('')}
@@ -754,6 +781,86 @@ const Schedule = () => {
     const exitWhenToMeet = () => {
         setWhenToMeet(false);
     };
+    // 일정 생성 API 연결
+    const handleAddEvent = async (eventObject) => {
+        const userId = currentUser.id;
+        const projId = currentProject.id;
+
+        const newEvent = {
+            projId: projId,
+            date: eventObject.start,
+            scheName: eventObject.title,
+            place: eventObject.location,
+            category: "일정",
+            detail: eventObject.agenda,
+            participants: eventObject.attendees.split(',').map(p => p.trim())
+        };
+
+        try {
+            if (!process.env.REACT_APP_API_URL) {
+                console.warn("API URL이 지정되지 않았습니다.");
+                return;
+            }
+            const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newEvent),
+            });
+
+            if (response.ok) {
+                const savedEvent = await response.json();
+                setEvents([...events, savedEvent]);
+                setShowPopup(false);
+            } else {
+                const error = await response.text();
+                console.error("Failed to create event:", error);
+                alert("일정 생성에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error("Error creating event:", error);
+            alert("서버와 연결할 수 없습니다.");
+        }
+    };
+
+    // 일정 조회 (주간)
+    useEffect(() => {
+        const fetchAvailability = async () => {
+            if (!process.env.REACT_APP_API_URL) {
+                console.warn("API URL이 지정되지 않았습니다.");
+                return;
+            }
+            const response = await fetch('https://your-api-endpoint.com/schedule/meeting/adjust/availability');
+            const data = await response.json();
+            setEvents(data); // data 형식: [{ start, end, userName }]
+        };
+        fetchAvailability();
+
+        const fetchEvents = async () => {
+            try {
+                if (!process.env.REACT_APP_API_URL) {
+                    console.warn("API URL이 지정되지 않았습니다.");
+                    return;
+                }
+                const response = await fetch(`https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/weekly`, {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setEvents(data.teamSchedules[currentProject.id] || []);
+                } else {
+                    const error = await response.text();
+                    console.error("Failed to load events:", error);
+                }
+            } catch (error) {
+                console.error("Error loading events:", error);
+            }
+        };
+
+        fetchEvents();
+    }, [currentProject]);
 
     return (
         <div className="Dashboard">
