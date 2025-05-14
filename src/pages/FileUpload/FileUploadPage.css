@@ -20,6 +20,7 @@ body {
     border-radius: 10px !important;
     width: 45% !important;
     box-shadow: 0 0 10px rgba(0,0,0,0.1) !important;
+    display: block;
   }
   
   h2 {
@@ -143,3 +144,7 @@ body {
     border-bottom: 1px solid #ccc !important;
   }
   
+  .upload-button {
+    align-items: center !important;
+    margin: 0 5em;
+  }
