@@ -5,8 +5,6 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-
-// 더미 이벤트 데이터 (예시)
 const dummyEvents = [
     {
         userId: "20211079",
@@ -45,13 +43,11 @@ const dummyEvents = [
     }
 ];
 
-// 사용자 정보 매핑 (userId -> 사용자 이름)
 const userInfo = {
     "20211079": "Alice",
     "20211080": "Bob"
 };
 
-/* 1) 날짜 선택 달력 */
 function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates }) {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
@@ -108,8 +104,7 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
-/* 2) 읽기 전용 Availability Matrix */
-function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events }) {
+function AvailabilityMatrix({ selectedDates, start, end, events }) {
     const parseTime = (timeStr) => {
         const [hourMinute, ampm] = timeStr.split(' ');
         let [hour, minute] = hourMinute.split(':').map(Number);
@@ -137,7 +132,7 @@ function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events })
         return slots;
     };
 
-    const timeSlots = getTimeSlots(earliestTime, latestTime);
+    const timeSlots = getTimeSlots(start, end);
 
     const getCellDateTime = (dateStr, timeSlot) => {
         const { hour, minute } = parseTime(timeSlot);
@@ -225,8 +220,7 @@ function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events })
     );
 }
 
-/* 3) 드래그 가능한 Time Selection Grid */
-function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTimes, selectedTimes }) {
+function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
     const [isDragging, setIsDragging] = useState(false);
     const [toggleTo, setToggleTo] = useState(false);
 
@@ -240,8 +234,8 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
         return date;
     };
 
-    const startDate = parseTime(earliestTime);
-    const endDate = parseTime(latestTime);
+    const startDate = parseTime(start);
+    const endDate = parseTime(end);
     const timeSlots = [];
     const tempDate = new Date(startDate);
     while (tempDate <= endDate) {
@@ -275,7 +269,6 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     const handleMouseUp = () => {
         setIsDragging(false);
     };
-
     return (
         <div className="time-selection-grid" onMouseUp={handleMouseUp}>
             <div className="time-grid-header">
@@ -345,20 +338,83 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     );
 }
 
-/* 4) WhenToMeetGrid: 전체 흐름 관리 */
+/* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit }) {
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
-
+    const [isLoading, setIsLoading] = useState('false');
+    const [error, setError] = useState('');
     // 이벤트 관련 상태
     const [eventTitle, setEventTitle] = useState('');
     const [selectedDates, setSelectedDates] = useState([]);
     const [selectedTimes, setSelectedTimes] = useState([]);
 
     // 시간 범위 & 타임존
-    const [earliestTime, setEarliestTime] = useState('9:00 AM');
-    const [latestTime, setLatestTime] = useState('5:00 PM');
+    const [start, setEarliestTime] = useState('9:00 AM');
+    const [end, setLatestTime] = useState('5:00 PM');
     const [timeZone, setTimeZone] = useState('Asia/Seoul');
+
+    const convertToISO = (dateString, timeString, timeZone) => {
+    const [hourMinute, ampm] = timeString.split(' ');
+    let [hour, minute] = hourMinute.split(':').map(Number);
+
+    // PM일 경우 12시간을 추가
+    if (ampm === 'PM' && hour < 12) hour += 12;
+    if (ampm === 'AM' && hour === 12) hour = 0;
+
+    const date = new Date(dateString);
+    date.setHours(hour);
+    date.setMinutes(minute);
+    date.setSeconds(0);
+    date.setMilliseconds(0);
+
+    // 타임존 설정
+    const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
+    return localDate.toISOString();
+};
+const handleCreateEvent = async () => {
+    if (!validateStep()) return;
+    setIsLoading(true);
+    setError('');
+
+    // 선택된 날짜에서 가장 첫 번째 날짜 사용
+    const startDate = selectedDates[0];
+    const endDate = selectedDates[selectedDates.length - 1];
+
+    // ISO 형식으로 변환
+    const startISO = convertToISO(startDate, start, timeZone);
+    const endISO = convertToISO(endDate, end, timeZone);
+
+    const requestData = {
+        userId: "20211079",
+        projId: "cse00001",
+        start: startISO,
+        end: endISO,
+    };
+
+    try {
+        const response = await fetch(
+            'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData),
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('이벤트가 성공적으로 생성되었습니다.');
+        } else {
+            setError(data.message || '이벤트 생성에 실패했습니다.');
+        }
+    } catch (error) {
+        setError('서버와 연결할 수 없습니다.');
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     const validateStep = () => {
         const newErrors = {};
@@ -402,15 +458,6 @@ function WhenToMeetGrid({ onExit }) {
         });
     };
 
-    const handleCreateEvent = () => {
-        if (!validateStep()) return;
-        alert(`
-      이벤트 제목: ${eventTitle}
-      선택된 날짜: ${selectedDates.join(', ')}
-      선택된 시간: ${selectedTimes.join(', ')}
-      타임존: ${timeZone}
-    `);
-    };
 
     return (
         <div className="new-event-container">
@@ -452,8 +499,13 @@ function WhenToMeetGrid({ onExit }) {
                         <div className="time-options">
                             <label>
                                 No earlier than:
-                                <select value={earliestTime} onChange={(e) => setEarliestTime(e.target.value)}>
-                                    <option value="6:00 AM">6:00 AM</option>
+                                <select value={start} onChange={(e) => setEarliestTime(e.target.value)}>
+                                    <option value="1:00 AM">1:00 AM</option>
+                                    <option value="2:00 AM">2:00 AM</option>
+                                    <option value="3:00 AM">3:00 AM</option>                                      
+                                    <option value="4:00 AM">4:00 AM</option>                                       
+                                    <option value="5:00 AM">5:00 AM</option>
+                                    <option value="6:00 AM">6:00 AM</option>                                    
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
                                     <option value="9:00 AM">9:00 AM</option>
@@ -471,12 +523,18 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
+                                    <option value="1:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                             <label>
                                 No later than:
-                                <select value={latestTime} onChange={(e) => setLatestTime(e.target.value)}>
-                                    <option value="6:00 AM">6:00 AM</option>
+                                <select value={end} onChange={(e) => setLatestTime(e.target.value)}>
+                                    <option value="1:00 AM">1:00 AM</option>
+                                    <option value="2:00 AM">2:00 AM</option>
+                                    <option value="3:00 AM">3:00 AM</option>                                       
+                                    <option value="4:00 AM">4:00 AM</option>                                       
+                                    <option value="5:00 AM">5:00 AM</option>
+                                    <option value="6:00 AM">6:00 AM</option>                                   
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
                                     <option value="9:00 AM">9:00 AM</option>
@@ -494,7 +552,8 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-                                </select>
+                                    <option value="1:00 PM">12:00 PM</option>
+                                    </select>
                             </label>
                             <label>
                                 Time Zone:
@@ -507,6 +566,8 @@ function WhenToMeetGrid({ onExit }) {
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={nextStep}>Next</button>
+                            {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
+                            {errors.selectedDates && <div className="error">{errors.selectedDates}</div>}
                         </div>
                     </div>
                 </>
@@ -518,28 +579,30 @@ function WhenToMeetGrid({ onExit }) {
                         <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
                             <TimeSelectionGrid
                                 selectedDates={selectedDates}
-                                earliestTime={earliestTime}
-                                latestTime={latestTime}
+                                start={start}
+                                end={end}
                                 selectedTimes={selectedTimes}
                                 onSelectTimes={handleSelectTimes}
                             />
                             <AvailabilityMatrix
                                 selectedDates={selectedDates}
-                                earliestTime={earliestTime}
-                                latestTime={latestTime}
+                                start={start}
+                                end={end}
                                 events={dummyEvents}
                             />
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={handleCreateEvent}>Ready? Create Event</button>
+                            {isLoading && <div className="loading">로딩 중...</div>}
+                            {error && <div className="error-message">{error}</div>}
                         </div>
                     </div>
                 </>
             )}
         </div>
     );
-}
+};
 
 /* 5) react-big-calendar 관련 커스텀 컴포넌트 */
 const EventComponent = ({ event }) => {
