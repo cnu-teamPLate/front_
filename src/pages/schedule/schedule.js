@@ -424,7 +424,7 @@ function WhenToMeetGrid({ onExit }) {
                 return;
             }
             const response = await fetch(
-                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
+                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/schedule/meeting/adjust/upload',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

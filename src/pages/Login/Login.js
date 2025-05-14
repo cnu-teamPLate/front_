@@ -35,7 +35,7 @@ function Login() {
       });
 
       // 쿼리 파라미터에 userId 추가
-      const url = new URL('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/login');
+      const url = new URL('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/login');
       url.searchParams.append('userId', '20241121'); // userId를 쿼리 파라미터로 추가
 
       const response = await fetch(url, {
