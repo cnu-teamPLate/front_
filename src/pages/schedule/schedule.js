@@ -355,66 +355,66 @@ function WhenToMeetGrid({ onExit }) {
     const [timeZone, setTimeZone] = useState('Asia/Seoul');
 
     const convertToISO = (dateString, timeString, timeZone) => {
-    const [hourMinute, ampm] = timeString.split(' ');
-    let [hour, minute] = hourMinute.split(':').map(Number);
+        const [hourMinute, ampm] = timeString.split(' ');
+        let [hour, minute] = hourMinute.split(':').map(Number);
 
-    // PM일 경우 12시간을 추가
-    if (ampm === 'PM' && hour < 12) hour += 12;
-    if (ampm === 'AM' && hour === 12) hour = 0;
+        // PM일 경우 12시간을 추가
+        if (ampm === 'PM' && hour < 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
 
-    const date = new Date(dateString);
-    date.setHours(hour);
-    date.setMinutes(minute);
-    date.setSeconds(0);
-    date.setMilliseconds(0);
+        const date = new Date(dateString);
+        date.setHours(hour);
+        date.setMinutes(minute);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
 
-    // 타임존 설정
-    const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
-    return localDate.toISOString();
-};
-const handleCreateEvent = async () => {
-    if (!validateStep()) return;
-    setIsLoading(true);
-    setError('');
-
-    // 선택된 날짜에서 가장 첫 번째 날짜 사용
-    const startDate = selectedDates[0];
-    const endDate = selectedDates[selectedDates.length - 1];
-
-    // ISO 형식으로 변환
-    const startISO = convertToISO(startDate, start, timeZone);
-    const endISO = convertToISO(endDate, end, timeZone);
-
-    const requestData = {
-        userId: "20211079",
-        projId: "cse00001",
-        start: startISO,
-        end: endISO,
+        // 타임존 설정
+        const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
+        return localDate.toISOString();
     };
+    const handleCreateEvent = async () => {
+        if (!validateStep()) return;
+        setIsLoading(true);
+        setError('');
 
-    try {
-        const response = await fetch(
-            'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData),
+        // 선택된 날짜에서 가장 첫 번째 날짜 사용
+        const startDate = selectedDates[0];
+        const endDate = selectedDates[selectedDates.length - 1];
+
+        // ISO 형식으로 변환
+        const startISO = convertToISO(startDate, start, timeZone);
+        const endISO = convertToISO(endDate, end, timeZone);
+
+        const requestData = {
+            userId: "20211079",
+            projId: "cse00001",
+            start: startISO,
+            end: endISO,
+        };
+
+        try {
+            const response = await fetch(
+                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData),
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('이벤트가 성공적으로 생성되었습니다.');
+            } else {
+                setError(data.message || '이벤트 생성에 실패했습니다.');
             }
-        );
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alert('이벤트가 성공적으로 생성되었습니다.');
-        } else {
-            setError(data.message || '이벤트 생성에 실패했습니다.');
+        } catch (error) {
+            setError('서버와 연결할 수 없습니다.');
+        } finally {
+            setIsLoading(false);
         }
-    } catch (error) {
-        setError('서버와 연결할 수 없습니다.');
-    } finally {
-        setIsLoading(false);
-    }
-};
+    };
 
     const validateStep = () => {
         const newErrors = {};
@@ -502,10 +502,10 @@ const handleCreateEvent = async () => {
                                 <select value={start} onChange={(e) => setEarliestTime(e.target.value)}>
                                     <option value="1:00 AM">1:00 AM</option>
                                     <option value="2:00 AM">2:00 AM</option>
-                                    <option value="3:00 AM">3:00 AM</option>                                      
-                                    <option value="4:00 AM">4:00 AM</option>                                       
+                                    <option value="3:00 AM">3:00 AM</option>
+                                    <option value="4:00 AM">4:00 AM</option>
                                     <option value="5:00 AM">5:00 AM</option>
-                                    <option value="6:00 AM">6:00 AM</option>                                    
+                                    <option value="6:00 AM">6:00 AM</option>
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
                                     <option value="9:00 AM">9:00 AM</option>
@@ -531,10 +531,10 @@ const handleCreateEvent = async () => {
                                 <select value={end} onChange={(e) => setLatestTime(e.target.value)}>
                                     <option value="1:00 AM">1:00 AM</option>
                                     <option value="2:00 AM">2:00 AM</option>
-                                    <option value="3:00 AM">3:00 AM</option>                                       
-                                    <option value="4:00 AM">4:00 AM</option>                                       
+                                    <option value="3:00 AM">3:00 AM</option>
+                                    <option value="4:00 AM">4:00 AM</option>
                                     <option value="5:00 AM">5:00 AM</option>
-                                    <option value="6:00 AM">6:00 AM</option>                                   
+                                    <option value="6:00 AM">6:00 AM</option>
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
                                     <option value="9:00 AM">9:00 AM</option>
@@ -553,7 +553,7 @@ const handleCreateEvent = async () => {
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
                                     <option value="1:00 PM">12:00 PM</option>
-                                    </select>
+                                </select>
                             </label>
                             <label>
                                 Time Zone:
