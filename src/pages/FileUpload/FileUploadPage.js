@@ -1,15 +1,24 @@
 import './FileUploadPage.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IoMenu, IoAddCircle} from "react-icons/io5";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 function FileUploadPage() {
     const [files, setFiles] = useState([]);
     const [selectedTaskIndex, setSelectedTaskIndex] = useState(null);
     const [statusMessage, setStatusMessage] = useState('');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+    const [selectedFilter, setSelectedFilter] = useState(null);
+
+    const id = queryParams.get('id'); 
+    const projId = queryParams.get('projId'); 
+
     const [formData, setFormData] = useState({
         docs:JSON.stringify({
-          id : '20241121',
-          projId : 'cse00001',
+          id : '20241121', //id || '',
+          projId : 'cse00001', //projId || '',
           title : '',
           detail : '',
           category : '1',
@@ -29,78 +38,131 @@ function FileUploadPage() {
         { type: 'PPT', title: '과제 H 제목' },
     ];
 
+    const fetchFiles = async ({ projId, userId, taskId }) => {
+      let baseUrl = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/view';
+      let queryParams = [];
+  
+      if (projId) queryParams.push(`projId=${projId}`);
+      if (id) queryParams.push(`userId=${userId}`);
+      if (taskId) queryParams.push(`taskId=${taskId}`);
+  
+      const url = `${baseUrl}?${queryParams.join('&')}`;
+      console.log('요청 URL:', url);
+  
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP 상태 오류: ${response.status}`);
+  
+        const data = await response.json();
+  
+        if (!data || data.length === 0) {
+          setStatusMessage('파일이 없습니다.');
+          setFiles([]);
+        } else {
+          setStatusMessage('');
+          setFiles(data);
+        }
+      } catch (error) {
+        setStatusMessage(`error: ${error.message}`);
+        setFiles([]);
+      }
+    };
+  
+    useEffect(() => {
+      if (projId) fetchFiles({ projId });
+    }, [projId]);
+
+
     const handleInputChange = (e) => {
       const { name, value } = e.target;
-      setFormData({
-          ...formData,
-          docs: {
-              ...formData.docs,
-              [name]: value || '', // undefined 방지
-          },
-      });
-  };
+      setFormData((prev) => ({
+        ...prev,
+        docs: {
+          ...prev.docs,
+          [name]: value || '',
+        },
+      }));
+    };
   
     const handleFileChange = (e) => {
       const file = e.target.files[0];
       setFiles([file]);
       setFormData({
-            ...formData,
-            file: file, // 파일 데이터를 formData에 추가합니다.
-      });
-  };
-  
-
-  const handleDelete = () => {
-    setFiles([]); // 파일 삭제
-    setFormData({
         ...formData,
-        file: '', // formData에서 파일 초기화
-    });
-};
-
-    const handleTaskClick = (index) => {
-        setSelectedTaskIndex(index);
+        file: file,
+      });
     };
-
+  
+    const handleDelete = () => {
+      setFiles([]);
+      setFormData({
+        ...formData,
+        file: '',
+      });
+    };
+  
+    const handleTaskClick = (index) => {
+      setSelectedTaskIndex(index);
+    };
+  
     const handleSubmit = async (e) => {
       e.preventDefault();
-      console.log("업로드 버튼이 클릭되었습니다"); 
-
-
+      console.log("업로드 버튼이 클릭되었습니다");
   
       try {
-        const projectExists = await checkIfProjectExists(formData.projectId);
+        const projectExists = await checkIfProjectExists(formData.docs.projId);
         const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/project/docs', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            docs: JSON.stringify(formData.docs),
+          }),
         });
-        console.log('서버 응답:', response);
   
         const result = await response.json();
         if (response.ok) {
           setStatusMessage('폼이 성공적으로 제출되었습니다!');
           return 1;
-        } else if(!projectExists) {
+        } else if (!projectExists) {
           return -2;
-        }  else {
+        } else {
           setStatusMessage('서버 오류가 발생했습니다.');
-          return -3; 
+          return -3;
         }
       } catch (error) {
         console.error('폼 제출 중 오류 발생:', error);
         setStatusMessage('오류가 발생했습니다.');
       }
     };
-
+  
     const checkIfProjectExists = async (projectId) => {
-      // 실제로는 서버에 요청을 보내야 하지만, 여기서는 예시로 false를 반환
-      // 예: fetch(`/check-project/${projectId}`)
-      return projectId === '123';  // 예시로 ID가 '123'인 프로젝트만 존재한다고 가정
+      return projectId === '123';
     };
   
+    const formatDate = (dateArr) => {
+      if (!Array.isArray(dateArr)) return '';
+      const [y, m, d] = dateArr;
+      return `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+    };
+  
+    const handleFileClick = (file) => {
+      if (file.taskName) {
+        // 추후 실제 task 상세 URL로 대체
+        navigate('/AssignmentDetail');
+      } else {
+        navigate(`/file/detail/${file.fileId}`);
+      }
+    };
+
+    const handleFilterClick = (filterKey, fetchParams) => {
+      setSelectedFilter(filterKey);
+      fetchFiles(fetchParams);
+    }
+
+
     return (
       <div className="container">
         <div className="upload-section">
@@ -144,6 +206,33 @@ function FileUploadPage() {
   
         <div className="list-section">
           <h2>자료 목록</h2>
+          <div className="filter">
+            <span
+              className={selectedFilter === 'proj' ? 'filter-item selected' : 'filter-item'}
+              onClick={() => handleFilterClick('proj', { projId })}
+            >
+              전체
+            </span>
+            <span
+              className={selectedFilter === 'my' ? 'filter-item selected' : 'filter-item'}
+              onClick={() => handleFilterClick('my', { userId: id })}
+            >
+              내 전체 파일
+            </span>
+            <span
+              className={selectedFilter === 'myproj' ? 'filter-item selected' : 'filter-item'}
+              onClick={() => handleFilterClick('myproj', { projId, userId: id })}
+            >
+              내 프로젝트 파일
+            </span>
+            <span
+              className={selectedFilter === 'task' ? 'filter-item selected' : 'filter-item'}
+              onClick={() => handleFilterClick('task', { taskId: 4 })}
+            >
+              연관 과제 파일
+            </span>
+          </div>
+          {statusMessage && <p style={{ color: 'red' }}>{statusMessage}</p>}
           <table>
             <thead>
               <tr>
@@ -154,12 +243,12 @@ function FileUploadPage() {
               </tr>
             </thead>
             <tbody>
-              {Array.from({ length: 8 }, (_, i) => (
-                <tr key={i}>
-                  <td>김가나</td>
-                  <td>무슨무슨 자료.pdf</td>
-                  <td>과제명 어쩌구</td>
-                  <td>2025.01.01</td>
+              {files.map((file) => (
+                <tr key={file} onClick={() => handleFileClick(file)} style={{ cursor: 'pointer' }}>
+                  <td>{file.userName}</td>
+                  <td>{file.title || file.filename}</td>
+                  <td>{file.taskName || `과제 ${file.category}`}</td>
+                  <td>{formatDate(file.uploadDate)}</td>
                 </tr>
               ))}
             </tbody>
@@ -169,4 +258,4 @@ function FileUploadPage() {
     );
   }
   
-  export default FileUploadPage;
+export default FileUploadPage;

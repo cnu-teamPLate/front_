@@ -27,6 +27,26 @@ body {
     text-align: center !important;
     margin-bottom: 20px !important;
   }
+
+  .filter {
+    display: flex;
+    margin-bottom: 12px;
+  }
+
+
+.filter-item {
+  margin-right: 16px;
+  cursor: pointer;
+  color: #444;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.filter-item.selected {
+  color: #000;
+  font-weight: bold;
+  text-decoration: underline;
+}
   
   .task-select {
     background-color: white !important;
