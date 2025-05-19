@@ -260,13 +260,13 @@ function FileUploadPage() {
                 )}
             </ul>
             <div className="url-input-wrapper">
-              <input
+              <input className='url-input'
                 type="text"
                 placeholder="외부 URL을 입력하세요"
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
               />
-              <button type="button" onClick={() => {
+              <button className='plus' type="button" onClick={() => {
                 if (newUrl.trim()) {
                   const updatedUrls = [...urlList, newUrl.trim()];
                   setUrlList(updatedUrls);

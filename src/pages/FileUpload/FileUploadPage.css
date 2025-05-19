@@ -42,6 +42,7 @@ body {
   }
   .title {
     height :35px;
+    margin-top: 1em;
   }
 
   .detail {
@@ -58,7 +59,30 @@ body {
     font-size: 0.8rem;
   }
 
-  
+  .url-input-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .url-input {
+    box-sizing: border-box;
+    height: 35px;
+    width: 90% !important;
+    border-radius: 10px;
+    border-width: 0.5px;
+    padding: 10px;
+    border: 2px dashed #ccc !important;
+  }
+
+  .plus {
+    margin: 0 0 0 0.5em;
+    font-size: 12px;
+    width: 40px;
+    height: 30px;
+    box-sizing: border-box;
+  }
+
   h2 {
     text-align: center !important;
     margin-bottom: 20px !important;
@@ -135,7 +159,6 @@ body {
     border: 2px dashed #ccc !important;
     padding: 20px !important;
     text-align: center !important;
-    margin-bottom: 10px !important;
     background-color: #fff !important;
   }
   
@@ -150,13 +173,14 @@ body {
     display: none !important;
   }
   
-  .file-list {
+  .file-list, .url-list {
     list-style: none !important;
     padding: 0 !important;
     margin-bottom: 20px !important;
+    
   }
   
-  .file-list li {
+  .file-list li, .url-list li {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -164,28 +188,29 @@ body {
     margin: 4px 0 !important;
     font-size: 14px !important;
     line-height: 1.2 !important;
-    background-color: #fff !important;
+    background-color: none !important;
     border-radius: 4px !important;
   }
   
-  .file-list li span {
+  .file-list li span, .url-list li span {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     max-width: 80% !important;
   }
   
-  .file-list button {
-    background-color: #666666 !important;
+  .file-list button, .url-list button {
+    background-color: rgb(215, 215, 215) !important;
     border-radius: 4px !important;
-    font-size: 13px !important;
-    padding: 2px 8px !important;         /* 상하 여백 2px */
+    font-size: 10px !important;
+    padding: 4px 8px !important;         /* 상하 여백 2px */
     cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
     height: auto !important;
     line-height: 1 !important;
     margin: 0!important;
+    color: #6d6d6d;
   }
   
   table {
