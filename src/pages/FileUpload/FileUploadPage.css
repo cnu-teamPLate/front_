@@ -12,6 +12,7 @@ body {
     gap: 40px !important;
     padding: 40px 20px !important;
     background-color: #fff !important;
+    flex-wrap: wrap;
   }
   
   .upload-section, .list-section {
@@ -21,7 +22,42 @@ body {
     width: 45% !important;
     box-shadow: 0 0 10px rgba(0,0,0,0.1) !important;
     display: block;
+    min-width: 400px !important;
+    max-width: 100%;
+    box-sizing: border-box;
   }
+
+  .discription {
+    display: column;
+  }
+
+  .title, .detail {
+    box-sizing: border-box;
+    width: 100% !important;
+    border-radius: 10px;
+    border-width: 0.5px;
+    padding: 10px;
+    margin-bottom: 0.5em;
+
+  }
+  .title {
+    height :35px;
+  }
+
+  .detail {
+    height: 150px;
+    padding: 10px;
+    resize: none;         
+    vertical-align: top;
+    line-height: 1.4;
+    box-sizing: border-box;
+    
+  }
+
+  input::placeholder { 
+    font-size: 0.8rem;
+  }
+
   
   h2 {
     text-align: center !important;
@@ -31,11 +67,11 @@ body {
   .filter {
     display: flex;
     margin-bottom: 12px;
+    justify-content: space-around;
   }
 
 
 .filter-item {
-  margin-right: 16px;
   cursor: pointer;
   color: #444;
   font-weight: normal;
@@ -165,6 +201,6 @@ body {
   }
   
   .upload-button {
-    align-items: center !important;
-    margin: 0 5em;
+    display: block;
+    margin: 1em 0 0.5em auto!important;
   }

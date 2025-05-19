@@ -3,6 +3,43 @@ import React, { useEffect, useState } from 'react';
 import { IoMenu, IoAddCircle} from "react-icons/io5";
 import { useLocation, useNavigate } from 'react-router-dom';
 
+const dummyAssignments = [
+  {
+    taskId: 1,
+    id: "20241099",
+    projId: "CSE00001",
+    name: "김지홍",
+    cate: "발표",
+    level: 1,
+    date: "1739620235.000000000",
+    detail: "이러쿵",
+    checkBox: 1,
+  },
+  {
+    taskId: 2,
+    id: "00000000",
+    projId: "CSE00001",
+    name: "김서강",
+    cate: "PPT",
+    level: 2,
+    date: "1739620236.000000000",
+    detail: "어쩌구",
+    checkBox: 0,
+  },
+  {
+    taskId: 3,
+    id: "20241099",
+    projId: "CSE00001",
+    name: "홍길동",
+    cate: "PPT",
+    level: 2,
+    date: "1739620234.000000000",
+    detail: "Spring Boot API 개발",
+    checkBox: 0,
+  },
+];
+
+
 function FileUploadPage() {
     const [files, setFiles] = useState([]);
     const [selectedTaskIndex, setSelectedTaskIndex] = useState(null);
@@ -11,6 +48,10 @@ function FileUploadPage() {
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const [selectedFilter, setSelectedFilter] = useState(null);
+    const [taskList, setTaskList] = useState(dummyAssignments); // 나중에 []으로 바꾸기
+    const [urlList, setUrlList] = useState([]);
+    const [newUrl, setNewUrl] = useState('');
+
 
     const id = queryParams.get('id'); 
     const projId = queryParams.get('projId'); 
@@ -22,21 +63,27 @@ function FileUploadPage() {
           title : '',
           detail : '',
           category : '1',
-          url: '1',
+          url: '1', // 여기도 배열로 바꾸나?
         }),
         file : '',
     })
 
-    const dummyTasks = [
-        { type: '발표', title: '과제 A 제목' },
-        { type: 'PPT', title: '과제 B 제목' },
-        { type: '발표', title: '과제 C 제목' },
-        { type: 'PPT', title: '과제 D 제목' },
-        { type: '발표', title: '과제 E 제목' },
-        { type: 'PPT', title: '과제 F 제목' },
-        { type: '발표', title: '과제 G 제목' },
-        { type: 'PPT', title: '과제 H 제목' },
-    ];
+
+    
+
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(`http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=${projId}&id=${id}`);
+        if (!response.ok) {
+          throw new Error('과제 데이터를 불러오지 못했습니다.');
+        }
+        const data = await response.json();
+        setTaskList(data);
+      } catch (error) {
+        console.error('연관 과제 불러오기 오류:', error);
+        setTaskList([]); // fallback
+      }
+    };
 
     const fetchFiles = async ({ projId, userId, taskId }) => {
       let baseUrl = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/view';
@@ -69,7 +116,10 @@ function FileUploadPage() {
     };
   
     useEffect(() => {
-      if (projId) fetchFiles({ projId });
+      if (projId && id) {
+        fetchFiles({ projId });
+        fetchTasks(); // 연관 과제 가져오기 추가
+      }
     }, [projId]);
 
 
@@ -85,11 +135,11 @@ function FileUploadPage() {
     };
   
     const handleFileChange = (e) => {
-      const file = e.target.files[0];
-      setFiles([file]);
+      const selectedFiles = Array.from(e.target.files); // 여러 파일을 배열로
+      setFiles(selectedFiles); // 상태로 저장
       setFormData({
         ...formData,
-        file: file,
+        file: selectedFiles, // 배열로 저장
       });
     };
   
@@ -103,6 +153,15 @@ function FileUploadPage() {
   
     const handleTaskClick = (index) => {
       setSelectedTaskIndex(index);
+      const selectedTask = taskList[index];
+    
+      setFormData((prev) => ({
+        ...prev,
+        docs: {
+          ...prev.docs,
+          category: String(selectedTask.taskId), // 또는 다른 기준 값
+        },
+      }));
     };
   
     const handleSubmit = async (e) => {
@@ -110,19 +169,24 @@ function FileUploadPage() {
       console.log("업로드 버튼이 클릭되었습니다");
   
       try {
+        const formDataToSend = new FormData();
+        formDataToSend.append('docs', new Blob(
+          [JSON.stringify(formData.docs)],
+          { type: 'application/json' }
+        ));
+
+        if (formData.file && formData.file.length > 0) {
+          formData.file.forEach((file) => {
+            formDataToSend.append('file', file); // 같은 'file' 키로 여러 번 추가
+          });
+        }
+    
         const projectExists = await checkIfProjectExists(formData.docs.projId);
         const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/project/docs', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...formData,
-            docs: JSON.stringify(formData.docs),
-          }),
+          body: formDataToSend,
         });
   
-        const result = await response.json();
         if (response.ok) {
           setStatusMessage('폼이 성공적으로 제출되었습니다!');
           return 1;
@@ -171,15 +235,15 @@ function FileUploadPage() {
               <div className="task-list-title">연관 과제</div>
             <div className="task-list-scroll">
               
-              {dummyTasks.map((task, index) => (
-                  <div
+              {taskList.map((task, index) => (
+                <div
                   className={`task-row ${selectedTaskIndex === index ? 'selected-task' : ''}`}
-                  key={index}
+                  key={task.taskId}
                   onClick={() => handleTaskClick(index)}
-                  >
-                      <span className="task-type">{task.type}</span>
-                      <span className="task-title">{task.title}</span>
-                  </div>
+                >
+                  <span className="task-type">{task.cate}</span>
+                  <span className="task-title">{task.detail}</span>
+                </div>
               ))}
               </div>
             <div className="file-box">
@@ -195,9 +259,51 @@ function FileUploadPage() {
                     </li>
                 )}
             </ul>
+            <div className="url-input-wrapper">
+              <input
+                type="text"
+                placeholder="외부 URL을 입력하세요"
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+              />
+              <button type="button" onClick={() => {
+                if (newUrl.trim()) {
+                  const updatedUrls = [...urlList, newUrl.trim()];
+                  setUrlList(updatedUrls);
+                  setNewUrl('');
+                  setFormData((prev) => ({
+                    ...prev,
+                    docs: {
+                      ...prev.docs,
+                      url: updatedUrls, // formData에도 반영
+                    },
+                  }));
+                }
+              }}>추가</button>
+            </div>
+
+            <ul className="url-list">
+              {urlList.map((url, index) => (
+                <li key={index}>
+                  {url}
+                  <button type="button" onClick={() => {
+                    const updated = urlList.filter((_, i) => i !== index);
+                    setUrlList(updated);
+                    setFormData((prev) => ({
+                      ...prev,
+                      docs: {
+                        ...prev.docs,
+                        url: updated,
+                      },
+                    }));
+                  }}>삭제</button>
+                </li>
+              ))}
+            </ul>
+
             <div className='description'>
-                <input type='text' placeholder='제목을 입력해주세요' name='title' value={formData.docs.title} onChange={handleInputChange}/>
-                <input type='text' placeholder='설명을 입력해주세요' name='detail' value={formData.docs.detail} onChange={handleInputChange}/>
+                <input className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.docs.title} onChange={handleInputChange}/>
+                <textarea className='detail' type='text' placeholder='설명을 입력해주세요' name='detail' value={formData.docs.detail} onChange={handleInputChange}/>
             </div>
             <button type='submit' className="upload-button">업로드</button>
           </form>
