@@ -59,14 +59,76 @@ const MyAssignments = ({ isSidebar = false }) => {
     // 데이터 로드 함수 (DB 연동 시 fetch로 변경 가능)
     const fetchAssignments = async () => {
         // 현재는 더미 데이터 사용, 나중에 API 연동 시 아래 코드 수정
-        setAssignments(dummyAssignments);
+        setAssignments(data);
         //나중에 setAssignments(data)로 변경
         };
+
+    const handleDetail = (data) => {
+            fetch(getAssignment, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json"
+              }
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw {
+                    message: "오류 메시지",
+                    checkbox: 400,
+                    cate: "bad_request"
+                  };
+                }
+                return response.json();
+              })
+              .then(data => {
+                // 여기서 'a' 데이터 존재 여부를 확인
+                data.forEach(item => {
+                    const taskId = item.taskId;
+                })
+                if (item.a) {
+                  handleDetailWithA(taskId, item.a);
+                } else {
+                  handleDetailWithoutA(taskId);
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert(`Error ${error.checkbox}: ${error.message}`);
+              });
+          };
+          
+          //여기 좀 이상한 것 같음. 파일이 존재하는 과제를 불러온다는 게 디테일 불러온다는 뜻이 아닌가?
+          const handleDetailWithA = (taskId, aValue) => {
+            // 예: a가 존재할 때의 API 호출
+            fetch`${baseURL}/task/fileupload/view`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ a: aValue })
+            }
+              .then(res => res.json())
+              .then(result => {
+                console.log("A 있음:", result);
+              });
+          };
+          
+          const handleDetailWithoutA = () => {
+            // 예: a가 없을 때의 API 호출
+            fetch(`${baseURL}/task/view/${data.taskId}`, {
+              method: "GET"
+            })
+              .then(res => res.json())
+              .then(result => {
+                console.log("A 없음:", result);
+              });
+          };
+        
 
     // 컴포넌트 마운트 시 데이터 로드
     useEffect(() => {
         fetchAssignments();
-        /*
+        
         fetch()
             .then((response) => {
                 if (!response.ok) {
@@ -80,9 +142,9 @@ const MyAssignments = ({ isSidebar = false }) => {
                 );
                 setAssignments(filteredAssignments);
             })
-            .catch(error) => setError(error.message))
+            .catch((error) => setError(error.message))
             .finally(() => setLoading(false));
-        */
+        
     }, []);
 
     

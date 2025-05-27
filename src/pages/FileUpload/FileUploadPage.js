@@ -217,6 +217,28 @@ function FileUploadPage() {
         // 추후 실제 task 상세 URL로 대체
         navigate('/AssignmentDetail');
       } else {
+        //이 부분은 filrUploadDetail에서 사용되어야할 것 같은데
+        fetch(`http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/put`, {
+          method: "PUT",
+          headers: {
+            "Content-Type" : "application/json"
+          },
+          body: JSON.stringify({
+            //여기 들어가려면 수정 형식도 만들어야할 거같은데
+          })
+        })
+          .then(response => {
+            if(!response.ok) {
+              throw new Error("PUT 요청 실패")
+            } // 에러 사유가 꽤 많음
+            return response.json();
+          })
+          .then(result => {
+            console.log("수정 완료:", result);
+          })
+          .catch(error => {
+            console.error("error:", error);
+          })
         navigate(`/file/detail/${file.fileId}`);
       }
     };
