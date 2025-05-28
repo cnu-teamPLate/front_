@@ -181,8 +181,7 @@ function FileUploadPage() {
             formDataToSend.append('file', file);
           });
         }
-    
-        const projectExists = await checkIfProjectExists(formData.docs.projId);
+
         const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/project/docs', {
           method: 'POST',
           body: formDataToSend,
@@ -203,10 +202,6 @@ function FileUploadPage() {
         console.error('폼 제출 중 오류 발생:', error);
         setStatusMessage('오류가 발생했습니다.');
       }
-    };
-  
-    const checkIfProjectExists = async (projectId) => {
-      return projectId === '123';
     };
   
     const formatDate = (dateArr) => {
@@ -373,6 +368,7 @@ function FileUploadPage() {
                 <th>자료명</th>
                 <th>연관 과제</th>
                 {/* 연관 과제 클릭하면 그쪽 페이지로 넘어가는 코드 추가 (지금은 세부 페이지로 넘어가게 되어있음) */}
+                {/*파일 url 이 있어야함 그래야 파일 확인 가능 */}
                 <th>업로드 일자</th>
               </tr>
             </thead>
