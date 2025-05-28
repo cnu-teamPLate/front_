@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import { Link } from 'react-router-dom';
-
 import PasswordRecovery from './PasswordRecovery';
 
 function Login() {
@@ -12,8 +11,8 @@ function Login() {
   });
   const [error, setError] = useState('');
   const [isFindingPassword, setIsFindingPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,8 +24,8 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true); // 로딩 시작
-    setError(''); // 에러 초기화
+    setIsLoading(true);
+    setError('');
 
     try {
       const body = JSON.stringify({
@@ -34,9 +33,9 @@ function Login() {
         pwd: formData.password,
       });
 
-      // 쿼리 파라미터에 userId 추가
+
       const url = new URL('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/login');
-      url.searchParams.append('userId', '20241121'); // userId를 쿼리 파라미터로 추가
+
 
       const response = await fetch(url, {
         method: 'POST',
@@ -47,19 +46,21 @@ function Login() {
         credentials: 'include',
       });
 
-      const data = await response.json(); // 서버 응답 처리
+      const data = await response.json();
 
       if (response.ok) {
-        if (data) {
-          // 로그인 성공 및 반환된 데이터 처리
+        if (data && data.userId) {
+          // ✅ 로그인 성공 시 사용자 정보 localStorage에 저장
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('name', data.name);
+
+          // ✅ 대시보드로 이동
           navigate('/dashboard');
-          console.log(data); // 서버에서 반환된 데이터 로그 (디버깅용)
         } else {
-          // 실패한 경우
-          setError('로그인에 실패했습니다. 서버에서 반환된 값이 없습니다.');
+          setError('로그인에 실패했습니다. 사용자 정보가 없습니다.');
         }
       } else {
-        // 서버 에러
         setError(data.message || '로그인에 실패했습니다.');
       }
     } catch (error) {
@@ -68,13 +69,6 @@ function Login() {
       setIsLoading(false);
     }
   };
-  // const handleLogout = () => {
-  //   setFormData({
-  //     username: '',
-  //     password: '',
-  //   });
-  //   setError('');
-  // };
 
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
@@ -93,7 +87,7 @@ function Login() {
   };
 
   const handleSignUp = () => {
-    navigate('/signup'); // Navigate to the SignUp component
+    navigate('/signup');
   };
 
   return (
@@ -102,47 +96,45 @@ function Login() {
         {isFindingPassword ? (
           <PasswordRecovery onCancel={() => setIsFindingPassword(false)} />
         ) : (
-          <>
-            <div className="Login-box">
-              <h2>로그인</h2>
-              <form className="login-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="username">아이디</label>
-                  <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="password">비밀번호</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <button type="submit" disabled={isLoading}>
-                  {isLoading ? '로딩 중...' : '로그인'}
-                </button>
-              </form>
-              {error && <p className="error-message">{error}</p>}
-              <div className="extra-buttons">
-                <button className="text-button" onClick={handleFindCredentials}>
-                  비밀번호 찾기
-                </button>
-                <button className="text-button" onClick={handleSignUp}>
-                  회원가입하기
-                </button>
+          <div className="Login-box">
+            <h2>로그인</h2>
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="username">아이디</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                />
               </div>
+              <div className="form-group">
+                <label htmlFor="password">비밀번호</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? '로딩 중...' : '로그인'}
+              </button>
+            </form>
+            {error && <p className="error-message">{error}</p>}
+            <div className="extra-buttons">
+              <button className="text-button" onClick={handleFindCredentials}>
+                비밀번호 찾기
+              </button>
+              <button className="text-button" onClick={handleSignUp}>
+                회원가입하기
+              </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

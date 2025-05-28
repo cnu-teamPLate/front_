@@ -3,76 +3,92 @@ import React, { useState } from 'react';
 import { IoMenu, IoAddCircle} from "react-icons/io5";
 
 function FileUploadPage() {
-    const [file, setFile] = useState(null);
-    const [description, setDescription] = useState('');
-    const [isUploaded, setIsUploaded] = useState(false);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [files, setFiles] = useState([]);
+    const [selectedTaskIndex, setSelectedTaskIndex] = useState(null);
 
+    const dummyTasks = [
+        { type: '발표', title: '과제 A 제목' },
+        { type: 'PPT', title: '과제 B 제목' },
+        { type: '발표', title: '과제 C 제목' },
+        { type: 'PPT', title: '과제 D 제목' },
+        { type: '발표', title: '과제 E 제목' },
+        { type: 'PPT', title: '과제 F 제목' },
+        { type: '발표', title: '과제 G 제목' },
+        { type: 'PPT', title: '과제 H 제목' },
+    ];
+  
     const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
+      const newFiles = Array.from(e.target.files);
+      setFiles(prev => [...prev, ...newFiles]);
+    };
+  
+    const handleDelete = (index) => {
+      setFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleUpload = () => {
-        if (file) {
-            // Logic to handle file upload, e.g., sending to server
-            setIsUploaded(true);
-        }
+    const handleTaskClick = (index) => {
+        setSelectedTaskIndex(index);
     };
-
-    const handleDelete = () => {
-        setFile(null);
-        setIsUploaded(false);
-    };
-
-    const toggleSidebar = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
-
+  
     return (
-        <div className="file-upload-page">
-            {/* <button className="sidebar-toggle" onClick={toggleSidebar}>
-                <IoMenu size={24} />
-            </button> */}
-            <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <div className="sidebar-content">
-                    <p>메뉴</p>
+      <div className="container">
+        <div className="upload-section">
+          <h2>자료 업로드</h2>
+          <div className="task-list-title">연관 과제</div>
+          <div className="task-list-scroll">
+            
+            {dummyTasks.map((task, index) => (
+                <div
+                className={`task-row ${selectedTaskIndex === index ? 'selected-task' : ''}`}
+                key={index}
+                onClick={() => handleTaskClick(index)}
+                >
+                    <span className="task-type">{task.type}</span>
+                    <span className="task-title">{task.title}</span>
                 </div>
-            </aside>
-            <main>
-                <div className="upload-section">
-                    {isUploaded ? (
-                        <div className="upload-success">
-                            <h2>파일이 업로드되었습니다!</h2>
-                            <div>
-                                <p>파일 이름: {file.name}</p>
-                                <button onClick={handleDelete}>삭제</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="upload-form">
-                            <h2>자료 업로드</h2>
-                            <input type="file" onChange={handleFileChange} />
-                            {file && (
-                                <div>
-                                    <span>선택된 파일: {file.name}</span>
-                                </div>
-                            )}
-                            <textarea
-                                placeholder="파일 설명을 입력하세요"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                            <div className="button-row">
-                                <button onClick={handleUpload} disabled={!file}>
-                                    업로드
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </main>
+            ))}
+            </div>
+          <div className="file-box">
+            <label className="file-label">
+              파일 선택
+              <input type="file" multiple onChange={handleFileChange} />
+            </label>
+          </div>
+          <ul className="file-list">
+            {files.map((file, index) => (
+              <li key={index}>
+                {file.name} <button onClick={() => handleDelete(index)}>삭제</button>
+              </li>
+            ))}
+          </ul>
+          <button className="upload-button">업로드</button>
         </div>
+  
+        <div className="list-section">
+          <h2>자료 목록</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th>자료명</th>
+                <th>연관 과제</th>
+                <th>업로드 일자</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 8 }, (_, i) => (
+                <tr key={i}>
+                  <td>김가나</td>
+                  <td>무슨무슨 자료.pdf</td>
+                  <td>과제명 어쩌구</td>
+                  <td>2025.01.01</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     );
-}
-
-export default FileUploadPage;
+  }
+  
+  export default FileUploadPage;

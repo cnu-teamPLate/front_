@@ -5,10 +5,9 @@ import './SignUp.css';
 function SignUp() {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
-        username: '',
+        name: '',
         password: '',
         confirmPassword: '',
-        name: '',
         email: '',
         phone: '',
         studentnumber: '',
@@ -30,7 +29,6 @@ function SignUp() {
             if (!formData.terms) newErrors.terms = "서비스 약관에 동의해야 합니다.";
             if (!formData.privacy) newErrors.privacy = "개인 정보 수집 및 이용에 동의해야 합니다.";
         } else if (step === 2) {
-            if (!formData.username) newErrors.username = "아이디를 입력해주세요.";
             if (!formData.password) newErrors.password = "비밀번호를 입력해주세요.";
             if (!formData.confirmPassword) newErrors.confirmPassword = "비밀번호 확인을 입력해주세요.";
             if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "비밀번호가 다릅니다.";
@@ -53,14 +51,14 @@ function SignUp() {
         if (validateStep()) {
             setIsSubmitting(true); // 요청 시작
             try {
-                const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/register', {
+                const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        id: formData.name,
-                        username: formData.username,
+                        id: formData.studentnumber, 
+                        name: formData.name, 
                         pwd: formData.password,
                         email: formData.email,
                         phone: formData.phone,
@@ -111,23 +109,51 @@ function SignUp() {
             <div className="signup-content">
                 <form className="signup-form" onSubmit={handleSubmit}>
                     {step === 1 && (
-                        <div className="step">
-                            <h3>약관 동의</h3>
-                            <div className="form-group">
-                                <label>서비스 약관 동의</label>
-                                <textarea readOnly value="약관 내용" />
-                                <input type="checkbox" name="terms" onChange={handleChange} /> 동의합니다.
-                                {errors.terms && <p className="error">{errors.terms}</p>}
-                            </div>
-                            <div className="form-group">
-                                <label>개인 정보 수집 및 이용 동의</label>
-                                <textarea readOnly value="개인 정보 수집 및 이용 동의 내용" />
-                                <input type="checkbox" name="privacy" onChange={handleChange} /> 동의합니다.
-                                {errors.privacy && <p className="error">{errors.privacy}</p>}
-                            </div>
-                            <button type="button" onClick={nextStep}>다음</button>
-                        </div>
-                    )}
+    <div className="step">
+        <h3>약관 동의</h3>
+        <div className="form-group">
+            <label>서비스 약관 동의</label>
+            <textarea readOnly value={`서비스 약관 내용:
+
+1. 서비스 제공: 본 서비스는 사용자가 제공한 정보를 바탕으로 특정 기능을 제공하며, 사용자는 이를 통해 제공되는 서비스에 접근할 수 있습니다.
+
+2. 서비스의 변경 및 중단: 본 서비스는 언제든지 서비스 내용이나 기능을 변경하거나 중단할 수 있습니다. 이러한 변경 사항은 사용자에게 사전 고지 없이 즉시 적용될 수 있습니다.
+
+3. 사용자의 의무: 사용자는 서비스를 이용함에 있어 타인의 권리를 침해하거나 불법적인 활동을 하지 않으며, 서비스 이용 시 발생하는 모든 행위에 대해 책임을 집니다.
+
+4. 개인정보 보호: 본 서비스는 사용자의 개인정보를 보호하기 위해 최선을 다하며, 사용자의 동의 없이 개인정보를 외부에 제공하지 않습니다. 다만, 법적으로 요구되는 경우에는 예외로 할 수 있습니다.
+
+5. 서비스 약관의 변경: 본 서비스 약관은 필요에 따라 변경될 수 있으며, 변경 시 변경된 사항을 사용자에게 고지합니다.`} />
+            <input type="checkbox" name="terms" onChange={handleChange} /> 동의합니다.
+            {errors.terms && <p className="error">{errors.terms}</p>}
+        </div>
+        <div className="form-group">
+            <label>개인 정보 수집 및 이용 동의</label>
+            <textarea readOnly value={`개인정보 수집 및 이용 동의 내용:
+
+1. 수집하는 개인정보 항목
+- 이름, 이메일 주소, 연락처, 학번 등 회원 가입 및 서비스 제공을 위해 필요한 최소한의 개인정보를 수집합니다.
+
+2. 개인정보 이용 목적
+- 회원 가입 및 관리: 서비스 제공을 위한 본인 인증, 회원 관리, 고객 문의 응대 등을 위해 사용됩니다.
+- 서비스 제공 및 개선: 이용자의 서비스 사용 현황 분석, 맞춤형 서비스 제공 등을 위해 사용됩니다.
+- 법적 의무 이행: 법률에 의한 의무 이행을 위해 필요한 경우 개인정보를 처리할 수 있습니다.
+
+3. 개인정보의 보유 및 이용 기간
+- 회원 탈퇴 시까지 개인정보를 보유합니다. 다만, 관계 법령에 의해 일정 기간 보관해야 하는 경우 해당 기간 동안 보유합니다.
+
+4. 개인정보의 제3자 제공
+- 본 서비스는 사용자의 개인정보를 외부에 제공하지 않습니다. 다만, 사용자의 사전 동의가 있거나 법적 의무가 있는 경우 예외적으로 제공될 수 있습니다.
+
+5. 개인정보 처리 위탁
+- 본 서비스는 외부 업체에 개인정보 처리 업무를 위탁할 수 있으며, 위탁된 업체는 개인정보 보호 의무를 다할 의무가 있습니다.`} />
+            <input type="checkbox" name="privacy" onChange={handleChange} /> 동의합니다.
+            {errors.privacy && <p className="error">{errors.privacy}</p>}
+        </div>
+        <button type="button" onClick={nextStep}>다음</button>
+    </div>
+)}
+
                     {step === 2 && (
                         <div className="step">
                             <h3>정보 입력</h3>
@@ -151,11 +177,6 @@ function SignUp() {
                                 <label htmlFor="name">이름</label>
                                 <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required />
                                 {errors.name && <p className="error">{errors.name}</p>}
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="username">닉네임</label>
-                                <input type="text" id="username" name="username" value={formData.username} onChange={handleChange} required />
-                                {errors.username && <p className="error">{errors.username}</p>}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="email">이메일</label>
