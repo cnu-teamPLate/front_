@@ -135,11 +135,11 @@ function FileUploadPage() {
     };
   
     const handleFileChange = (e) => {
-      const selectedFiles = Array.from(e.target.files); // 여러 파일을 배열로
-      setFiles(selectedFiles); // 상태로 저장
+      const selectedFiles = Array.from(e.target.files); 
+      setFiles(selectedFiles); 
       setFormData({
         ...formData,
-        file: selectedFiles, // 배열로 저장
+        file: selectedFiles, 
       });
     };
   
@@ -159,10 +159,11 @@ function FileUploadPage() {
         ...prev,
         docs: {
           ...prev.docs,
-          category: String(selectedTask.taskId), // 또는 다른 기준 값
+          category: String(selectedTask.taskId),
         },
       }));
-    };
+    }; // 만약 선택된 게 없다면 -1 값으로 보내줘야함
+    // 선택 해제도 가능하게 코드 추가
   
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -177,7 +178,7 @@ function FileUploadPage() {
 
         if (formData.file && formData.file.length > 0) {
           formData.file.forEach((file) => {
-            formDataToSend.append('file', file); // 같은 'file' 키로 여러 번 추가
+            formDataToSend.append('file', file);
           });
         }
     
@@ -186,6 +187,8 @@ function FileUploadPage() {
           method: 'POST',
           body: formDataToSend,
         });
+        //이거 api 주소는 스웨거 문서 확인해서 수정해두기
+        //백으로 보내는 형식도 스웨거 참고
   
         if (response.ok) {
           setStatusMessage('폼이 성공적으로 제출되었습니다!');
@@ -212,6 +215,8 @@ function FileUploadPage() {
       return `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
     };
   
+    //전체 삭제 버튼 따로, 파일마다 삭제, 수정 버튼 따로
+    //삭제 api와 수정 api는 각 버튼 눌렀을 때 실행 
     const handleFileClick = (file) => {
       if (file.taskName) {
         // 추후 실제 task 상세 URL로 대체
@@ -334,6 +339,7 @@ function FileUploadPage() {
   
         <div className="list-section">
           <h2>자료 목록</h2>
+          {/*여기 언저리에 수정, 삭제 버튼 넣기 */}
           <div className="filter">
             <span
               className={selectedFilter === 'proj' ? 'filter-item selected' : 'filter-item'}
@@ -357,23 +363,22 @@ function FileUploadPage() {
               className={selectedFilter === 'task' ? 'filter-item selected' : 'filter-item'}
               onClick={() => handleFilterClick('task', { taskId: 4 })}
             >
-              연관 과제 파일
+              연관 과제 파일 {/* 어떤 과제인지를 선택하는 창 먼저 -> taskId 넣어서 해당 과제 파일 불러오는 api 실행 -> 하단에 해당 파일 리스트 띄워주는 방식*/}
             </span>
           </div>
           {statusMessage && <p style={{ color: 'red' }}>{statusMessage}</p>}
           <table>
             <thead>
               <tr>
-                <th>이름</th>
                 <th>자료명</th>
                 <th>연관 과제</th>
+                {/* 연관 과제 클릭하면 그쪽 페이지로 넘어가는 코드 추가 (지금은 세부 페이지로 넘어가게 되어있음) */}
                 <th>업로드 일자</th>
               </tr>
             </thead>
             <tbody>
               {files.map((file) => (
                 <tr key={file} onClick={() => handleFileClick(file)} style={{ cursor: 'pointer' }}>
-                  <td>{file.userName}</td>
                   <td>{file.title || file.filename}</td>
                   <td>{file.taskName || `과제 ${file.category}`}</td>
                   <td>{formatDate(file.uploadDate)}</td>
