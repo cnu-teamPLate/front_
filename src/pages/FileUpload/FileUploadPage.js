@@ -62,7 +62,7 @@ function FileUploadPage() {
           projId : 'cse00001', //projId || '',
           title : '',
           detail : '',
-          category : '1',
+          category : '-1',
           url: '1', // 여기도 배열로 바꾸나?
         }),
         file : '',
@@ -152,14 +152,19 @@ function FileUploadPage() {
     };
   
     const handleTaskClick = (index) => {
+      const isSameTask = selectedTaskIndex === index;
+      const newSelectedIndex = isSameTask ? -1 : index;
+      console.log("선택된 인덱스:", newSelectedIndex);
       setSelectedTaskIndex(index);
+      
       const selectedTask = taskList[index];
+      //지금 인덱스로 되고 있는데, 인덱스가 아니라 id를 건네야함
     
       setFormData((prev) => ({
         ...prev,
         docs: {
           ...prev.docs,
-          category: String(selectedTask.taskId),
+          category: isSameTask ? "-1" : String(taskList[index].taskId),
         },
       }));
     }; // 만약 선택된 게 없다면 -1 값으로 보내줘야함
@@ -192,8 +197,6 @@ function FileUploadPage() {
         if (response.ok) {
           setStatusMessage('폼이 성공적으로 제출되었습니다!');
           return 1;
-        } else if (!projectExists) {
-          return -2;
         } else {
           setStatusMessage('서버 오류가 발생했습니다.');
           return -3;
@@ -259,8 +262,8 @@ function FileUploadPage() {
               
               {taskList.map((task, index) => (
                 <div
-                  className={`task-row ${selectedTaskIndex === index ? 'selected-task' : ''}`}
                   key={task.taskId}
+                  className={`task-row ${selectedTaskIndex === index ? 'selected' : ''}`}
                   onClick={() => handleTaskClick(index)}
                 >
                   <span className="task-type">{task.cate}</span>
@@ -368,7 +371,8 @@ function FileUploadPage() {
                 <th>자료명</th>
                 <th>연관 과제</th>
                 {/* 연관 과제 클릭하면 그쪽 페이지로 넘어가는 코드 추가 (지금은 세부 페이지로 넘어가게 되어있음) */}
-                {/*파일 url 이 있어야함 그래야 파일 확인 가능 */}
+                {/*파일 url 이 있어야함 그래야 파일 확인 가능
+                이거 목록을 하나하나 카드형식으로 뜨게끔 아예 div로 묶어버리고, 목록상단은 그냥 파일 리스트로 바꿔야함 */}
                 <th>업로드 일자</th>
               </tr>
             </thead>

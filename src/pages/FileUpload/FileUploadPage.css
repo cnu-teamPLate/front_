@@ -140,7 +140,7 @@ body {
     font-size: 15px !important;
   }
   
-  .task-row.selected-task {
+  .task-row.selected {
     border: 2px solid red !important;
     border-radius: 6px !important;
     background-color: #fff5f5 !important;
