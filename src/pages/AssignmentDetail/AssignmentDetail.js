@@ -2,7 +2,7 @@ import './AssignmentDetail.css';
 import React, { useState } from 'react';
 import { IoMenu, IoAddCircle, IoBookmark } from "react-icons/io5";
 
-
+//과제 상세 내용 띄워주는 코드 작성해야함. 이전 페이지에서 불러온 걸 다음 페이지로 넘겨주기 vs 여기서 api 한번 더 부르기
 function AssignmentDetail() {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState('Initial Title');
@@ -51,7 +51,8 @@ function AssignmentDetail() {
         setSidebarOpen(!sidebarOpen);
     };
 
-
+    //파일도 띄워줄 수 있도록 ui 수정해야함 
+    //파일의 경우, 기존의 디테일 불러오기 부분의 반환 값에 값이 추가될 예정 (파일명, 파일 url, 파일 업로드 시각)
     return (
         <div className="As-detail">
             <button className="sidebar-toggle" onClick={toggleSidebar}>
@@ -72,6 +73,7 @@ function AssignmentDetail() {
                                 value={dropdownValues.role} 
                                 onChange={handleDropdownChange}
                                 >
+                                    {/* 프로젝트 쪽 api 중에 멤버 리스트 불러오는 거에서 이름만 가져오는 식으로 진행. */}
                                     <option value="role">담당자</option>
                                     <option value="Option 2">Option 2</option>
                                     <option value="Option 3">Option 3</option>

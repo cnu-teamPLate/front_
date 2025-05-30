@@ -78,7 +78,9 @@ function Assignment({ onSubmit = () => { }, currentUser = "", notifications = []
         { value: "김지훈", label: "김지훈" },
         { value: "박서준", label: "박서준" },
         { value: "이수민", label: "이수민" }
+        
     ];
+    {/* 프로젝트 쪽 api 이용해서 사람 이름 가져오기 */}
 
     const [submittedData, setSubmittedData] = useState([]);
     const [ids, setids] = useState([]);
