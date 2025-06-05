@@ -77,7 +77,7 @@
     justify-content: center;
     gap: 5px;
     flex-direction: column;
-    padding: 0!important;
+    padding: 0;
 }
 
 .As-title textarea, .As-detail textarea {

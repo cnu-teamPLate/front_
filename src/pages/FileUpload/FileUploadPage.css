@@ -11,16 +11,15 @@ body {
   align-items: flex-start;
   gap: 40px;
   padding: 40px 20px;
-  background-color: #fff;
 }
 
 .upload-section,
 .list-section {
-  background-color: #f4f4f4 !important;
-  padding: 30px !important;
-  border-radius: 10px !important;
-  width: 45% !important;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important;
+  background-color: #f4f4f4;
+  padding: 30px;
+  border-radius: 10px;
+  width: 45%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
