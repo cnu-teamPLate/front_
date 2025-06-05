@@ -37,7 +37,6 @@ function App() {
             <>
               <Header />
               <Home />
-              <Footer />
             </>
           }
         />
@@ -62,7 +61,12 @@ function App() {
           </>
         }
         />
-        <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+        <Route path="/dashboard" element={
+          <>
+            <Header /><Dashboard />
+          </>
+        }
+        />
         <Route path="/MyPage/:userId" element={<MyPage />} />
         <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
 
