@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
 import './Dashboard.css';
-
+import Footer from '../../components/Footer';
 const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
 
 function Dashboard() {
@@ -74,7 +74,7 @@ function Dashboard() {
 
         // Ensure projId is present; generate a fallback if not (though backend should provide it)
         const projId = projectFromApi.projectId || projectFromApi.projId || `${projectFromApi.classId}-${projectFromApi.projName}-${projectFromApi.date || index}`;
-        
+
         let subjectData = null;
         if (projectFromApi.classId) {
           subjectData = {
@@ -103,7 +103,7 @@ function Dashboard() {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -153,7 +153,7 @@ function Dashboard() {
       date: newProject.date || new Date().toISOString(), // Use date from state or generate new
       goal: newProject.goal,
       projName: newProject.projectName,
-      github: newProject.githubLink, 
+      github: newProject.githubLink,
       classId: newProject.subject.classId,
       teamName: newProject.teamName,
       members: newProject.teamMembers.map(member => member.id)
@@ -161,7 +161,7 @@ function Dashboard() {
 
     console.log("Submitting project payload for creation:", projectPayload);
     setIsSubmitting(true);
-    setSubjectApiMessage(''); 
+    setSubjectApiMessage('');
     setMemberApiMessage('');
 
     try {
@@ -182,9 +182,9 @@ function Dashboard() {
       if (responseData.failedMemberIds && responseData.failedMemberIds.length > 0) {
         finalMessage = `프로젝트는 처리되었으나, 다음 학번의 팀원 추가에 실패했습니다: ${responseData.failedMemberIds.join(', ')}. 목록을 확인해주세요.`;
       }
-      
+
       alert(finalMessage);
-      fetchProjects(); 
+      fetchProjects();
       handleCloseProjectPopup();
 
     } catch (submissionError) {
@@ -194,7 +194,7 @@ function Dashboard() {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleSearchSubject = async () => {
     if (!subjectNameInput.trim()) { setSubjectApiMessage('검색할 과목명을 입력해주세요.'); return; }
     setSubjectApiMessage('과목 조회 중...'); setSearchedSubject(null); setShowEnrollForm(false);
@@ -208,35 +208,39 @@ function Dashboard() {
       if (!response.ok) {
         let errorMessage = `HTTP 오류! 상태: ${response.status}`; const contentType = response.headers.get("content-type");
         try { if (contentType && contentType.includes("application/json")) { const errorData = await response.json(); errorMessage = errorData.message || errorData.error || JSON.stringify(errorData) || errorMessage; } else { const errorText = await response.text(); errorMessage = errorText.trim() || errorMessage; } } catch (e) { console.warn("오류 응답의 본문을 파싱할 수 없습니다:", e); }
-        if (response.status === 400) { setSubjectApiMessage(`입력값을 확인해주시거나, 과목을 찾을 수 없습니다. (서버 응답: ${errorMessage}). 새로 등록하시겠습니까?`); setShowEnrollForm(true); setEnrollClassIdInput(subjectNameInput.trim()); setEnrollProfessorInput('');
+        if (response.status === 400) {
+          setSubjectApiMessage(`입력값을 확인해주시거나, 과목을 찾을 수 없습니다. (서버 응답: ${errorMessage}). 새로 등록하시겠습니까?`); setShowEnrollForm(true); setEnrollClassIdInput(subjectNameInput.trim()); setEnrollProfessorInput('');
         } else { setSubjectApiMessage(`과목 조회 실패: ${errorMessage}`); setShowEnrollForm(false); } return;
       }
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const responseData = await response.json();
-        if (responseData && responseData.length > 0) { setSearchedSubject(responseData[0]); setSubjectApiMessage(`과목을 찾았습니다: ${responseData[0].className} (교수: ${responseData[0].professor || 'N/A'})`); setShowEnrollForm(false);
+        if (responseData && responseData.length > 0) {
+          setSearchedSubject(responseData[0]); setSubjectApiMessage(`과목을 찾았습니다: ${responseData[0].className} (교수: ${responseData[0].professor || 'N/A'})`); setShowEnrollForm(false);
         } else { setSubjectApiMessage('해당 과목 정보를 찾을 수 없습니다. 새로 등록하시겠습니까?'); setShowEnrollForm(true); setEnrollClassIdInput(subjectNameInput.trim()); setEnrollProfessorInput(''); }
-      } else { const responseText = await response.text(); console.warn("올바른 HTTP 응답(2xx)을 받았으나 JSON 형식이 아닙니다. 응답 내용:", responseText); setSubjectApiMessage('과목 정보를 찾을 수 없거나 서버 응답 형식이 올바르지 않습니다. 새로 등록하시겠습니까?'); setShowEnrollForm(true); setEnrollClassIdInput(subjectNameInput.trim()); setEnrollProfessorInput('');}
+      } else { const responseText = await response.text(); console.warn("올바른 HTTP 응답(2xx)을 받았으나 JSON 형식이 아닙니다. 응답 내용:", responseText); setSubjectApiMessage('과목 정보를 찾을 수 없거나 서버 응답 형식이 올바르지 않습니다. 새로 등록하시겠습니까?'); setShowEnrollForm(true); setEnrollClassIdInput(subjectNameInput.trim()); setEnrollProfessorInput(''); }
     } catch (err) { console.error("Search subject error:", err); setSubjectApiMessage('과목 조회 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.'); setShowEnrollForm(false); }
   };
 
-  const handleSelectSubject = () => { 
+  const handleSelectSubject = () => {
     if (searchedSubject) { setNewProject(prev => ({ ...prev, subject: searchedSubject })); setSubjectApiMessage(`선택된 과목: ${searchedSubject.className}`); setSearchedSubject(null); setShowEnrollForm(false); }
   };
 
-  const handleEnrollSubject = async () => { 
+  const handleEnrollSubject = async () => {
     if (!enrollClassIdInput.trim() || !subjectNameInput.trim() || !enrollProfessorInput.trim()) { setSubjectApiMessage('과목 ID, 과목명, 교수명을 모두 입력해주세요.'); return; }
     setSubjectApiMessage('새 과목 등록 중...'); setIsSubmitting(true); const newClassData = { classId: enrollClassIdInput.trim(), className: subjectNameInput.trim(), professor: enrollProfessorInput.trim() };
     try {
       const response = await fetch(`${API_BASE_URL}/class/enroll`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newClassData) });
       const responseText = await response.text();
-      if (response.ok) { setSubjectApiMessage(`${responseText}`); setNewProject(prev => ({ ...prev, subject: newClassData })); setShowEnrollForm(false); setSearchedSubject(null);
+      if (response.ok) {
+        setSubjectApiMessage(`${responseText}`); setNewProject(prev => ({ ...prev, subject: newClassData })); setShowEnrollForm(false); setSearchedSubject(null);
       } else { setSubjectApiMessage(`등록 실패: ${responseText}`); }
-    } catch (err) { console.error("Enroll subject error:", err); setSubjectApiMessage('과목 등록 중 오류가 발생했습니다. 네트워크를 확인해주세요.'); 
+    } catch (err) {
+      console.error("Enroll subject error:", err); setSubjectApiMessage('과목 등록 중 오류가 발생했습니다. 네트워크를 확인해주세요.');
     } finally { setIsSubmitting(false); }
   };
 
-  const handleSearchMembers = async () => { 
+  const handleSearchMembers = async () => {
     if (!memberSearchQuery.trim()) { setMemberApiMessage('검색할 팀원의 학번 또는 이름을 입력해주세요.'); return; }
     setMemberApiMessage('팀원 검색 중...'); setSearchedMembers([]);
     try {
@@ -246,13 +250,14 @@ function Dashboard() {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const responseData = await response.json();
-        if (responseData && responseData.length > 0) { setSearchedMembers(responseData); setMemberApiMessage(`${responseData.length}명의 팀원을 찾았습니다.`);
+        if (responseData && responseData.length > 0) {
+          setSearchedMembers(responseData); setMemberApiMessage(`${responseData.length}명의 팀원을 찾았습니다.`);
         } else { setMemberApiMessage('검색된 팀원이 없습니다.'); setSearchedMembers([]); }
       } else { const responseText = await response.text(); console.warn("팀원 검색: 올바른 HTTP 응답(2xx)을 받았으나 JSON 형식이 아닙니다. 응답 내용:", responseText); setMemberApiMessage('팀원 검색 응답 형식이 올바르지 않습니다.'); setSearchedMembers([]); }
     } catch (err) { console.error("Search members error:", err); setMemberApiMessage('팀원 검색 중 오류가 발생했습니다. 네트워크를 확인해주세요.'); setSearchedMembers([]); }
   };
 
-  const handleAddSearchedMember = (memberToAdd) => { 
+  const handleAddSearchedMember = (memberToAdd) => {
     const isAlreadyAdded = newProject.teamMembers.some(member => member.id === memberToAdd.userId);
     if (isAlreadyAdded) { setMemberApiMessage(`${memberToAdd.userName}(${memberToAdd.userId})님은 이미 추가된 팀원입니다.`); return; }
     const newTeamMember = { id: memberToAdd.userId, name: memberToAdd.userName };
@@ -262,7 +267,7 @@ function Dashboard() {
 
   const handleEditProject = (project) => {
     const dateForInput = project.date ? project.date.substring(0, 16) : ''; // YYYY-MM-DDTHH:MM format for datetime-local
-    setSelectedProject({ ...project, date: dateForInput }); 
+    setSelectedProject({ ...project, date: dateForInput });
     setShowEditPopup(true);
   };
 
@@ -326,58 +331,58 @@ function Dashboard() {
           </button>
         </div>
 
-        {isLoading && !isSubmitting ? ( <p className="loading-message">프로젝트 목록 로딩 중...</p> ) : 
-         error ? ( <p className="error">{error}</p> ) : (
-          <div className="project-list">
-            {projects.map(project => (
-              <div className="project-card" key={project.projId}>
-                <div className="project-card-header">
-                  <h2 title={project.projectName}>{project.projectName}</h2>
-                  <div className="project-controls">
-                    <IoBookmark size={20} color="gold" style={{cursor: 'pointer'}} title="북마크"/>
-                    <IoSettings size={20} color="#6c757d" style={{ cursor: 'pointer' }} onClick={() => handleEditProject(project)} title="설정" />
+        {isLoading && !isSubmitting ? (<p className="loading-message">프로젝트 목록 로딩 중...</p>) :
+          error ? (<p className="error">{error}</p>) : (
+            <div className="project-list">
+              {projects.map(project => (
+                <div className="project-card" key={project.projId}>
+                  <div className="project-card-header">
+                    <h2 title={project.projectName}>{project.projectName}</h2>
+                    <div className="project-controls">
+                      <IoBookmark size={20} color="gold" style={{ cursor: 'pointer' }} title="북마크" />
+                      <IoSettings size={20} color="#6c757d" style={{ cursor: 'pointer' }} onClick={() => handleEditProject(project)} title="설정" />
+                    </div>
+                  </div>
+                  <div className="project-card-body">
+                    {project.teamName && (<p className="project-detail"><strong>팀 이름:</strong> {project.teamName}</p>)}
+                    <p className="project-detail">
+                      <strong>과목:</strong>
+                      {project.subject
+                        ? `${project.subject.className || '이름 없음'} (ID: ${project.subject.classId}, ${project.subject.professor || '담당교수 미지정'})`
+                        : (project.classId ? `ID: ${project.classId}` : 'N/A')
+                      }
+                    </p>
+                    <p className="project-detail project-goal"><strong>목표:</strong> {project.goal || 'N/A'}</p>
+                    {project.date && (<p className="project-detail project-date"><strong>일자:</strong> {new Date(project.date).toLocaleDateString()}</p>)} {/* "등록일/수정일" -> "일자" */}
+                    <div className="team-members-simplified">
+                      <h3>팀원:</h3>
+                      {project.teamMembers && project.teamMembers.length > 0 ? (
+                        <ul>{project.teamMembers.map((member) => (<li key={member.id} title={`${member.name} (${member.id})`}>{member.name || member.id}</li>))}</ul>
+                      ) : (<p className="no-members-text">팀원이 없습니다.</p>)}
+                    </div>
+                  </div>
+                  <div className="project-card-footer">
+                    <a href={project.githubLink || '#'} target="_blank" rel="noopener noreferrer" className="project-link">프로젝트로 이동</a>
                   </div>
                 </div>
-                <div className="project-card-body">
-                  {project.teamName && ( <p className="project-detail"><strong>팀 이름:</strong> {project.teamName}</p> )}
-                  <p className="project-detail">
-                    <strong>과목:</strong> 
-                    {project.subject 
-                      ? `${project.subject.className || '이름 없음'} (ID: ${project.subject.classId}, ${project.subject.professor || '담당교수 미지정'})` 
-                      : (project.classId ? `ID: ${project.classId}` : 'N/A')
-                    }
-                  </p>
-                  <p className="project-detail project-goal"><strong>목표:</strong> {project.goal || 'N/A'}</p>
-                  {project.date && ( <p className="project-detail project-date"><strong>일자:</strong> {new Date(project.date).toLocaleDateString()}</p> )} {/* "등록일/수정일" -> "일자" */}
-                  <div className="team-members-simplified">
-                    <h3>팀원:</h3>
-                    {project.teamMembers && project.teamMembers.length > 0 ? (
-                      <ul>{project.teamMembers.map((member) => ( <li key={member.id} title={`${member.name} (${member.id})`}>{member.name || member.id}</li> ))}</ul>
-                    ) : ( <p className="no-members-text">팀원이 없습니다.</p> )}
-                  </div>
-                </div>
-                <div className="project-card-footer">
-                  <a href={project.githubLink || '#'} target="_blank" rel="noopener noreferrer" className="project-link">프로젝트로 이동</a>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
       </main>
 
       {/* 새 프로젝트 생성 팝업 */}
       {showProjectPopup && (
-        <div className="popupfordashboard"> 
+        <div className="popupfordashboard">
           <div className="popup-inner">
             <h2>새 프로젝트 생성</h2>
             <label>프로젝트명: <input type="text" name="projectName" value={newProject.projectName} onChange={handleChange} disabled={isSubmitting} /></label>
             <label>팀 이름: <input type="text" name="teamName" value={newProject.teamName} onChange={handleChange} disabled={isSubmitting} /></label>
-            <label>GitHub 링크: <input type="text" name="githubLink" value={newProject.githubLink} onChange={handleChange} placeholder="예: https://github.com/team/repo" disabled={isSubmitting}/> </label>
+            <label>GitHub 링크: <input type="text" name="githubLink" value={newProject.githubLink} onChange={handleChange} placeholder="예: https://github.com/team/repo" disabled={isSubmitting} /> </label>
             <label>프로젝트 목표: <input type="text" name="goal" value={newProject.goal} onChange={handleChange} disabled={isSubmitting} /></label>
             <div className="subject-section">
               <label htmlFor="subjectNameInputId">과목명:</label>
               <div className="subject-search-container">
-                <input id="subjectNameInputId" type="text" value={subjectNameInput} onChange={(e) => setSubjectNameInput(e.target.value)} placeholder="과목명 입력 후 조회" disabled={isSubmitting}/>
+                <input id="subjectNameInputId" type="text" value={subjectNameInput} onChange={(e) => setSubjectNameInput(e.target.value)} placeholder="과목명 입력 후 조회" disabled={isSubmitting} />
                 <button type="button" onClick={handleSearchSubject} className="search-subject-button" disabled={isSubmitting}>조회</button>
               </div>
               {subjectApiMessage && <p className={`api-message ${showEnrollForm ? 'enroll-prompt' : ''}`}>{subjectApiMessage}</p>}
@@ -393,7 +398,7 @@ function Dashboard() {
                 <div className="subject-enroll-form">
                   <h4>새 과목 등록</h4>
                   <label>과목 ID (필수): <input type="text" value={enrollClassIdInput} onChange={(e) => setEnrollClassIdInput(e.target.value)} placeholder="새 과목의 고유 ID" disabled={isSubmitting} /></label>
-                  <label>과목명 (자동 입력됨): <input type="text" value={subjectNameInput} readOnly disabled style={{backgroundColor: '#e9ecef'}} /></label>
+                  <label>과목명 (자동 입력됨): <input type="text" value={subjectNameInput} readOnly disabled style={{ backgroundColor: '#e9ecef' }} /></label>
                   <label>교수명 (필수): <input type="text" value={enrollProfessorInput} onChange={(e) => setEnrollProfessorInput(e.target.value)} placeholder="교수님 성함" disabled={isSubmitting} /></label>
                   <button type="button" onClick={handleEnrollSubject} className="enroll-subject-button" disabled={isSubmitting}>
                     {isSubmitting ? '등록 중...' : '이 내용으로 등록'}
@@ -404,7 +409,7 @@ function Dashboard() {
             <div className="member-section">
               <label htmlFor="memberSearchQueryInputId">팀원 검색 (학번/이름):</label>
               <div className="member-search-container">
-                <input id="memberSearchQueryInputId" type="text" value={memberSearchQuery} onChange={handleMemberSearchQueryChange} placeholder="학번 또는 이름으로 검색" disabled={isSubmitting}/>
+                <input id="memberSearchQueryInputId" type="text" value={memberSearchQuery} onChange={handleMemberSearchQueryChange} placeholder="학번 또는 이름으로 검색" disabled={isSubmitting} />
                 <button type="button" onClick={handleSearchMembers} className="search-member-button" disabled={isSubmitting}>검색</button>
               </div>
               {memberApiMessage && <p className="api-message">{memberApiMessage}</p>}
@@ -450,13 +455,13 @@ function Dashboard() {
             <label>프로젝트 목표: <input type="text" name="goal" value={selectedProject.goal} onChange={handleEditChange} disabled={isSubmitting} /></label>
             <label>GitHub 링크: <input type="text" name="githubLink" value={selectedProject.githubLink || ''} onChange={handleEditChange} disabled={isSubmitting} /></label>
             <label>날짜:
-              <input 
+              <input
                 type="datetime-local" // 날짜 및 시간 선택 UI 제공
-                name="date" 
+                name="date"
                 // selectedProject.date가 ISO 문자열이라고 가정하고 YYYY-MM-DDTHH:MM 형식으로 변환
-                value={selectedProject.date ? selectedProject.date.substring(0,16) : ''} 
+                value={selectedProject.date ? selectedProject.date.substring(0, 16) : ''}
                 onChange={handleEditChange}
-                disabled={isSubmitting} 
+                disabled={isSubmitting}
               />
             </label>
             <div className="popup-actions">
@@ -467,7 +472,7 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      )}
+      )} <Footer />
     </div>
   );
 }
