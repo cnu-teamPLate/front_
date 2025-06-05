@@ -34,7 +34,7 @@ function FileUploadPage() {
         detail : '',
         category : -1,
         url: [], // 여기도 배열로 바꾸나?
-        file : [],
+        files : [],
       }
     )
     
@@ -144,23 +144,35 @@ function FileUploadPage() {
         const {
           id, projId, title, detail, category, url, file
         } = formData;
+
+        console.log('id', id)
+        formDataToSend.append("id", formData.id);
+        formDataToSend.append("projId", formData.projId);
+        formDataToSend.append("title", formData.title);
+        formDataToSend.append("detail", formData.detail);
+        formDataToSend.append("category", formData.category);
+        formDataToSend.append("url", formData.url);
+
+        console.log("formDataToSend", formDataToSend);
+        console.log("formData", formData);
+
     
-        const uploadData = { id, projId, title, detail, category, url };
+        // const uploadData = { id, projId, title, detail, category, url };
 
-        formDataToSend.append('docs', new Blob(
-          [JSON.stringify(formData.docs)],
-          { type: 'application/json' }
-        ));
+        // formDataToSend.append('docs', new Blob(
+        //   [JSON.stringify(formData.docs)],
+        //   { type: 'application/json' }
+        // ));
 
-        if (formData.file && formData.file.length > 0) {
-          formData.file.forEach((file) => {
-            formDataToSend.append('file', file);
+        if (file && file.length > 0) {
+          file.forEach((f) => {
+            formDataToSend.append('files', f);
           });
         }
 
         const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/upload', {
           method: 'POST',
-          body: formDataToSend,
+          body: formData,
         });
 
         //이거 api 주소는 스웨거 문서 확인해서 수정해두기
