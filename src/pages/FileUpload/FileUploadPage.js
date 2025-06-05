@@ -3,42 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { IoMenu, IoAddCircle} from "react-icons/io5";
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const dummyAssignments = [
-  {
-    taskId: 1,
-    id: "20241099",
-    projId: "CSE00001",
-    name: "김지홍",
-    cate: "발표",
-    level: 1,
-    date: "1739620235.000000000",
-    detail: "이러쿵",
-    checkBox: 1,
-  },
-  {
-    taskId: 2,
-    id: "00000000",
-    projId: "CSE00001",
-    name: "김서강",
-    cate: "PPT",
-    level: 2,
-    date: "1739620236.000000000",
-    detail: "어쩌구",
-    checkBox: 0,
-  },
-  {
-    taskId: 3,
-    id: "20241099",
-    projId: "CSE00001",
-    name: "홍길동",
-    cate: "PPT",
-    level: 2,
-    date: "1739620234.000000000",
-    detail: "Spring Boot API 개발",
-    checkBox: 0,
-  },
-];
-
 
 function FileUploadPage() {
     const [files, setFiles] = useState([]);
@@ -48,9 +12,13 @@ function FileUploadPage() {
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const [selectedFilter, setSelectedFilter] = useState(null);
-    const [taskList, setTaskList] = useState(dummyAssignments); // 나중에 []으로 바꾸기
+    const [taskList, setTaskList] = useState([]); // 나중에 []으로 바꾸기
     const [urlList, setUrlList] = useState([]);
     const [newUrl, setNewUrl] = useState('');
+    const [editMode, setEditMode] = useState(false);
+    const [deleteMode, setDeleteMode] = useState(false);
+    const [editedFiles, setEditedFiles] = useState([]);
+    const [selectedFiles, setSelectedFiles] = useState([]);
 
 
     const id = queryParams.get('id'); 
@@ -63,9 +31,9 @@ function FileUploadPage() {
           title : '',
           detail : '',
           category : '-1',
-          url: '1', // 여기도 배열로 바꾸나?
+          url: [], // 여기도 배열로 바꾸나?
         }),
-        file : '',
+        file : [],
     })
 
 
@@ -101,13 +69,17 @@ function FileUploadPage() {
         if (!response.ok) throw new Error(`HTTP 상태 오류: ${response.status}`);
   
         const data = await response.json();
-  
-        if (!data || data.length === 0) {
-          setStatusMessage('파일이 없습니다.');
-          setFiles([]);
-        } else {
-          setStatusMessage('');
+
+        if (response.ok) {
+          console.log('파일을 가져옴');
           setFiles(data);
+        } else if (response.status === 400)
+        {
+          setStatusMessage('필수 요청 값이 존재하지 않습니다');
+          setFiles([]);
+        } else if(response.status === 404){
+          setStatusMessage('존재하는 프로젝트 혹은 유저 혹은 과제 아이디가 아닙니다.');
+          setFiles([]);
         }
       } catch (error) {
         setStatusMessage(`error: ${error.message}`);
@@ -123,16 +95,7 @@ function FileUploadPage() {
     }, [projId]);
 
 
-    const handleInputChange = (e) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({
-        ...prev,
-        docs: {
-          ...prev.docs,
-          [name]: value || '',
-        },
-      }));
-    };
+
   
     const handleFileChange = (e) => {
       const selectedFiles = Array.from(e.target.files); 
@@ -187,23 +150,29 @@ function FileUploadPage() {
           });
         }
 
-        const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/project/docs', {
+        const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/upload', {
           method: 'POST',
           body: formDataToSend,
         });
+
         //이거 api 주소는 스웨거 문서 확인해서 수정해두기
         //백으로 보내는 형식도 스웨거 참고
-  
+        const data = await response.json().catch(() => ({})); // JSON 파싱 실패 대비
+
         if (response.ok) {
-          setStatusMessage('폼이 성공적으로 제출되었습니다!');
-          return 1;
+          setStatusMessage(data.message || '업로드 완료되었습니다!');
+        } else if (response.status === 400) {
+          setStatusMessage(data.message || '요청 오류: 파일 이름을 확인해주세요.');
+        } else if (response.status === 404) {
+          setStatusMessage(data.message || '요청 오류: 프로젝트 ID가 존재하지 않습니다.');
+        } else if (response.status === 500) {
+          setStatusMessage(data.message || '서버 오류: 예상치 못한 문제가 발생했습니다.');
         } else {
-          setStatusMessage('서버 오류가 발생했습니다.');
-          return -3;
+          setStatusMessage('알 수 없는 오류가 발생했습니다.');
         }
       } catch (error) {
-        console.error('폼 제출 중 오류 발생:', error);
-        setStatusMessage('오류가 발생했습니다.');
+        console.error('네트워크 오류:', error);
+        setStatusMessage('네트워크 오류가 발생했습니다.');
       }
     };
   
@@ -215,35 +184,50 @@ function FileUploadPage() {
   
     //전체 삭제 버튼 따로, 파일마다 삭제, 수정 버튼 따로
     //삭제 api와 수정 api는 각 버튼 눌렀을 때 실행 
-    const handleFileClick = (file) => {
-      if (file.taskName) {
-        // 추후 실제 task 상세 URL로 대체
-        navigate('/AssignmentDetail');
-      } else {
-        //이 부분은 filrUploadDetail에서 사용되어야할 것 같은데
-        fetch(`http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/put`, {
-          method: "PUT",
-          headers: {
-            "Content-Type" : "application/json"
-          },
-          body: JSON.stringify({
-            //여기 들어가려면 수정 형식도 만들어야할 거같은데
-          })
-        })
-          .then(response => {
-            if(!response.ok) {
-              throw new Error("PUT 요청 실패")
-            } // 에러 사유가 꽤 많음
-            return response.json();
-          })
-          .then(result => {
-            console.log("수정 완료:", result);
-          })
-          .catch(error => {
-            console.error("error:", error);
-          })
-        navigate(`/file/detail/${file.fileId}`);
+    const handleEditToggle = () => {
+      setEditMode(!editMode);
+      setDeleteMode(false);
+    };
+  
+    const handleDeleteToggle = () => {
+      setDeleteMode(!deleteMode);
+      setEditMode(false);
+      setSelectedFiles([]);
+    };
+  
+    const handleInputChange = (index, field, value) => {
+      const updated = [...editedFiles];
+      updated[index][field] = value;
+      setEditedFiles(updated);
+    };
+  
+    const handleFileSelect = (fileId) => {
+      setSelectedFiles(prev => prev.includes(fileId) ? prev.filter(id => id !== fileId) : [...prev, fileId]);
+    };
+  
+    const handleSaveEdits = async () => {
+      for (let file of editedFiles) {
+        const data = new FormData();
+        data.append("id", file.fileId);
+        data.append("title", file.title);
+        data.append("detail", file.detail);
+        data.append("category", file.category);
+        data.append("urls", JSON.stringify(file.urls || []));
+        await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/put', {
+          method: 'PUT',
+          body: data
+        });
       }
+      setEditMode(false);
+    };
+  
+    const handleDeleteFiles = async () => {
+      await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/file/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docs: selectedFiles })
+      });
+      setDeleteMode(false);
     };
 
     const handleFilterClick = (filterKey, fetchParams) => {
@@ -337,7 +321,10 @@ function FileUploadPage() {
   
         <div className="list-section">
           <h2>자료 목록</h2>
-          {/*여기 언저리에 수정, 삭제 버튼 넣기 */}
+          <button onClick={handleEditToggle}>수정 모드</button>
+          <button onClick={handleDeleteToggle}>삭제 모드</button>
+          {editMode && <button onClick={handleSaveEdits}>수정 완료</button>}
+          {deleteMode && <button onClick={handleDeleteFiles}>삭제</button>}
           <div className="filter">
             <span
               className={selectedFilter === 'proj' ? 'filter-item selected' : 'filter-item'}
@@ -368,20 +355,25 @@ function FileUploadPage() {
           <table>
             <thead>
               <tr>
-                <th>자료명</th>
-                <th>연관 과제</th>
-                {/* 연관 과제 클릭하면 그쪽 페이지로 넘어가는 코드 추가 (지금은 세부 페이지로 넘어가게 되어있음) */}
-                {/*파일 url 이 있어야함 그래야 파일 확인 가능
-                이거 목록을 하나하나 카드형식으로 뜨게끔 아예 div로 묶어버리고, 목록상단은 그냥 파일 리스트로 바꿔야함 */}
-                <th>업로드 일자</th>
+                <th>파일</th>
+                {deleteMode && <th>선택</th>}
               </tr>
             </thead>
             <tbody>
-              {files.map((file) => (
-                <tr key={file} onClick={() => handleFileClick(file)} style={{ cursor: 'pointer' }}>
-                  <td>{file.title || file.filename}</td>
+              {editedFiles.map((file, index) => (
+                <tr key={file.fileId}>
+                  <td>
+                    {editMode ? (
+                      <input value={file.title} onChange={(e) => handleInputChange(index, 'title', e.target.value)} />
+                    ) : (
+                      file.title || file.filename
+                    )}
+                  </td>
                   <td>{file.taskName || `과제 ${file.category}`}</td>
                   <td>{formatDate(file.uploadDate)}</td>
+                  {deleteMode && (
+                    <td><input type="checkbox" checked={selectedFiles.includes(file.fileId)} onChange={() => handleFileSelect(file.fileId)} /></td>
+                  )}
                 </tr>
               ))}
             </tbody>
