@@ -25,6 +25,7 @@ body {
     min-width: 400px !important;
     max-width: 100%;
     box-sizing: border-box;
+    margin-top: 1em;
   }
 
   .discription {
