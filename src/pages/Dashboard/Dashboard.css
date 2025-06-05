@@ -1,538 +1,427 @@
-/* General Body Styles (Optional - for context) */
+/* General Body Styles */
 body {
-  font-family: sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
-  background-color: #f4f7f6; /* Light background for the page */
+  background-color: #f0f2f5;
   color: #333;
+  line-height: 1.6;
 }
 
 .Dashboard {
   display: flex;
+  min-height: 100vh;
 }
 
-/* Sidebar Styles (Assuming they exist and are mostly fine) */
+/* Sidebar Styles */
 .App-sidebar {
-  width: 250px;
-  background-color: #fff;
-  padding: 20px;
-  height: 100vh;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  /* Add other sidebar styles as needed */
+  width: 260px;
+  background-color: #ffffff;
+  padding: 20px 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  border-right: 1px solid #e8e8e8;
 }
-
-.App-sidebar.open {
-  /* Styles for when sidebar is open, if using toggle */
-}
-
 .sidebar-content h2 {
-  font-size: 1.2em;
-  color: #333;
+  font-size: 1.25em;
+  color: #a32828; /* Base color for header accent */
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ecf0f1;
 }
-
 .my-projects .project-item {
-  padding: 8px 0;
+  padding: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-radius: 5px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.9em;
+  color: #34495e;
 }
 .my-projects .project-item:hover {
-  background-color: #f0f0f0;
+  background-color: #fcecea; /* Lighter shade of base color for hover */
+  color: #a32828; /* Base color for text on hover */
 }
-
+.my-projects .project-item p {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Main Content Area */
 .App-content {
   flex-grow: 1;
-  padding: 20px;
-  transition: margin-left 0.3s ease; /* If sidebar toggles */
+  padding: 25px 30px;
+  background-color: #f4f7f9;
 }
-
-.App-content.shifted {
-  /* margin-left: 250px; /* Adjust if sidebar has fixed width */
-}
-
 .main-header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
-
 .add-project-button {
-  padding: 12px 18px;
-  background-color: #007bff;
+  padding: 10px 20px;
+  background-color: #a32828; /* Base color */
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-
 .add-project-button:hover {
-  background-color: #0056b3;
+  background-color: #8a2020; /* Darker shade for hover */
+  transform: translateY(-1px);
+}
+.add-project-button:active {
+  transform: translateY(0px);
 }
 
-/* Dashboard.css */
-
-/* ... (이전 CSS 스타일들은 그대로 두거나 필요에 따라 유지합니다) ... */
-
-/* Project List & Card Styling (가로 나열 및 스크롤) */
+/* Project List & Card Styling */
 .project-list {
-  display: flex;         /* Flexbox를 사용하여 아이템들을 가로로 배열합니다. */
-  flex-direction: row;   /* 명시적으로 가로 방향 설정 (기본값이긴 합니다.) */
-  overflow-x: auto;    /* 내용이 넘칠 경우 가로 스크롤바를 표시합니다. */
-  overflow-y: hidden;  /* 세로 스크롤바는 숨깁니다 (카드 높이가 다를 경우 불필요한 스크롤 방지). */
-  gap: 20px;             /* 카드 사이의 간격을 설정합니다. */
-  padding: 10px 5px;     /* 리스트 자체의 상하좌우 패딩 (스크롤바 공간 확보 및 미관) */
-  /* 카드 높이가 모두 같다면 min-height는 필요 없을 수 있습니다. */
-  /* min-height: 400px; /* 예시: 리스트 영역의 최소 높이 확보 */
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 25px;
+  padding: 10px 5px 25px 5px;
+  min-height: 350px;
 }
-
-/* 스크롤바 스타일링 (선택 사항, 브라우저 호환성 확인 필요) */
-.project-list::-webkit-scrollbar {
-  height: 8px; /* 스크롤바의 높이 */
-}
-.project-list::-webkit-scrollbar-thumb {
-  background-color: #ccc; /* 스크롤바 막대 색상 */
-  border-radius: 4px; /* 스크롤바 막대 둥근 모서리 */
-}
-.project-list::-webkit-scrollbar-thumb:hover {
-  background-color: #bbb; /* 스크롤바 막대에 마우스 오버 시 색상 */
-}
-.project-list::-webkit-scrollbar-track {
-  background-color: #f0f0f0; /* 스크롤바 트랙 색상 */
-}
-
+.project-list::-webkit-scrollbar { height: 10px; }
+.project-list::-webkit-scrollbar-thumb { background-color: #c79393; border-radius: 5px; }
+.project-list::-webkit-scrollbar-thumb:hover { background-color: #a32828; }
+.project-list::-webkit-scrollbar-track { background-color: #ecf0f1; border-radius: 5px; }
 
 .project-card {
-  /* === 기존 .project-card 스타일 유지 === */
   background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  display: flex; /* 카드 내부 요소 정렬을 위한 flex */
+  border: 1px solid #dfe4ea;
+  border-left: 4px solid #a32828; /* Accent border with base color */
+  border-radius: 6px;
+  padding: 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  display: flex;
   flex-direction: column;
-  transition: box-shadow 0.3s ease;
-  /* === 가로 나열을 위한 추가/수정 === */
-  flex-shrink: 0;        /* 카드가 부모 컨테이너에 맞춰 줄어들지 않도록 합니다. */
-  width: 320px;          /* 각 카드의 고정 너비를 설정합니다. (필요에 따라 조절) */
-  /* height: 380px; */    /* 모든 카드의 높이를 동일하게 맞추고 싶다면 고정 높이 설정 가능 */
-                          /* height: auto; 로 두면 내용에 따라 높이가 달라집니다. */
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  flex-shrink: 0;
+  width: 330px;
+  min-height: 280px;
+  overflow: hidden;
 }
-
 .project-card:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
 }
-
-/* ... (나머지 .project-card 내부 요소 스타일들(.project-card-header 등)은 이전과 동일하게 유지) ... */
 
 .project-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e9ecef;
 }
-
 .project-card-header h2 {
   margin: 0;
-  font-size: 1.4em;
-  color: #333;
+  font-size: 1.2em;
+  color: #a32828; /* Base color for card titles */
   font-weight: 600;
-}
-
-.project-controls {
-  display: flex;
-  gap: 12px;
-}
-.project-controls > * {
-    cursor: pointer;
-}
-
-
-.project-card p {
-  margin: 8px 0;
-  line-height: 1.6;
-  color: #555;
-  font-size: 0.95rem;
-}
-
-.project-card p strong {
-  color: #333;
-}
-
-.project-link {
-  display: inline-block;
-  margin-top: auto; 
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: white !important;
-  text-decoration: none;
-  border-radius: 4px;
-  font-weight: 500;
-  text-align: center;
-  transition: background-color 0.2s ease;
-  font-size: 0.9rem;
-}
-
-.project-link:hover {
-  background-color: #218838;
-}
-
-.team-members {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.team-members h3 {
-  font-size: 1.1em;
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.team-members ul {
-  list-style: none;
-  padding: 0;
-}
-
-.team-members li {
-  margin-bottom: 10px;
-  padding: 8px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.contribution-graph {
-  background-color: #e9ecef;
-  border-radius: 4px;
-  margin-top: 5px;
-  height: 20px;
-  width: 100%;
-  overflow: hidden;
-}
-
-.contribution-bar {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: white;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
-  transition: width 0.5s ease-in-out;
-}
-
-.popupfordashboard {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px; /* Padding for smaller screens */
-  box-sizing: border-box;
-}
-
-.popup-inner {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  width: 80%;
-  max-width: 550px; /* Slightly wider popup */
-  max-height: 70vh;
-  overflow-y: auto; /* Enable scroll for taller content */
-  box-sizing: border-box;
-}
-
-.popup-inner h2 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 30px;
-  color: #333;
-  font-size: 1.6em;
-  font-weight: 600;
-}
-
-.popup-inner label {
-  display: block;
-  margin-bottom: 15px; 
-  font-weight: 500; /* Slightly less bold */
-  color: #454545;
-  font-size: 0.95rem;
-}
-
-.popup-inner input[type="text"],
-.popup-inner input[type="url"] { /* Assuming githubLink could be type="url" */
-  width: 100%;
-  padding: 12px; /* Increased padding */
-  margin-top: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
-}
-
-.popup-inner input[type="text"]:focus,
-.popup-inner input[type="url"]:focus {
-  border-color: #007bff; /* Highlight on focus */
-  outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-}
-
-
-/* Team Member Input Group (inside label) */
-.team-member-input-group {
-  display: flex; /* Align input and button on the same line */
-  align-items: center; /* Vertically align items in the flex container */
-  margin-top: 6px; /* Space between label text and this group */
-}
-
-.team-member-input-group input[type="text"] {
-  flex-grow: 1; /* Input takes up available space */
-  margin-top: 0; /* Reset margin as it's handled by the group */
-  margin-right: 10px; /* Space between input and button */
-}
-
-.add-member-button-popup {
-  padding: 12px 15px; /* Match input padding height */
-  /* margin-left: 10px; Removed, using margin-right on input instead */
-  background-color: #5A6268; /* Secondary button color */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
   white-space: nowrap;
-  transition: background-color 0.2s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.project-controls { display: flex; gap: 15px; }
+.project-controls > * { cursor: pointer; color: #7f8c8d; transition: color 0.2s ease; }
+.project-controls > *:hover { color: #a32828; }
 
-.add-member-button-popup:hover {
-  background-color: #474D52;
+.project-card-body { padding: 15px 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
+.project-detail { margin: 0; line-height: 1.5; color: #555; font-size: 0.875rem; }
+.project-detail strong { color: #333; font-weight: 500; margin-right: 5px; }
+.project-goal { white-space: pre-wrap; word-break: break-word; max-height: 60px; overflow-y: auto; }
+.project-date { font-style: italic; color: #777; }
+
+.team-members-simplified { margin-top: 8px; }
+.team-members-simplified h3 { font-size: 0.95em; margin-top: 0; margin-bottom: 6px; color: #34495e; font-weight: 500; }
+.team-members-simplified ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.team-members-simplified li {
+  font-size: 0.8rem; color: #a32828; background-color: #fcecea;
+  padding: 3px 8px; border-radius: 10px; white-space: nowrap;
+  border: 1px solid #f7c5c5;
 }
+.no-members-text { font-size: 0.8rem; color: #777; font-style: italic; }
 
-.added-members {
-  margin-top: 15px;
-  margin-bottom: 25px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-}
-
-.added-members h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.added-members ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.added-members li {
-  padding: 6px 0;
+.project-card-footer { padding: 15px 20px; border-top: 1px solid #e9ecef; background-color: #f8f9fa; margin-top: auto; }
+.project-link {
+  display: block; padding: 8px 15px; background-color: #a32828;
+  color: white !important; text-decoration: none; border-radius: 4px;
+  font-weight: 500; text-align: center; transition: background-color 0.2s ease;
   font-size: 0.85rem;
-  color: #555;
-  border-bottom: 1px dotted #e0e0e0;
 }
-.added-members li:last-child {
-  border-bottom: none;
-}
+.project-link:hover { background-color: #8a2020; }
 
-.popup-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 30px;
-}
+/* Error and Loading Messages */
+.error { color: #a32828; background-color: #fcecea; border: 1px solid #f7c5c5; padding: 12px; border-radius: 4px; text-align: center; }
+.loading-message { font-size: 1.1em; text-align: center; padding: 20px; color: #7f8c8d; }
 
-.popup-actions button {
-  padding: 12px 22px;
-  border: none;
+/* Popup Styling */
+.popupfordashboard {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(40, 40, 40, 0.65);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000; padding: 20px; box-sizing: border-box;
+}
+.popup-inner {
+  background-color: #fff; padding: 25px 30px; border-radius: 6px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  width: 100%; max-width: 600px; max-height: 85vh;
+  overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;
+}
+.popup-inner h2 {
+  text-align: center; margin-top: 0; margin-bottom: 25px;
+  color: #a32828; font-size: 1.4em; font-weight: 600;
+}
+.popup-inner label { display: block; margin-bottom: 12px; font-weight: 500; color: #495057; font-size: 0.9rem; }
+.popup-inner input[type="text"], .popup-inner input[type="url"] {
+  width: 100%; padding: 10px; margin-top: 4px;
+  border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;
+  font-size: 0.95rem; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.popup-inner input[type="text"]:focus, .popup-inner input[type="url"]:focus {
+  border-color: #a32828; outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(163, 40, 40, .25);
+}
+.divider { margin: 20px 0; border: 0; border-top: 1px solid #e9ecef; }
+
+/* Dashboard.css */
+
+/* ... 기존 다른 스타일들 ... */
+
+/* --- Unified Styles for Subject & Member Sections in Popup (간격 조정 및 스타일 통일) --- */
+.subject-section, .member-section {
+  margin-top: 15px; /* 상하 마진 약간 줄임 */
+  margin-bottom: 15px;
+  padding: 12px;    /* 내부 패딩 약간 줄임 */
+  border: 1px solid #e9ecef;
   border-radius: 5px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 1rem;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #f8f9fa;
 }
-
-.popup-actions button:hover {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.popup-create-button,
-.popup-save-button {
-  background-color: #28a745; /* Green */
-  color: white;
-}
-.popup-create-button:hover,
-.popup-save-button:hover {
-  background-color: #218838;
-}
-
-.popup-cancel-button {
-  background-color: #6c757d; /* Gray */
-  color: white;
-}
-.popup-cancel-button:hover {
-  background-color: #5a6268;
-}
-
-/* 과목명 레이블 (선택 사항, 이전과 동일) */
-.subject-section > label[htmlFor="subjectNameInputId"] {
+.subject-section > label[htmlFor="subjectNameInputId"],
+.member-section > label[htmlFor="memberSearchQueryInputId"] {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 6px; /* 마진 약간 줄임 */
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  color: #343a40;
 }
 
-/* 입력창과 버튼을 감싸는 컨테이너 */
-.subject-search-container {
-  display: flex;         /* 자식 요소들을 가로로 배치 */
-  align-items: center;   /* 자식 요소들을 세로 중앙으로 정렬 */
+.subject-search-container, .member-search-container {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
-  margin-top: 0px;
+  margin-bottom: 8px; /* 마진 약간 줄임 */
+}
+.subject-search-container input[type="text"],
+.member-search-container input[type="text"] {
+  flex-grow: 1; padding: 8px 10px; border: 1px solid #ced4da; border-radius: 4px;
+  font-size: 0.9rem; height: 36px; /* 높이 통일 (이전 38px에서 약간 줄임) */
+  box-sizing: border-box; margin-top: 0;
 }
 
-/* 과목명 입력창 스타일 */
-.subject-search-container input[type="text"] {
-  flex-grow: 1;          /* 남은 공간을 모두 차지하도록 설정 */
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  margin-top: 0px;
-  height: 50px;           
-  padding: 0 10px;         /* 상하 padding은 0, 좌우 padding 설정 (line-height로 중앙정렬 시) */
-  line-height: 34px;       /* height에서 border(1px*2)를 뺀 값, 텍스트 세로 중앙 정렬 (단일 라인 텍스트) */
-  box-sizing: border-box;  /* padding과 border를 height 계산에 포함 */
+.search-subject-button, .search-member-button {
+  color: white; background-color: #a32828; /* 기본 테마색 유지 */
+  border: none; border-radius: 4px; cursor: pointer; font-weight: 500;
+  font-size: 0.85rem; white-space: nowrap; height: 36px; /* 높이 통일 */
+  padding: 0 15px; display: inline-flex; align-items: center;
+  justify-content: center; transition: background-color 0.15s ease-in-out; margin-top: 0;
 }
-
-/* 조회 버튼 스타일 */
-.search-subject-button {
-  /* 기본 스타일 */
-  color: white;
-  background-color: #007bff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 0.9rem;
-  white-space: nowrap; /* 버튼 내 텍스트가 여러 줄로 나뉘는 것을 방지 */
-  margin-top: 0px;
-  height: 50px;
-  box-sizing: border-box;  /* padding과 border를 height 계산에 포함 */
-  padding: 0 15px;         /* 좌우 여백 */
-  display: inline-flex;    /* 버튼 자체를 flex 컨테이너로 만듦 (내부 컨텐츠 정렬용) */
-  align-items: center;     /* 내부 텍스트를 세로 중앙으로 */
-  justify-content: center; /* 내부 텍스트를 가로 중앙으로 (선택 사항) */
-}
-
-.search-subject-button:hover {
-  background-color: #0056b3;
-}
+.search-subject-button:hover, .search-member-button:hover { background-color: #8a2020; }
 
 .api-message {
-  font-size: 0.9em;
-  margin: 10px 0;
-  padding: 8px;
-  border-radius: 4px;
+  font-size: 0.8rem; margin: 6px 0 8px 0; /* 상하 마진 약간 줄임 */
+  padding: 7px 10px; /* 패딩 약간 줄임 */
+  border-radius: 4px; border: 1px solid transparent; text-align: center;
 }
-.api-message.enroll-prompt {
-  background-color: #fff3cd;
-  border: 1px solid #ffeeba;
-  color: #856404;
+/* .api-message.enroll-prompt 스타일은 유지 (노란색 경고) */
+.api-message.enroll-prompt { background-color: #fef3cd; border-color: #fce8ae; color: #664d03; }
+.api-message:not(.enroll-prompt) { background-color: #e9ecef; color: #495057; border-color: #ced4da; }
+
+/* --- Sub-headers within forms (h4) --- */
+.subject-enroll-form h4,
+.searched-members-list h4 {
+  margin-top: 0;
+  margin-bottom: 10px; /* 마진 약간 줄임 */
+  font-size: 1em;
+  color: #343a40;
+  font-weight: 600;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-/* 검색 결과 및 등록 폼 스타일은 이전과 동일하게 유지 */
-.subject-found-details {
-  padding: 10px;
-  background-color: #e6f7ff;
-  border: 1px solid #b3e0ff;
+/* --- Subject Specific Styles in Popup (수정) --- */
+.subject-found-details { /* 과목 검색 성공 시 표시 영역 - 배경 및 테두리는 이전과 동일 (흰색/회색) */
+  padding: 10px 12px; /* 패딩 약간 조정 */
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  margin-bottom: 10px;
-  font-size: 0.9rem; /* 내부 텍스트 크기 일관성 */
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
 }
-.subject-found-details p {
-  margin: 0 0 8px 0;
+
+/* 새로 추가된 wrapper div 스타일 */
+.subject-found-details .subject-info-wrapper {
+  display: flex;                 /* Flexbox 레이아웃 사용 */
+  justify-content: space-between;/* 양쪽 끝으로 요소를 분산 */
+  align-items: center;           /* 세로 중앙 정렬 */
+  width: 100%;
 }
+
+/* 검색된 과목 텍스트 스타일 */
+.subject-found-details .subject-text-details {
+  margin: 0;                     /* p 태그의 기본 마진 제거 */
+  flex-grow: 1;                  /* 텍스트 부분이 가능한 많은 공간 차지 */
+  padding-right: 10px;           /* 버튼과의 간격 */
+  color: #333;
+  line-height: 1.4;              /* 줄 간격 조정 */
+}
+.subject-found-details .subject-text-details strong {
+  color: #000;
+}
+
+
+/* "이 과목 선택" 버튼 스타일 - 팀원 "추가" 버튼과 유사하게 변경 */
 .select-subject-button {
-  padding: 8px 12px; /* 버튼 크기 일관성 */
-  font-size: 0.9rem;
-  /* ... 기존 스타일 ... */
-  background-color: #28a745;
+  padding: 4px 8px;         /* 팀원 추가 버튼과 동일한 패딩 */
+  font-size: 0.75rem;       /* 팀원 추가 버튼과 동일한 폰트 크기 */
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;       /* 팀원 추가 버튼과 동일한 모서리 둥글기 */
   cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  background-color: #a32828; /* 기본 테마색 */
+  flex-shrink: 0;           /* 버튼이 줄어들지 않도록 함 */
+  white-space: nowrap;      /* 버튼 텍스트가 여러 줄로 나뉘는 것 방지 */
 }
 .select-subject-button:hover {
-  background-color: #218838;
+  background-color: #8a2020; /* 기본 테마색의 어두운 톤 */
 }
 
 
+/* 과목 등록 폼 스타일 (큰 변경 없음, 필요시 간격 등 미세 조정) */
 .subject-enroll-form {
   padding: 15px;
-  border: 1px solid #ced4da;
+  background-color: #fff; /* 흰색 배경 및 테두리 유지 */
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  background-color: #f8f9fa;
-  margin-top: 10px; /* API 메시지와의 간격 */
+  margin-top: 8px;
 }
-.subject-enroll-form h4 {
+.subject-enroll-form h4 { /* 스타일은 이전 답변에서 .searched-members-list h4와 통일됨 */
   margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.1em;
+  margin-bottom: 12px;
+  font-size: 1em;
+  color: #343a40;
+  font-weight: 600;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e0e0e0;
 }
 .subject-enroll-form label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: normal;
-  font-size: 0.9rem; /* 레이블 폰트 크기 */
+  font-weight: normal; font-size: 0.85rem; margin-bottom: 5px;
 }
 .subject-enroll-form input[type="text"] {
-  width: 100%;
-  padding: 8px 10px; /* 입력창 높이 일관성 */
-  height: 36px;      /* 입력창 높이 일관성 */
-  box-sizing: border-box;
-  margin-top: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.9rem; height: 36px;
+  padding: 8px 10px; margin-bottom: 8px;
 }
-.enroll-subject-button {
-  padding: 8px 15px; /* 버튼 크기 일관성 */
-  font-size: 0.9rem;
-  /* ... 기존 스타일 ... */
-  background-color: #17a2b8;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
+.enroll-subject-button { /* 과목 등록 버튼 스타일 */
+  margin-top: 5px;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  color: white; border: none;
+  border-radius: 4px; cursor: pointer; transition: background-color 0.15s ease-in-out;
+  background-color: #a32828; /* 기본 테마색 */
 }
 .enroll-subject-button:hover {
-  background-color: #138496;
+  background-color: #8a2020; /* 기본 테마색의 어두운 톤 */
 }
 
-.divider {
-    margin: 20px 0;
-    border: 0;
-    border-top: 1px solid #eee;
+.add-searched-member-button { /* 이 버튼 스타일을 .select-subject-button이 참조함 */
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 8px; /* 왼쪽 여백으로 텍스트와 구분 */
+  transition: background-color 0.15s ease-in-out;
+  background-color: #a32828; /* 기본 테마색 */
+  flex-shrink: 0; /* 버튼 크기 유지 */
+  white-space: nowrap;
 }
+.add-searched-member-button:hover {
+  background-color: #8a2020;
+}
+.add-searched-member-button:disabled {
+  background-color: #adb5bd;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Member Specific Styles in Popup (기존 스타일 유지 또는 약간의 간격 조정) */
+.searched-members-list {
+  margin-top: 8px; /* API 메시지와의 간격 */
+  max-height: 150px; overflow-y: auto;
+  border: 1px solid #e0e0e0; padding: 10px; /* 패딩 조정 */
+  border-radius: 4px; background-color: #fff;
+}
+/* .searched-members-list h4 스타일은 위에서 .subject-enroll-form h4 와 통일됨 */
+.searched-members-list ul { list-style: none; padding: 0; margin: 0; }
+.searched-members-list li {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 5px; /* 패딩 약간 줄임 */
+  border-bottom: 1px solid #f1f3f5; font-size: 0.85rem; color: #495057;
+}
+.searched-members-list li:last-child { border-bottom: none; }
+.searched-members-list li span { flex-grow: 1; }
+
+.add-searched-member-button {
+  padding: 4px 8px; font-size: 0.75rem; color: white; border: none;
+  border-radius: 3px; cursor: pointer; margin-left: 8px;
+  transition: background-color 0.15s ease-in-out;
+  background-color: #a32828; /* 기본 테마색 유지 */
+}
+.add-searched-member-button:hover { background-color: #8a2020; }
+.add-searched-member-button:disabled { background-color: #adb5bd; color: #fff; cursor: not-allowed; opacity: 0.8; }
+
+/* Added Members & Popup Actions (기존 스타일 유지 또는 약간의 간격 조정) */
+.added-members {
+  margin-top: 10px; /* 간격 약간 줄임 */
+  padding: 10px; background-color: #f8f9fa; border-radius: 4px;
+}
+.added-members h4 { font-size: 0.95em; margin-top:0; margin-bottom: 8px; color: #343a40; }
+.added-members ul { list-style: none; padding-left: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.added-members li {
+  font-size: 0.85rem; color: #a32828; background-color: #fcecea;
+  padding: 3px 8px; border-radius: 10px; border: 1px solid #f7c5c5;
+}
+
+.divider { margin: 15px 0; /* 간격 약간 줄임 */ border: 0; border-top: 1px solid #e9ecef; }
+
+.popup-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  margin-top: 15px; /* 간격 약간 줄임 */
+  padding-top: 15px; border-top: 1px solid #e9ecef;
+}
+
+.popup-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e9ecef; }
+.popup-actions button { padding: 9px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 0.95rem; transition: background-color 0.2s ease, box-shadow 0.2s ease; }
+.popup-actions button:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+.popup-create-button, .popup-save-button { background-color: #a32828; color: white; } /* Base color */
+.popup-create-button:hover, .popup-save-button:hover { background-color: #8a2020; } /* Darker shade */
+.popup-cancel-button { background-color: #6c757d; color: white; } /* Kept as neutral gray */
+.popup-cancel-button:hover { background-color: #5a6268; }
