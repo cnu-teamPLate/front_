@@ -21,8 +21,10 @@ function FileUploadPage() {
     const [selectedFiles, setSelectedFiles] = useState([]);
 
 
-    const id = queryParams.get('id'); 
-    const projId = queryParams.get('projId'); 
+    //const id = queryParams.get('id'); 
+    //const projId = queryParams.get('projId'); 
+    const id = '20241121'; 
+    const projId ='cse00001'; 
 
     const [formData, setFormData] = useState({
         docs:JSON.stringify({
@@ -30,7 +32,7 @@ function FileUploadPage() {
           projId : 'cse00001', //projId || '',
           title : '',
           detail : '',
-          category : '-1',
+          category : -1,
           url: [], // 여기도 배열로 바꾸나?
         }),
         file : [],
@@ -95,7 +97,16 @@ function FileUploadPage() {
     }, [projId]);
 
 
-
+    const handleUploadInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        docs: {
+          ...prev.docs,
+          [name]: value,
+        }
+      }));
+    };
   
     const handleFileChange = (e) => {
       const selectedFiles = Array.from(e.target.files); 
@@ -311,8 +322,8 @@ function FileUploadPage() {
             </ul>
 
             <div className='description'>
-                <input className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.docs.title} onChange={handleInputChange}/>
-                <textarea className='detail' type='text' placeholder='설명을 입력해주세요' name='detail' value={formData.docs.detail} onChange={handleInputChange}/>
+                <input className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.docs.title} onChange={handleUploadInputChange}/>
+                <textarea className='detail' type='text' placeholder='설명을 입력해주세요' name='detail' value={formData.docs.detail} onChange={handleUploadInputChange}/>
             </div>
             <button type='submit' className="upload-button">업로드</button>
           </form>
