@@ -59,11 +59,13 @@
 
 /* 할 일 리스트 영역 컨테이너 */
 .todolist-container {
+    width: 10%;
+    display: flex;
+    justify-content: center;
     margin-top: 10px;
 }
 
 .calendar-wrapper {
-    width: 85%;
     background: white;
     border-radius: 8px;
     padding: 10px;
