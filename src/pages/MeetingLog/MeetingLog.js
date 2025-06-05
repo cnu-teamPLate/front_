@@ -114,7 +114,7 @@ function MeetingLog() {
 
       try {
         const response = await fetch(
-          'https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/teamProj/api/save',
+          'https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/api/save',
           {
             method: 'POST',
             headers: {},

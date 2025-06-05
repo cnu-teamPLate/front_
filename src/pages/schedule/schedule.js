@@ -419,12 +419,8 @@ function WhenToMeetGrid({ onExit }) {
         };
 
         try {
-            if (!process.env.REACT_APP_API_URL) {
-                console.warn("API URL이 지정되지 않았습니다.");
-                return;
-            }
             const response = await fetch(
-                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
+                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/schedule/meeting/adjust/upload',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -651,20 +647,29 @@ const localizer = momentLocalizer(moment);
 
 /* 6) Schedule 메인 컴포넌트 */
 const Schedule = () => {
+    const [view, setView] = useState('month');
+
+    const handleMonthVersion = () => {
+        setView('month');
+    };
+
+    const handleWeekVersion = () => {
+        setView('week');
+    };
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [newEvent, setNewEvent] = useState({
-        title: '',
-        start: '',
-        end: '',
-        location: '',
-        attendees: '',
-        agenda: '',
+        scheId: '',
+        projId: '',
+        date: '',
+        scheName: '',
+        place: '',
         category: '',
+        detail: '',
+        participants: '',
     });
     const [whenToMeet, setWhenToMeet] = useState(false);
-    const [view, setView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
@@ -717,14 +722,6 @@ const Schedule = () => {
         }
     };
 
-    const handleMonthVersion = () => {
-        setView('month');
-    };
-
-    const handleWeekVersion = () => {
-        setView('week');
-    };
-
     const CustomToolbar = (toolbar) => {
         const goToBack = () => {
             toolbar.onNavigate('PREV');
@@ -768,7 +765,7 @@ const Schedule = () => {
             left: e.clientX + 10 + 'px'
         });
     };
-
+    const [availability, setAvailability] = useState([]);
     const handleEventMouseOut = () => {
         setPopupStyle({ display: 'none' });
     };
@@ -783,6 +780,7 @@ const Schedule = () => {
         const projId = currentProject.id;
 
         const newEvent = {
+            //scheId: scheId,
             projId: projId,
             date: eventObject.start,
             scheName: eventObject.title,
@@ -793,10 +791,7 @@ const Schedule = () => {
         };
 
         try {
-            if (!process.env.REACT_APP_API_URL) {
-                console.warn("API URL이 지정되지 않았습니다.");
-                return;
-            }
+
             const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/upload', {
                 method: 'POST',
                 headers: {
@@ -819,44 +814,66 @@ const Schedule = () => {
             alert("서버와 연결할 수 없습니다.");
         }
     };
-
+    const [loading, setLoading] = useState(false);
     // 일정 조회 (주간)
     useEffect(() => {
-        const fetchAvailability = async () => {
-            if (!process.env.REACT_APP_API_URL) {
-                console.warn("API URL이 지정되지 않았습니다.");
-                return;
-            }
-            const response = await fetch('https://your-api-endpoint.com/schedule/meeting/adjust/availability');
-            const data = await response.json();
-            setEvents(data); // data 형식: [{ start, end, userName }]
-        };
-        fetchAvailability();
-
-        const fetchEvents = async () => {
-            try {
-                if (!process.env.REACT_APP_API_URL) {
-                    console.warn("API URL이 지정되지 않았습니다.");
-                    return;
-                }
-                const response = await fetch(`https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/weekly`, {
-                    method: 'GET'
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setEvents(data.teamSchedules[currentProject.id] || []);
-                } else {
-                    const error = await response.text();
-                    console.error("Failed to load events:", error);
-                }
-            } catch (error) {
-                console.error("Error loading events:", error);
-            }
-        };
-
         fetchEvents();
-    }, [currentProject]);
+        fetchAvailability();
+    }, [view]);
+
+
+    const fetchEvents = async () => {
+        setLoading(true);
+        try {
+            const apiUrl = view === 'month'
+                ? 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
+                : 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projId: "cse00001",
+                    date: "2025-01-01T00:02:27.Z",
+                    cate: "meeting"
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Event API 응답 데이터:", data);
+
+            if (data.teamSchedules?.cse00001) {
+                setEvents(data.teamSchedules.cse00001);
+            } else {
+                setEvents([]);
+                console.warn("일정을 불러올 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("API 호출 중 오류:", error.message);
+            setEvents([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchAvailability = async () => {
+        try {
+            const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/meeting/adjust/availability');
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setAvailability(data);
+            } else {
+                setAvailability([]);
+            }
+        } catch (error) {
+            console.error("API 호출 중 오류:", error.message);
+            setAvailability([]);
+        }
+    };
 
     return (
         <div className="Dashboard">
