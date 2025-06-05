@@ -46,6 +46,7 @@ function FileUploadPage() {
         const response = await fetch(`http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=${projId}&id=${id}`);
         if (!response.ok) {
           throw new Error('과제 데이터를 불러오지 못했습니다.');
+          // 아니 이게 data가 정의가 안되었대 그러면 지금 ppt 이거도 뜨면 안되는 거 아녀?
         }
         const data = await response.json();
         setTaskList(data);
@@ -60,7 +61,7 @@ function FileUploadPage() {
       let queryParams = [];
   
       if (projId) queryParams.push(`projId=${projId}`);
-      if (id) queryParams.push(`userId=${userId}`);
+      if (userId) queryParams.push(`userId=${userId}`);
       if (taskId) queryParams.push(`taskId=${taskId}`);
   
       const url = `${baseUrl}?${queryParams.join('&')}`;
@@ -68,7 +69,6 @@ function FileUploadPage() {
   
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP 상태 오류: ${response.status}`);
   
         const data = await response.json();
 
@@ -129,16 +129,14 @@ function FileUploadPage() {
       const isSameTask = selectedTaskIndex === index;
       const newSelectedIndex = isSameTask ? -1 : index;
       console.log("선택된 인덱스:", newSelectedIndex);
-      setSelectedTaskIndex(index);
-      
-      const selectedTask = taskList[index];
-      //지금 인덱스로 되고 있는데, 인덱스가 아니라 id를 건네야함
+      setSelectedTaskIndex(newSelectedIndex);
+      const newCategory = isSameTask ? "-1" : String(taskList[index].taskId);
     
       setFormData((prev) => ({
         ...prev,
         docs: {
           ...prev.docs,
-          category: isSameTask ? "-1" : String(taskList[index].taskId),
+          category: newCategory,
         },
       }));
     }; // 만약 선택된 게 없다면 -1 값으로 보내줘야함
@@ -215,6 +213,7 @@ function FileUploadPage() {
     const handleFileSelect = (fileId) => {
       setSelectedFiles(prev => prev.includes(fileId) ? prev.filter(id => id !== fileId) : [...prev, fileId]);
     };
+    // 전체 필터를 선택했는데 왜 업로드 폼에 파일이 생길까
   
     const handleSaveEdits = async () => {
       for (let file of editedFiles) {
