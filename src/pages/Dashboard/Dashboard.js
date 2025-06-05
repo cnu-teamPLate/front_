@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react'; // useCallback 유지
+import { useNavigate } from 'react-router-dom'; // useParams 제거
 import { IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
 import './Dashboard.css';
 
@@ -16,6 +16,9 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  // !!! localStorage에서 userId 가져오기 !!!
+  const userIdFromStorage = localStorage.getItem('userId'); // 문자열 또는 null
 
   // Subject Search and Enrollment States
   const [subjectNameInput, setSubjectNameInput] = useState('');
@@ -35,10 +38,10 @@ function Dashboard() {
       projectName: '',
       goal: '',
       githubLink: '',
-      subject: null, // Will store { classId, className, professor }
-      teamName: '',   // Added for project creation payload
-      teamMembers: [],  // Will store { id, name }
-      date: new Date().toISOString(), // Default date for new projects, can be overwritten
+      subject: null,
+      teamName: '',
+      teamMembers: [],
+      date: new Date().toISOString(),
     };
   }
 
@@ -54,12 +57,20 @@ function Dashboard() {
     setMemberApiMessage('');
   };
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
+    // !!! localStorage에서 가져온 userIdFromStorage 사용 !!!
+    if (!userIdFromStorage) {
+      console.warn("User ID from localStorage is not available. Skipping fetchProjects.");
+      setIsLoading(false);
+      setError("사용자 ID를 찾을 수 없어 프로젝트를 불러올 수 없습니다. 로그인 상태를 확인해주세요.");
+      setProjects([]); // 사용자 ID가 없으면 프로젝트 목록을 비웁니다.
+      return;
+    }
+
     setIsLoading(true);
     setError('');
-    const userIdToFetch = '20211079'; // Example User ID - replace with dynamic ID if needed
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/view?userId=${userIdToFetch}`);
+      const response = await fetch(`${API_BASE_URL}/projects/view?userId=${userIdFromStorage}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from server' }));
         throw new Error(errorData.message || '프로젝트 데이터를 불러오는 데 실패했습니다.');
@@ -71,10 +82,7 @@ function Dashboard() {
           id: apiMember.userId,
           name: apiMember.userName,
         }));
-
-        // Ensure projId is present; generate a fallback if not (though backend should provide it)
         const projId = projectFromApi.projectId || projectFromApi.projId || `${projectFromApi.classId}-${projectFromApi.projName}-${projectFromApi.date || index}`;
-        
         let subjectData = null;
         if (projectFromApi.classId) {
           subjectData = {
@@ -87,10 +95,10 @@ function Dashboard() {
           projId: projId,
           projectName: projectFromApi.projName,
           goal: projectFromApi.goal,
-          githubLink: projectFromApi.githubLink || projectFromApi.github, // Prefer githubLink if exists
-          date: projectFromApi.date || new Date().toISOString(), // Ensure date exists
+          githubLink: projectFromApi.githubLink || projectFromApi.github,
+          date: projectFromApi.date || new Date().toISOString(),
           subject: subjectData,
-          classId: projectFromApi.classId, // Keep for direct access if needed
+          classId: projectFromApi.classId,
           teamName: projectFromApi.teamName,
           teamMembers: teamMembers,
         };
@@ -102,11 +110,11 @@ function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
-  
+  }, [userIdFromStorage]); // userIdFromStorage가 변경될 때 fetchProjects 함수 재생성
+
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]); // fetchProjects (즉, userIdFromStorage)가 변경될 때 실행
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,30 +138,20 @@ function Dashboard() {
 
   const handleCloseProjectPopup = () => {
     setShowProjectPopup(false);
-    setNewProject(initialProject()); // Reset newProject form
+    setNewProject(initialProject());
     resetPopupFormStates();
   };
 
   const handleAddProject = async () => {
-    if (!newProject.projectName.trim()) {
-      alert("프로젝트 명을 입력해주세요.");
-      return;
-    }
-    if (!newProject.subject || !newProject.subject.classId) {
-      alert("과목을 선택하거나 등록해주세요.");
-      setSubjectApiMessage("과목을 선택하거나 등록해주세요.");
-      return;
-    }
-    if (!newProject.teamName.trim()) {
-      alert("팀 이름을 입력해주세요.");
-      return;
-    }
+    if (!newProject.projectName.trim()) { alert("프로젝트 명을 입력해주세요."); return; }
+    if (!newProject.subject || !newProject.subject.classId) { alert("과목을 선택하거나 등록해주세요."); setSubjectApiMessage("과목을 선택하거나 등록해주세요."); return; }
+    if (!newProject.teamName.trim()) { alert("팀 이름을 입력해주세요."); return; }
 
     const projectPayload = {
-      date: newProject.date || new Date().toISOString(), // Use date from state or generate new
+      date: newProject.date || new Date().toISOString(),
       goal: newProject.goal,
       projName: newProject.projectName,
-      github: newProject.githubLink, 
+      github: newProject.githubLink,
       classId: newProject.subject.classId,
       teamName: newProject.teamName,
       members: newProject.teamMembers.map(member => member.id)
@@ -161,38 +159,26 @@ function Dashboard() {
 
     console.log("Submitting project payload for creation:", projectPayload);
     setIsSubmitting(true);
-    setSubjectApiMessage(''); 
-    setMemberApiMessage('');
+    setSubjectApiMessage(''); setMemberApiMessage('');
 
     try {
       const response = await fetch(`${API_BASE_URL}/projects/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(projectPayload),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(projectPayload),
       });
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}. 서버 응답을 파싱할 수 없습니다.` }));
         throw new Error(errorData.message || `프로젝트 생성에 실패했습니다. 상태: ${response.status}`);
       }
-
       const responseData = await response.json();
       let finalMessage = responseData.message || '프로젝트가 성공적으로 처리되었습니다.';
-
       if (responseData.failedMemberIds && responseData.failedMemberIds.length > 0) {
         finalMessage = `프로젝트는 처리되었으나, 다음 학번의 팀원 추가에 실패했습니다: ${responseData.failedMemberIds.join(', ')}. 목록을 확인해주세요.`;
       }
-      
       alert(finalMessage);
       fetchProjects(); 
       handleCloseProjectPopup();
-
-    } catch (submissionError) {
-      console.error("Failed to submit project:", submissionError);
-      alert(`프로젝트 추가 중 오류 발생: ${submissionError.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (submissionError) { console.error("Failed to submit project:", submissionError); alert(`프로젝트 추가 중 오류 발생: ${submissionError.message}`);
+    } finally { setIsSubmitting(false); }
   };
   
   const handleSearchSubject = async () => {
@@ -219,11 +205,9 @@ function Dashboard() {
       } else { const responseText = await response.text(); console.warn("올바른 HTTP 응답(2xx)을 받았으나 JSON 형식이 아닙니다. 응답 내용:", responseText); setSubjectApiMessage('과목 정보를 찾을 수 없거나 서버 응답 형식이 올바르지 않습니다. 새로 등록하시겠습니까?'); setShowEnrollForm(true); setEnrollClassIdInput(subjectNameInput.trim()); setEnrollProfessorInput('');}
     } catch (err) { console.error("Search subject error:", err); setSubjectApiMessage('과목 조회 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.'); setShowEnrollForm(false); }
   };
-
   const handleSelectSubject = () => { 
     if (searchedSubject) { setNewProject(prev => ({ ...prev, subject: searchedSubject })); setSubjectApiMessage(`선택된 과목: ${searchedSubject.className}`); setSearchedSubject(null); setShowEnrollForm(false); }
   };
-
   const handleEnrollSubject = async () => { 
     if (!enrollClassIdInput.trim() || !subjectNameInput.trim() || !enrollProfessorInput.trim()) { setSubjectApiMessage('과목 ID, 과목명, 교수명을 모두 입력해주세요.'); return; }
     setSubjectApiMessage('새 과목 등록 중...'); setIsSubmitting(true); const newClassData = { classId: enrollClassIdInput.trim(), className: subjectNameInput.trim(), professor: enrollProfessorInput.trim() };
@@ -251,7 +235,6 @@ function Dashboard() {
       } else { const responseText = await response.text(); console.warn("팀원 검색: 올바른 HTTP 응답(2xx)을 받았으나 JSON 형식이 아닙니다. 응답 내용:", responseText); setMemberApiMessage('팀원 검색 응답 형식이 올바르지 않습니다.'); setSearchedMembers([]); }
     } catch (err) { console.error("Search members error:", err); setMemberApiMessage('팀원 검색 중 오류가 발생했습니다. 네트워크를 확인해주세요.'); setSearchedMembers([]); }
   };
-
   const handleAddSearchedMember = (memberToAdd) => { 
     const isAlreadyAdded = newProject.teamMembers.some(member => member.id === memberToAdd.userId);
     if (isAlreadyAdded) { setMemberApiMessage(`${memberToAdd.userName}(${memberToAdd.userId})님은 이미 추가된 팀원입니다.`); return; }
@@ -261,7 +244,7 @@ function Dashboard() {
   };
 
   const handleEditProject = (project) => {
-    const dateForInput = project.date ? project.date.substring(0, 16) : ''; // YYYY-MM-DDTHH:MM format for datetime-local
+    const dateForInput = project.date ? project.date.substring(0, 16) : '';
     setSelectedProject({ ...project, date: dateForInput }); 
     setShowEditPopup(true);
   };
@@ -272,7 +255,7 @@ function Dashboard() {
 
     const updatePayload = {
       projectId: selectedProject.projId,
-      date: selectedProject.date ? new Date(selectedProject.date + ':00Z').toISOString() : new Date().toISOString(), // Ensure seconds and Z for full ISO string if input is YYYY-MM-DDTHH:MM
+      date: selectedProject.date ? new Date(selectedProject.date + ':00Z').toISOString() : new Date().toISOString(),
       goal: selectedProject.goal,
       projName: selectedProject.projectName,
       github: selectedProject.githubLink,
@@ -283,9 +266,7 @@ function Dashboard() {
     setIsSubmitting(true);
     try {
       const response = await fetch(`${API_BASE_URL}/projects/update/${selectedProject.projId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatePayload),
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatePayload),
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
@@ -293,31 +274,13 @@ function Dashboard() {
       }
       alert('프로젝트가 성공적으로 수정되었습니다.');
       fetchProjects();
-      setShowEditPopup(false);
-      setSelectedProject(null);
-    } catch (submissionError) {
-      console.error("Failed to update project:", submissionError);
-      alert(`프로젝트 수정 오류: ${submissionError.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
+      setShowEditPopup(false); setSelectedProject(null);
+    } catch (submissionError) { console.error("Failed to update project:", submissionError); alert(`프로젝트 수정 오류: ${submissionError.message}`);
+    } finally { setIsSubmitting(false); }
   };
 
   return (
     <div className="Dashboard">
-      <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-content">
-          <div className="my-projects">
-            <h2>내 프로젝트</h2>
-            {projects.map(project => (
-              <div className="project-item" key={project.projId} onClick={() => navigate(`/project/${project.projId}`)} style={{ cursor: 'pointer' }}>
-                <p title={project.projectName}>{project.projectName}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </aside>
-
       <main className={`App-content ${sidebarOpen ? 'shifted' : ''}`}>
         <div className="main-header">
           <button onClick={handleCreateProject} className="add-project-button">
@@ -348,7 +311,7 @@ function Dashboard() {
                     }
                   </p>
                   <p className="project-detail project-goal"><strong>목표:</strong> {project.goal || 'N/A'}</p>
-                  {project.date && ( <p className="project-detail project-date"><strong>일자:</strong> {new Date(project.date).toLocaleDateString()}</p> )} {/* "등록일/수정일" -> "일자" */}
+                  {project.date && ( <p className="project-detail project-date"><strong>마감일:</strong> {new Date(project.date).toLocaleDateString()}</p> )} {/* "등록일/수정일" -> "일자" */}
                   <div className="team-members-simplified">
                     <h3>팀원:</h3>
                     {project.teamMembers && project.teamMembers.length > 0 ? (
@@ -449,11 +412,10 @@ function Dashboard() {
             <label>팀 이름: <input type="text" name="teamName" value={selectedProject.teamName || ''} onChange={handleEditChange} disabled={isSubmitting} /></label>
             <label>프로젝트 목표: <input type="text" name="goal" value={selectedProject.goal} onChange={handleEditChange} disabled={isSubmitting} /></label>
             <label>GitHub 링크: <input type="text" name="githubLink" value={selectedProject.githubLink || ''} onChange={handleEditChange} disabled={isSubmitting} /></label>
-            <label>날짜:
+            <label>마감일:
               <input 
-                type="datetime-local" // 날짜 및 시간 선택 UI 제공
+                type="datetime-local"
                 name="date" 
-                // selectedProject.date가 ISO 문자열이라고 가정하고 YYYY-MM-DDTHH:MM 형식으로 변환
                 value={selectedProject.date ? selectedProject.date.substring(0,16) : ''} 
                 onChange={handleEditChange}
                 disabled={isSubmitting} 
