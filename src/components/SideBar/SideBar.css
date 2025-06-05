@@ -1,6 +1,4 @@
-/* 기본적으로 사이드바 숨김 */
 .sidebar {
-    /* 추가: 화면에 고정하기 위한 설정 */
     position: fixed;
     top: 0;
     left: -280px;
@@ -59,11 +57,12 @@
 
 /* 할 일 리스트 영역 컨테이너 */
 .todolist-container {
+    display: flex;
+    justify-content: center;
     margin-top: 10px;
 }
 
 .calendar-wrapper {
-    width: 85%;
     background: white;
     border-radius: 8px;
     padding: 10px;
@@ -71,6 +70,7 @@
 }
 
 .todolist-wrapper {
+    width: 2px;
     background-color: #fff;
     border-radius: 8px;
     padding: 10px;

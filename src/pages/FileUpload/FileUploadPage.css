@@ -1,98 +1,100 @@
 body {
-    margin: 0 !important;
-    font-family: sans-serif !important;
-    background-color: #f8f8f8 !important;
-  }
-  
-  .container {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: center !important;
-    align-items: flex-start !important;
-    gap: 40px !important;
-    padding: 40px 20px !important;
-    background-color: #fff !important;
-    flex-wrap: wrap;
-  }
-  
-  .upload-section, .list-section {
-    background-color: #f4f4f4 !important;
-    padding: 30px !important;
-    border-radius: 10px !important;
-    width: 45% !important;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1) !important;
-    display: block;
-    min-width: 400px !important;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
+  margin: 0 !important;
+  font-family: sans-serif !important;
+  background-color: #f8f8f8 !important;
+}
 
-  .discription {
-    display: column;
-  }
+.container {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 40px !important;
+  padding: 40px 20px !important;
+  flex-wrap: wrap;
+}
 
-  .title, .detail {
-    box-sizing: border-box;
-    width: 100% !important;
-    border-radius: 10px;
-    border-width: 0.5px;
-    padding: 10px;
-    margin-bottom: 0.5em;
+.upload-section,
+.list-section {
+  background-color: #f4f4f4 !important;
+  padding: 30px !important;
+  border-radius: 10px !important;
+  width: 45% !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important;
+  display: block;
+  min-width: 400px !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
 
-  }
-  .title {
-    height :35px;
-    margin-top: 1em;
-  }
+.discription {
+  display: column;
+}
 
-  .detail {
-    height: 150px;
-    padding: 10px;
-    resize: none;         
-    vertical-align: top;
-    line-height: 1.4;
-    box-sizing: border-box;
-    
-  }
+.title,
+.detail {
+  box-sizing: border-box;
+  width: 100% !important;
+  border-radius: 10px;
+  border-width: 0.5px;
+  padding: 10px;
+  margin-bottom: 0.5em;
 
-  input::placeholder { 
-    font-size: 0.8rem;
-  }
+}
 
-  .url-input-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.title {
+  height: 35px;
+  margin-top: 1em;
+}
 
-  .url-input {
-    box-sizing: border-box;
-    height: 35px;
-    width: 90% !important;
-    border-radius: 10px;
-    border-width: 0.5px;
-    padding: 10px;
-    border: 2px dashed #ccc !important;
-  }
+.detail {
+  height: 150px;
+  padding: 10px;
+  resize: none;
+  vertical-align: top;
+  line-height: 1.4;
+  box-sizing: border-box;
 
-  .plus {
-    margin: 0 0 0 0.5em;
-    font-size: 12px;
-    width: 40px;
-    height: 30px;
-    box-sizing: border-box;
-  }
+}
 
-  h2 {
-    text-align: center !important;
-    margin-bottom: 20px !important;
-  }
+input::placeholder {
+  font-size: 0.8rem;
+}
 
-  .filter {
-    display: flex;
-    margin-bottom: 12px;
-    justify-content: space-around;
-  }
+.url-input-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.url-input {
+  box-sizing: border-box;
+  height: 35px;
+  width: 90% !important;
+  border-radius: 10px;
+  border-width: 0.5px;
+  padding: 10px;
+  border: 2px dashed #ccc !important;
+}
+
+.plus {
+  margin: 0 0 0 0.5em;
+  font-size: 12px;
+  width: 40px;
+  height: 30px;
+  box-sizing: border-box;
+}
+
+h2 {
+  text-align: center !important;
+  margin-bottom: 20px !important;
+}
+
+.filter {
+  display: flex;
+  margin-bottom: 12px;
+  justify-content: space-around;
+}
 
 
 .filter-item {
@@ -107,125 +109,132 @@ body {
   font-weight: bold;
   text-decoration: underline;
 }
-  
-  .task-select {
-    background-color: white !important;
-    border-radius: 10px !important;
-    padding: 15px !important;
-    border: 1px solid #ccc !important;
-    margin-bottom: 20px !important;
-  }
-  
-  .task-list-scroll {
-    max-height: 100px !important;
-    overflow-y: auto !important;
-    background-color: white !important;
-    border: 1px solid #ccc !important;
-    border-radius: 10px !important;
-    padding: 10px !important;
-    margin-bottom: 20px !important;
-  }
-  
-  .task-row {
-    display: flex !important;
-    justify-content: space-between !important;
-    padding: 6px 10px !important;
-    border-bottom: 1px solid #eee !important;
-    font-size: 14px !important;
-  }
 
-  .task-list-title {
-    font-weight: bold !important;
-    margin-bottom: 8px !important;
-    font-size: 15px !important;
-  }
-  
-  .task-row.selected {
-    border: 2px solid red !important;
-    border-radius: 6px !important;
-    background-color: #fff5f5 !important;
-  }
-  
-  .task-type {
-    font-weight: bold !important;
-    color: #444 !important;
-  }
-  
-  .task-title {
-    color: #666 !important;
-  }
-  
-  .file-box {
-    border: 2px dashed #ccc !important;
-    padding: 20px !important;
-    text-align: center !important;
-    background-color: #fff !important;
-  }
-  
-  .file-label {
-    display: inline-block !important;
-    cursor: pointer !important;
-    color: #666 !important;
-    position: relative !important;
-  }
-  
-  .file-label input[type=file] {
-    display: none !important;
-  }
-  
-  .file-list, .url-list {
-    list-style: none !important;
-    padding: 0 !important;
-    margin-bottom: 20px !important;
-    
-  }
-  
-  .file-list li, .url-list li {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 2px 8px !important;         /* 상하 여백 2px로 최소화 */
-    margin: 4px 0 !important;
-    font-size: 14px !important;
-    line-height: 1.2 !important;
-    background-color: none !important;
-    border-radius: 4px !important;
-  }
-  
-  .file-list li span, .url-list li span {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    max-width: 80% !important;
-  }
-  
-  .file-list button, .url-list button {
-    background-color: rgb(215, 215, 215) !important;
-    border-radius: 4px !important;
-    font-size: 10px !important;
-    padding: 4px 8px !important;         /* 상하 여백 2px */
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    height: auto !important;
-    line-height: 1 !important;
-    margin: 0!important;
-    color: #6d6d6d;
-  }
-  
-  table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    background-color: white !important;
-  }
-  
-  th, td {
-    text-align: center !important;
-    padding: 10px !important;
-    border-bottom: 1px solid #ccc !important;
-  }
-  
-  .upload-button {
-    display: block;
-    margin: 1em 0 0.5em auto!important;
-  }
+.task-select {
+  background-color: white !important;
+  border-radius: 10px !important;
+  padding: 15px !important;
+  border: 1px solid #ccc !important;
+  margin-bottom: 20px !important;
+}
+
+.task-list-scroll {
+  max-height: 100px !important;
+  overflow-y: auto !important;
+  background-color: white !important;
+  border: 1px solid #ccc !important;
+  border-radius: 10px !important;
+  padding: 10px !important;
+  margin-bottom: 20px !important;
+}
+
+.task-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 6px 10px !important;
+  border-bottom: 1px solid #eee !important;
+  font-size: 14px !important;
+}
+
+.task-list-title {
+  font-weight: bold !important;
+  margin-bottom: 8px !important;
+  font-size: 15px !important;
+}
+
+.task-row.selected {
+  border: 2px solid red !important;
+  border-radius: 6px !important;
+  background-color: #fff5f5 !important;
+}
+
+.task-type {
+  font-weight: bold !important;
+  color: #444 !important;
+}
+
+.task-title {
+  color: #666 !important;
+}
+
+.file-box {
+  border: 2px dashed #ccc !important;
+  padding: 20px !important;
+  text-align: center !important;
+  background-color: #fff !important;
+}
+
+.file-label {
+  display: inline-block !important;
+  cursor: pointer !important;
+  color: #666 !important;
+  position: relative !important;
+}
+
+.file-label input[type=file] {
+  display: none !important;
+}
+
+.file-list,
+.url-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin-bottom: 20px !important;
+
+}
+
+.file-list li,
+.url-list li {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 2px 8px !important;
+  /* 상하 여백 2px로 최소화 */
+  margin: 4px 0 !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  background-color: none !important;
+  border-radius: 4px !important;
+}
+
+.file-list li span,
+.url-list li span {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 80% !important;
+}
+
+.file-list button,
+.url-list button {
+  background-color: rgb(215, 215, 215) !important;
+  border-radius: 4px !important;
+  font-size: 10px !important;
+  padding: 4px 8px !important;
+  /* 상하 여백 2px */
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  height: auto !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  color: #6d6d6d;
+}
+
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background-color: white !important;
+}
+
+th,
+td {
+  text-align: center !important;
+  padding: 10px !important;
+  border-bottom: 1px solid #ccc !important;
+}
+
+.upload-button {
+  display: block;
+  margin: 1em 0 0.5em auto !important;
+}
