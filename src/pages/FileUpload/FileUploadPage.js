@@ -324,10 +324,12 @@ function FileUploadPage() {
   
         <div className="list-section">
           <h2>자료 목록</h2>
-          <button onClick={handleEditToggle}>수정 모드</button>
-          <button onClick={handleDeleteToggle}>삭제 모드</button>
-          {editMode && <button onClick={handleSaveEdits}>수정 완료</button>}
-          {deleteMode && <button onClick={handleDeleteFiles}>삭제</button>}
+          <div className='button-group'>
+            <button className='button-mode' onClick={handleEditToggle}>수정</button>
+            <button className='button-mode'onClick={handleDeleteToggle}>삭제</button>
+            {editMode && <button className='button-mode' onClick={handleSaveEdits}>완료</button>}
+            {deleteMode && <button className='button-mode' onClick={handleDeleteFiles}>완료</button>}
+          </div>
           <div className="filter">
             <span
               className={selectedFilter === 'proj' ? 'filter-item selected' : 'filter-item'}

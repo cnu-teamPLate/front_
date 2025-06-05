@@ -229,3 +229,11 @@ body {
     display: block;
     margin: 1em 0 0.5em auto!important;
   }
+
+  .button-group {
+    margin-left: auto!important;
+  }
+
+  .button-mode {
+    margin-top: 0!important;
+  }
