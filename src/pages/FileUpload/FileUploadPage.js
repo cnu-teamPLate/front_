@@ -26,19 +26,17 @@ function FileUploadPage() {
     const id = '20241121'; 
     const projId ='cse00001'; 
 
-    const [formData, setFormData] = useState({
-        docs:JSON.stringify({
-          id : '20241121', //id || '',
-          projId : 'cse00001', //projId || '',
-          title : '',
-          detail : '',
-          category : -1,
-          url: [], // 여기도 배열로 바꾸나?
-        }),
+    const [formData, setFormData] = useState(
+      {
+        id : '20241121', //id || '',
+        projId : 'cse00001', //projId || '',
+        title : '',
+        detail : '',
+        category : -1,
+        url: [], // 여기도 배열로 바꾸나?
         file : [],
-    })
-
-
+      }
+    )
     
 
     const fetchTasks = async () => {
@@ -48,8 +46,8 @@ function FileUploadPage() {
           throw new Error('과제 데이터를 불러오지 못했습니다.');
           // 아니 이게 data가 정의가 안되었대 그러면 지금 ppt 이거도 뜨면 안되는 거 아녀?
         }
-        const data = await response.json();
-        setTaskList(data);
+        const taskData = await response.json();
+        setTaskList(taskData);
       } catch (error) {
         console.error('연관 과제 불러오기 오류:', error);
         setTaskList([]); // fallback
@@ -70,11 +68,11 @@ function FileUploadPage() {
       try {
         const response = await fetch(url);
   
-        const data = await response.json();
+        const fileData = await response.json();
 
         if (response.ok) {
           console.log('파일을 가져옴');
-          setFiles(data);
+          setFiles(fileData);
         } else if (response.status === 400)
         {
           setStatusMessage('필수 요청 값이 존재하지 않습니다');
@@ -101,10 +99,7 @@ function FileUploadPage() {
       const { name, value } = e.target;
       setFormData((prev) => ({
         ...prev,
-        docs: {
-          ...prev.docs,
           [name]: value,
-        }
       }));
     };
   
@@ -134,10 +129,7 @@ function FileUploadPage() {
     
       setFormData((prev) => ({
         ...prev,
-        docs: {
-          ...prev.docs,
           category: newCategory,
-        },
       }));
     }; // 만약 선택된 게 없다면 -1 값으로 보내줘야함
     // 선택 해제도 가능하게 코드 추가
@@ -148,6 +140,13 @@ function FileUploadPage() {
   
       try {
         const formDataToSend = new FormData();
+        console.log(formDataToSend);
+        const {
+          id, projId, title, detail, category, url, file
+        } = formData;
+    
+        const uploadData = { id, projId, title, detail, category, url };
+
         formDataToSend.append('docs', new Blob(
           [JSON.stringify(formData.docs)],
           { type: 'application/json' }
@@ -292,10 +291,7 @@ function FileUploadPage() {
                   setNewUrl('');
                   setFormData((prev) => ({
                     ...prev,
-                    docs: {
-                      ...prev.docs,
                       url: updatedUrls, // formData에도 반영
-                    },
                   }));
                 }
               }}>추가</button>
@@ -310,10 +306,7 @@ function FileUploadPage() {
                     setUrlList(updated);
                     setFormData((prev) => ({
                       ...prev,
-                      docs: {
-                        ...prev.docs,
                         url: updated,
-                      },
                     }));
                   }}>삭제</button>
                 </li>
@@ -321,8 +314,8 @@ function FileUploadPage() {
             </ul>
 
             <div className='description'>
-                <input className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.docs.title} onChange={handleUploadInputChange}/>
-                <textarea className='detail' type='text' placeholder='설명을 입력해주세요' name='detail' value={formData.docs.detail} onChange={handleUploadInputChange}/>
+                <input className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.title} onChange={handleUploadInputChange}/>
+                <textarea className='detail' type='text' placeholder='설명을 입력해주세요' name='detail' value={formData.detail} onChange={handleUploadInputChange}/>
             </div>
             <button type='submit' className="upload-button">업로드</button>
           </form>
