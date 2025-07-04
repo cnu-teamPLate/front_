@@ -13,11 +13,8 @@ const SideBar = ({ sidebarOpen }) => {
                     <MyCalendar />
                 </div>
             </div>
-            <div className='todo-list container'>
-                <div className='todolist wrapper'>
-                    <MyAssignments isSidebar={true} />
-                </div>
-            </div>
+            {/* 기존 todo-list/todolist wrapper div 제거, MyAssignments만 남김 */}
+            <MyAssignments isSidebar={true} />
         </aside>
     );
 };

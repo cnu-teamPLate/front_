@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'; // useCallback 유지
 import { useNavigate } from 'react-router-dom'; // useParams 제거
 import { IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
+import { Link } from 'react-router-dom';
+
 import './Dashboard.css';
 
 const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
@@ -8,6 +10,8 @@ const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.co
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectsPerPage] = useState(5);
   const [showProjectPopup, setShowProjectPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -17,7 +21,6 @@ function Dashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // !!! localStorage에서 userId 가져오기 !!!
   const userIdFromStorage = localStorage.getItem('userId'); // 문자열 또는 null
 
   // Subject Search and Enrollment States
@@ -115,6 +118,13 @@ function Dashboard() {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]); // fetchProjects (즉, userIdFromStorage)가 변경될 때 실행
+
+  // Pagination logic
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = projects.slice(indexOfFirstProject, indexOfLastProject);
+
+  const paginate = pageNumber => setCurrentPage(pageNumber);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -291,40 +301,48 @@ function Dashboard() {
 
         {isLoading && !isSubmitting ? ( <p className="loading-message">프로젝트 목록 로딩 중...</p> ) : 
          error ? ( <p className="error">{error}</p> ) : (
-          <div className="project-list">
-            {projects.map(project => (
-              <div className="project-card" key={project.projId}>
-                <div className="project-card-header">
-                  <h2 title={project.projectName}>{project.projectName}</h2>
-                  <div className="project-controls">
-                    <IoBookmark size={20} color="gold" style={{cursor: 'pointer'}} title="북마크"/>
-                    <IoSettings size={20} color="#6c757d" style={{ cursor: 'pointer' }} onClick={() => handleEditProject(project)} title="설정" />
+          <>
+            <div className="project-list">
+              {currentProjects.map(project => (
+                <div className="project-card" key={project.projId}>
+                  <div className="project-card-header">
+                    <h2 title={project.projectName}>{project.projectName}</h2>
+                    <div className="project-controls">
+                      <IoBookmark size={20} color="gold" style={{cursor: 'pointer'}} title="북마크"/>
+                      <IoSettings size={20} color="#6c757d" style={{ cursor: 'pointer' }} onClick={() => handleEditProject(project)} title="설정" />
+                    </div>
+                  </div>
+                  <div className="project-card-body">
+                    {project.teamName && ( <p className="project-detail"><strong>팀 이름:</strong> {project.teamName}</p> )}
+                    <p className="project-detail">
+                      <strong>과목:</strong> 
+                      {project.subject 
+                        ? `${project.subject.className || '이름 없음'} (ID: ${project.subject.classId}, ${project.subject.professor || '담당교수 미지정'})` 
+                        : (project.classId ? `ID: ${project.classId}` : 'N/A')
+                      }
+                    </p>
+                    <p className="project-detail project-goal"><strong>목표:</strong> {project.goal || 'N/A'}</p>
+                    {project.date && ( <p className="project-detail project-date"><strong>마감일:</strong> {new Date(project.date).toLocaleDateString()}</p> )} {/* "등록일/수정일" -> "일자" */}
+                    <div className="team-members-simplified">
+                      <h3>팀원:</h3>
+                      {project.teamMembers && project.teamMembers.length > 0 ? (
+                        <ul>{project.teamMembers.map((member) => ( <li key={member.id} title={`${member.name} (${member.id})`}>{member.name || member.id}</li> ))}</ul>
+                      ) : ( <p className="no-members-text">팀원이 없습니다.</p> )}
+                    </div>
+                  </div>
+                  <div className="project-card-footer">
+                    <Link to={`/project/${project.projId}`} className="project-link">프로젝트로 이동</Link>
                   </div>
                 </div>
-                <div className="project-card-body">
-                  {project.teamName && ( <p className="project-detail"><strong>팀 이름:</strong> {project.teamName}</p> )}
-                  <p className="project-detail">
-                    <strong>과목:</strong> 
-                    {project.subject 
-                      ? `${project.subject.className || '이름 없음'} (ID: ${project.subject.classId}, ${project.subject.professor || '담당교수 미지정'})` 
-                      : (project.classId ? `ID: ${project.classId}` : 'N/A')
-                    }
-                  </p>
-                  <p className="project-detail project-goal"><strong>목표:</strong> {project.goal || 'N/A'}</p>
-                  {project.date && ( <p className="project-detail project-date"><strong>마감일:</strong> {new Date(project.date).toLocaleDateString()}</p> )} {/* "등록일/수정일" -> "일자" */}
-                  <div className="team-members-simplified">
-                    <h3>팀원:</h3>
-                    {project.teamMembers && project.teamMembers.length > 0 ? (
-                      <ul>{project.teamMembers.map((member) => ( <li key={member.id} title={`${member.name} (${member.id})`}>{member.name || member.id}</li> ))}</ul>
-                    ) : ( <p className="no-members-text">팀원이 없습니다.</p> )}
-                  </div>
-                </div>
-                <div className="project-card-footer">
-                  <a href={project.githubLink || '#'} target="_blank" rel="noopener noreferrer" className="project-link">프로젝트로 이동</a>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            <Pagination
+              projectsPerPage={projectsPerPage}
+              totalProjects={projects.length}
+              paginate={paginate}
+              currentPage={currentPage}
+            />
+          </>
         )}
       </main>
 
@@ -406,21 +424,35 @@ function Dashboard() {
 
       {showEditPopup && selectedProject && (
         <div className="popupfordashboard">
-          <div className="popup-inner">
+          <div className="popup-inner edit-popup">
             <h2>프로젝트 편집</h2>
-            <label>프로젝트명: <input type="text" name="projectName" value={selectedProject.projectName} onChange={handleEditChange} disabled={isSubmitting} /></label>
-            <label>팀 이름: <input type="text" name="teamName" value={selectedProject.teamName || ''} onChange={handleEditChange} disabled={isSubmitting} /></label>
-            <label>프로젝트 목표: <input type="text" name="goal" value={selectedProject.goal} onChange={handleEditChange} disabled={isSubmitting} /></label>
-            <label>GitHub 링크: <input type="text" name="githubLink" value={selectedProject.githubLink || ''} onChange={handleEditChange} disabled={isSubmitting} /></label>
-            <label>마감일:
+            <div className="form-group">
+              <label htmlFor="edit-projectName">프로젝트명</label>
+              <input id="edit-projectName" type="text" name="projectName" value={selectedProject.projectName} onChange={handleEditChange} disabled={isSubmitting} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-teamName">팀 이름</label>
+              <input id="edit-teamName" type="text" name="teamName" value={selectedProject.teamName || ''} onChange={handleEditChange} disabled={isSubmitting} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-goal">프로젝트 목표</label>
+              <input id="edit-goal" type="text" name="goal" value={selectedProject.goal} onChange={handleEditChange} disabled={isSubmitting} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-githubLink">GitHub 링크</label>
+              <input id="edit-githubLink" type="text" name="githubLink" value={selectedProject.githubLink || ''} onChange={handleEditChange} disabled={isSubmitting} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-date">마감일</label>
               <input 
+                id="edit-date"
                 type="datetime-local"
                 name="date" 
                 value={selectedProject.date ? selectedProject.date.substring(0,16) : ''} 
                 onChange={handleEditChange}
                 disabled={isSubmitting} 
               />
-            </label>
+            </div>
             <div className="popup-actions">
               <button onClick={handleSaveProject} className="popup-save-button" disabled={isSubmitting}>
                 {isSubmitting ? '저장 중...' : '저장'}
@@ -435,3 +467,30 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+const Pagination = ({ projectsPerPage, totalProjects, paginate, currentPage }) => {
+  const pageNumbers = [];
+
+  for (let i = 1; i <= Math.ceil(totalProjects / projectsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePaginate = (e, number) => {
+    e.preventDefault();
+    paginate(number);
+  };
+
+  return (
+    <nav>
+      <ul className='pagination'>
+        {pageNumbers.map(number => (
+          <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            <a onClick={(e) => handlePaginate(e, number)} href='!#' className='page-link'>
+              {number}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
