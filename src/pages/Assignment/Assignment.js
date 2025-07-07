@@ -1,18 +1,69 @@
 /* eslint-disable no-unused-vars */
 import './Assignment.css';
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
-import MyAssignments from '../../components/MyAssignments/MyAssignments';
-import AllAssignments from '../../components/AllAssignments/AllAssignments';
+
 
 const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
 
-// 쿼리 파라미터에서 projectId, id(사용자) 추출
-const urlParams = new URLSearchParams(window.location.search);
-const projId = urlParams.get("projectId");
-const currentUserId = localStorage.getItem('userId');;
+const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange }) => {
+    
+    const isPast = new Date(item.date * 1000) < new Date();
+
+    const cardClasses = `assignment-card ${isPast ? 'past-due' : ''} ${item.checkBox === 1 ? 'completed' : ''}`;
+    const assigneeName = getAssigneeName(item.userName);
+
+
+    const onCheckboxClick = (e) => {
+        e.stopPropagation(); 
+        e.preventDefault();  
+        handleCheckboxChange(item.taskId); 
+    };
+
+    return (
+        <a href={`/AssignmentDetail?taskId=${item.taskId}`} className={cardClasses}>
+            <div className="card-status-bar"></div>
+            <div className="card-content">
+                <div className="card-header">
+                    <span className="tag category-tag">{item.cate}</span>
+                    <div className="card-checkbox-wrapper" onClick={onCheckboxClick}>
+                        <input
+                            type="checkbox"
+                            checked={item.checkBox === 1}
+                            readOnly 
+                        />
+                        <span className="custom-checkbox"></span>
+                    </div>
+                </div>
+                
+                <h4 className="card-title">{item.taskName}</h4>
+                <p className="card-description">{item.detail}</p>
+                
+                <div className="card-footer">
+                    <div className="card-tags">
+                         <span className="tag assignee-tag">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            {assigneeName}
+                        </span>
+                        <span className={`tag complexity-tag level-${item.level}`}>{getComplexityLabel(item.level)}</span>
+                    </div>
+                    <div className="card-deadline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>{formatDate(item.date)}</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    );
+};
+
 
 function Assignment({ notifications = [] }) {
+    const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
+    const projId = urlParams.get("projectId");
+    const currentUserId = localStorage.getItem('userId');
     const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
     const [detailPlaceholder, setDetailPlaceholder] = useState('과제의 상세 설명을 적어주세요');
     const [formData, setFormData] = useState({
@@ -61,11 +112,16 @@ function Assignment({ notifications = [] }) {
     }, [projId]);
 
     useEffect(() => {
-        if (!projId || !currentUserId) return;
+        if (!projId) return;
         const fetchAssignments = async () => {
             try {
-                const response = await fetch(`${baseURL}/task/view?projId=${projId}&id=${currentUserId}`);
+                const response = await fetch(`${baseURL}/task/view?projId=${projId}`);
                 if (!response.ok) {
+                    if (response.status === 404) {
+                        setAllAssignments([]);
+                        setMyAssignments([]);
+                        return; 
+                    }
                     throw new Error(`과제 데이터를 불러오지 못했습니다. 상태 코드: ${response.status}`);
                 }
                 const data = await response.json();
@@ -74,8 +130,11 @@ function Assignment({ notifications = [] }) {
                 const sortedData = sortData(fetchedData);
                 setAllAssignments(sortedData);
 
-                const myData = sortedData.filter(item => item.userName === currentUserId);
-                setMyAssignments(myData);
+                if (currentUserId) {
+                    
+                    const myData = sortedData.filter(item => item.userName === currentUserId);
+                    setMyAssignments(myData);
+                }
 
             } catch (error) {
                 console.error('과제 불러오기 오류:', error);
@@ -94,25 +153,18 @@ function Assignment({ notifications = [] }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // payload 객체
-        /* 
-        과제 생성 API (/task/post)에서 Task 엔티티를 데이터베이스에 저장할 때, 
-        taskId가 자동으로 생성되지 않고 0으로 저장되어 Duplicate entry 오류가 발생
-        Task 엔티티의 taskId 필드에 ID 자동 생성 전략 어노테이션을 확인하고 추가 필요
-        */
         const payload = {
-
-            id: currentUserId,                      // 현재 사용자 ID
-            projId: projId,                         // 프로젝트 ID
-            role: null,                             // role은 현재 폼에 없으므로 null 처리
+            id: currentUserId,
+            projId: projId,
+            role: null,
             cate: formData.category,
             level: Number(formData.complexity),
             date: new Date(formData.deadline).toISOString(), 
             detail: formData.description,
-            checkBox: 0,                            // 새 과제이므로 checkBox 상태는 0(미완료)으로 설정
+            checkBox: 0,
             taskName: formData.taskName,
-            userName: formData.assignee,            // 담당자 ID
-            files: [],                              // 새 과제이므로 빈 파일 목록 전송
+            userName: formData.assignee, 
+            files: [],
         };
 
         console.log("Submitting Payload:", JSON.stringify(payload, null, 2));
@@ -138,30 +190,55 @@ function Assignment({ notifications = [] }) {
         }
     };
 
-    // Unix 타임스탬프 기준 정렬 함수
     const sortData = (data) => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
 
         return [...data].sort((a, b) => {
+
+            if (a.checkBox === 0 && b.checkBox === 1) return -1;
+            if (a.checkBox === 1 && b.checkBox === 0) return 1;
+
             const dateA = new Date(a.date * 1000);
             const dateB = new Date(b.date * 1000);
-            const isPastA = dateA < now;
-            const isPastB = dateB < now;
 
-            if (isPastA && !isPastB) return 1;
-            if (!isPastA && isPastB) return -1;
-            if (isPastA && isPastB) return dateB - dateA;
             return dateA - dateB;
         });
     };
 
-    // 마감일 경과 여부 CSS 클래스 반환 함수
-    const getItemClass = (itemDate) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const itemDateTime = new Date(itemDate * 1000);
-        return itemDateTime < today ? 'look-item past-date' : 'look-item';
+  
+    const handleCheckboxChange = (taskId) => {
+       
+        const updatedAssignments = allAssignments.map((item) =>
+            item.taskId === taskId ? { ...item, checkBox: item.checkBox === 1 ? 0 : 1 } : item
+        );
+        const sorted = sortData(updatedAssignments);
+        setAllAssignments(sorted);
+
+        if (currentUserId) {
+            const myData = sorted.filter(item => item.userName === currentUserId);
+            setMyAssignments(myData);
+        }
+    };
+
+    
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleString("ko-KR", {
+            year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", hour12: false,
+        }).replace(/\. /g, '.').slice(0, -1); 
+    };
+
+    
+    const getAssigneeName = (assigneeId) => {
+        const member = projectMembers.find(m => String(m.id) === String(assigneeId));
+        return member ? member.name : 'Unknown';
+    };
+
+    
+    const getComplexityLabel = (complexity) => {
+        return levelOptions.find(opt => opt.value === complexity)?.label || "알 수 없음";
     };
 
     return (
@@ -170,7 +247,6 @@ function Assignment({ notifications = [] }) {
                 <div className="center-content">
                     <form className="As-create-form" onSubmit={handleSubmit}>
                         <div className="setting-list">
-                            {/* [수정] 담당자 목록을 새로운 API 응답 형식(id, name)에 맞춰 렌더링 */}
                             <select name="assignee" value={formData.assignee} onChange={handleChange} required>
                                 <option value="" disabled>담당자</option>
                                 {projectMembers.map((member) => (
@@ -193,9 +269,9 @@ function Assignment({ notifications = [] }) {
                                     </option>
                                 ))}
                             </select>
-                            <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} required />
+                            <input type="datetime-local" name="deadline" value={formData.deadline} onChange={handleChange} required />
                         </div>
-                        <div className="container">
+                        <div className="containerarea">
                             <div className="As-title">
                                 <textarea
                                     name="taskName"
@@ -217,9 +293,48 @@ function Assignment({ notifications = [] }) {
                         </div>
                         <button type="submit" className="submit-button">생성</button>
                     </form>
+                    
                     <div className="Assignment-look">
-                        <MyAssignments myAssignment={myAssignments} getItemClass={getItemClass} isSidebar={false} />
-                        <AllAssignments allAssignment={allAssignments} getItemClass={getItemClass} />
+                        <div className="my-assignment">
+                            <h3>내 과제 보기</h3>
+                            <div className="assignments-list">
+                                {myAssignments.length > 0 ? (
+                                    myAssignments.map((item) => (
+                                        
+                                        <AssignmentCard 
+                                            key={item.taskId}
+                                            item={item}
+                                            getAssigneeName={getAssigneeName}
+                                            getComplexityLabel={getComplexityLabel}
+                                            formatDate={formatDate}
+                                            handleCheckboxChange={handleCheckboxChange}
+                                        />
+                                    ))
+                                ) : (
+                                    <p className="no-assignments-msg">내 과제가 없습니다.</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="all-assignment">
+                            <h3>전체 과제 보기</h3>
+                            <div className="assignments-list">
+                                {allAssignments.length > 0 ? (
+                                    allAssignments.map((item) => (
+                                        
+                                        <AssignmentCard 
+                                            key={item.taskId}
+                                            item={item}
+                                            getAssigneeName={getAssigneeName}
+                                            getComplexityLabel={getComplexityLabel}
+                                            formatDate={formatDate}
+                                            handleCheckboxChange={handleCheckboxChange}
+                                        />
+                                    ))
+                                ) : (
+                                    <p className="no-assignments-msg">등록된 과제가 없습니다.</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                     <NotificationPopup notifications={notifications} />
                 </div>
