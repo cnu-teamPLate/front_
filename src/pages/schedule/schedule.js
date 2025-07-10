@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-
-// 더미 이벤트 데이터 (예시)
 const dummyEvents = [
     {
         userId: "20211079",
@@ -45,13 +44,11 @@ const dummyEvents = [
     }
 ];
 
-// 사용자 정보 매핑 (userId -> 사용자 이름)
 const userInfo = {
     "20211079": "Alice",
     "20211080": "Bob"
 };
 
-/* 1) 날짜 선택 달력 */
 function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates }) {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
@@ -108,8 +105,8 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
-/* 2) 읽기 전용 Availability Matrix */
-function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events }) {
+function AvailabilityMatrix({ selectedDates, start, end, events }) {
+    const [hoveredUsers, setHoveredUsers] = useState([]);
     const parseTime = (timeStr) => {
         const [hourMinute, ampm] = timeStr.split(' ');
         let [hour, minute] = hourMinute.split(':').map(Number);
@@ -137,7 +134,7 @@ function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events })
         return slots;
     };
 
-    const timeSlots = getTimeSlots(earliestTime, latestTime);
+    const timeSlots = getTimeSlots(start, end);
 
     const getCellDateTime = (dateStr, timeSlot) => {
         const { hour, minute } = parseTime(timeSlot);
@@ -155,6 +152,13 @@ function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events })
         const names = overlappingEvents.map(event => userInfo[event.userId]).filter(Boolean);
         return [...new Set(names)];
     };
+    const calculateCellColor = (userCount) => {
+        // 최대 사용자 수에 비례하여 색상 결정 (최대 9명 가능)
+        const maxCount = 9;
+        const intensity = Math.min(userCount / maxCount, 1);
+        return `rgba(0, 200, 0, ${intensity})`;
+    };
+
 
     return (
         <div className="availability-matrix">
@@ -169,7 +173,11 @@ function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events })
                         fontWeight: 'bold'
                     }}
                 >
-                    Time
+                    {selectedDates.map(date => (
+                        <div key={date} className="matrix-header-cell" style={{ flex: 1, fontWeight: 'bold' }}>
+                            {date}
+                        </div>
+                    ))}
                 </div>
                 {selectedDates.map(date => (
                     <div
@@ -208,25 +216,37 @@ function AvailabilityMatrix({ selectedDates, earliestTime, latestTime, events })
                                 key={`${date}-${slot}`}
                                 className="matrix-cell"
                                 style={{
+
                                     flex: 1,
-                                    border: '1px solid #ccc',
-                                    padding: '6px',
+                                    backgroundColor: calculateCellColor(users.length),
                                     minHeight: '40px',
-                                    textAlign: 'center'
+                                    position: 'relative'
                                 }}
-                            >
-                                {users.join(', ')}
+                                onMouseEnter={() => setHoveredUsers(users)}
+                                onMouseLeave={() => setHoveredUsers([])}                            >
+                                {users.length > 0 ? (
+                                    <span>{users.length}명 가능</span>
+                                ) : null}
                             </div>
                         );
                     })}
                 </div>
             ))}
+            {hoveredUsers.length > 0 && (
+                <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
+                    <h4>가능한 사용자</h4>
+                    <ul>
+                        {hoveredUsers.map(user => (
+                            <li key={user}>{user}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }
 
-/* 3) 드래그 가능한 Time Selection Grid */
-function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTimes, selectedTimes }) {
+function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
     const [isDragging, setIsDragging] = useState(false);
     const [toggleTo, setToggleTo] = useState(false);
 
@@ -240,8 +260,8 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
         return date;
     };
 
-    const startDate = parseTime(earliestTime);
-    const endDate = parseTime(latestTime);
+    const startDate = parseTime(start);
+    const endDate = parseTime(end);
     const timeSlots = [];
     const tempDate = new Date(startDate);
     while (tempDate <= endDate) {
@@ -275,7 +295,6 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     const handleMouseUp = () => {
         setIsDragging(false);
     };
-
     return (
         <div className="time-selection-grid" onMouseUp={handleMouseUp}>
             <div className="time-grid-header">
@@ -345,20 +364,83 @@ function TimeSelectionGrid({ selectedDates, earliestTime, latestTime, onSelectTi
     );
 }
 
-/* 4) WhenToMeetGrid: 전체 흐름 관리 */
+/* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit }) {
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
-
+    const [isLoading, setIsLoading] = useState('false');
+    const [error, setError] = useState('');
     // 이벤트 관련 상태
     const [eventTitle, setEventTitle] = useState('');
     const [selectedDates, setSelectedDates] = useState([]);
     const [selectedTimes, setSelectedTimes] = useState([]);
 
     // 시간 범위 & 타임존
-    const [earliestTime, setEarliestTime] = useState('9:00 AM');
-    const [latestTime, setLatestTime] = useState('5:00 PM');
+    const [start, setEarliestTime] = useState('9:00 AM');
+    const [end, setLatestTime] = useState('5:00 PM');
     const [timeZone, setTimeZone] = useState('Asia/Seoul');
+
+    const convertToISO = (dateString, timeString, timeZone) => {
+        const [hourMinute, ampm] = timeString.split(' ');
+        let [hour, minute] = hourMinute.split(':').map(Number);
+
+        // PM일 경우 12시간을 추가
+        if (ampm === 'PM' && hour < 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
+
+        const date = new Date(dateString);
+        date.setHours(hour);
+        date.setMinutes(minute);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+
+        // 타임존 설정
+        const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
+        return localDate.toISOString();
+    };
+    const handleCreateEvent = async () => {
+        if (!validateStep()) return;
+        setIsLoading(true);
+        setError('');
+
+        // 선택된 날짜에서 가장 첫 번째 날짜 사용
+        const startDate = selectedDates[0];
+        const endDate = selectedDates[selectedDates.length - 1];
+
+        // ISO 형식으로 변환
+        const startISO = convertToISO(startDate, start, timeZone);
+        const endISO = convertToISO(endDate, end, timeZone);
+
+        const requestData = {
+            userId: "20211079",
+            projId: "cse00001",
+            start: startISO,
+            end: endISO,
+        };
+
+        try {
+            const response = await fetch(
+                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/schedule/meeting/adjust/upload',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData),
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('이벤트가 성공적으로 생성되었습니다.');
+            } else {
+                setError(data.message || '이벤트 생성에 실패했습니다.');
+            }
+        } catch (error) {
+            setError('서버와 연결할 수 없습니다.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const validateStep = () => {
         const newErrors = {};
@@ -401,16 +483,8 @@ function WhenToMeetGrid({ onExit }) {
             }
         });
     };
+    const navigate = useNavigate();
 
-    const handleCreateEvent = () => {
-        if (!validateStep()) return;
-        alert(`
-      이벤트 제목: ${eventTitle}
-      선택된 날짜: ${selectedDates.join(', ')}
-      선택된 시간: ${selectedTimes.join(', ')}
-      타임존: ${timeZone}
-    `);
-    };
 
     return (
         <div className="new-event-container">
@@ -452,7 +526,12 @@ function WhenToMeetGrid({ onExit }) {
                         <div className="time-options">
                             <label>
                                 No earlier than:
-                                <select value={earliestTime} onChange={(e) => setEarliestTime(e.target.value)}>
+                                <select value={start} onChange={(e) => setEarliestTime(e.target.value)}>
+                                    <option value="1:00 AM">1:00 AM</option>
+                                    <option value="2:00 AM">2:00 AM</option>
+                                    <option value="3:00 AM">3:00 AM</option>
+                                    <option value="4:00 AM">4:00 AM</option>
+                                    <option value="5:00 AM">5:00 AM</option>
                                     <option value="6:00 AM">6:00 AM</option>
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
@@ -471,11 +550,17 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
+                                    <option value="1:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                             <label>
                                 No later than:
-                                <select value={latestTime} onChange={(e) => setLatestTime(e.target.value)}>
+                                <select value={end} onChange={(e) => setLatestTime(e.target.value)}>
+                                    <option value="1:00 AM">1:00 AM</option>
+                                    <option value="2:00 AM">2:00 AM</option>
+                                    <option value="3:00 AM">3:00 AM</option>
+                                    <option value="4:00 AM">4:00 AM</option>
+                                    <option value="5:00 AM">5:00 AM</option>
                                     <option value="6:00 AM">6:00 AM</option>
                                     <option value="7:00 AM">7:00 AM</option>
                                     <option value="8:00 AM">8:00 AM</option>
@@ -494,19 +579,14 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-                                </select>
-                            </label>
-                            <label>
-                                Time Zone:
-                                <select value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
-                                    <option value="Asia/Seoul">Asia/Seoul</option>
-                                    <option value="America/New_York">America/New_York</option>
-                                    <option value="Europe/London">Europe/London</option>
+                                    <option value="1:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={nextStep}>Next</button>
+                            {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
+                            {errors.selectedDates && <div className="error">{errors.selectedDates}</div>}
                         </div>
                     </div>
                 </>
@@ -518,30 +598,33 @@ function WhenToMeetGrid({ onExit }) {
                         <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
                             <TimeSelectionGrid
                                 selectedDates={selectedDates}
-                                earliestTime={earliestTime}
-                                latestTime={latestTime}
+                                start={start}
+                                end={end}
                                 selectedTimes={selectedTimes}
                                 onSelectTimes={handleSelectTimes}
                             />
                             <AvailabilityMatrix
                                 selectedDates={selectedDates}
-                                earliestTime={earliestTime}
-                                latestTime={latestTime}
+
+                                start={start}
+                                end={end}
                                 events={dummyEvents}
                             />
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
-                            <button onClick={handleCreateEvent}>Ready? Create Event</button>
+                            <button onClick={() => navigate('/schedule')}>Next</button>
+                            {isLoading && <div className="loading">로딩 중...</div>}
+                            {error && <div className="error-message">{error}</div>}
                         </div>
                     </div>
                 </>
             )}
         </div>
     );
-}
+};
+//-----------------여기까지가 웬투밋-----------------------------------------------------------------
 
-/* 5) react-big-calendar 관련 커스텀 컴포넌트 */
 const EventComponent = ({ event }) => {
     const user = userInfo[event.userId];
     return (
@@ -564,19 +647,29 @@ const localizer = momentLocalizer(moment);
 
 /* 6) Schedule 메인 컴포넌트 */
 const Schedule = () => {
+    const [view, setView] = useState('month');
+
+    const handleMonthVersion = () => {
+        setView('month');
+    };
+
+    const handleWeekVersion = () => {
+        setView('week');
+    };
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [newEvent, setNewEvent] = useState({
-        title: '',
-        start: '',
-        end: '',
-        location: '',
-        attendees: '',
-        agenda: ''
+        scheId: '',
+        projId: '',
+        date: '',
+        scheName: '',
+        place: '',
+        category: '',
+        detail: '',
+        participants: '',
     });
     const [whenToMeet, setWhenToMeet] = useState(false);
-    const [view, setView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
@@ -600,9 +693,6 @@ const Schedule = () => {
         setWhenToMeet(true);
     };
 
-    const handleAddEvent = (eventObject) => {
-        setEvents([...events, eventObject]);
-    };
 
     const handleSelectSlot = ({ start, end }) => {
         const userId = currentUser.id;
@@ -630,14 +720,6 @@ const Schedule = () => {
             };
             setEvents([...events, newEventObject]);
         }
-    };
-
-    const handleMonthVersion = () => {
-        setView('month');
-    };
-
-    const handleWeekVersion = () => {
-        setView('week');
     };
 
     const CustomToolbar = (toolbar) => {
@@ -671,6 +753,7 @@ const Schedule = () => {
        <div>시간: ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}</div>
        <div>장소: ${event.location}</div>
        <div>대상: ${event.attendees}</div>
+       <div>카테고리: ${event.category}</div>
        <div>안건:</div>
        <ul>
           ${event.agenda.split('\n').map((item, idx) => `<li key=${idx}>${item}</li>`).join('')}
@@ -682,7 +765,7 @@ const Schedule = () => {
             left: e.clientX + 10 + 'px'
         });
     };
-
+    const [availability, setAvailability] = useState([]);
     const handleEventMouseOut = () => {
         setPopupStyle({ display: 'none' });
     };
@@ -690,6 +773,106 @@ const Schedule = () => {
     // onExit 함수는 WhenToMeetGrid에서 onExit prop으로 전달됨
     const exitWhenToMeet = () => {
         setWhenToMeet(false);
+    };
+    // 일정 생성 API 연결
+    const handleAddEvent = async (eventObject) => {
+        const userId = currentUser.id;
+        const projId = currentProject.id;
+
+        const newEvent = {
+            //scheId: scheId,
+            projId: projId,
+            date: eventObject.start,
+            scheName: eventObject.title,
+            place: eventObject.location,
+            category: "일정",
+            detail: eventObject.agenda,
+            participants: eventObject.attendees.split(',').map(p => p.trim())
+        };
+
+        try {
+
+            const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newEvent),
+            });
+
+            if (response.ok) {
+                const savedEvent = await response.json();
+                setEvents([...events, savedEvent]);
+                setShowPopup(false);
+            } else {
+                const error = await response.text();
+                console.error("Failed to create event:", error);
+                alert("일정 생성에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error("Error creating event:", error);
+            alert("서버와 연결할 수 없습니다.");
+        }
+    };
+    const [loading, setLoading] = useState(false);
+    // 일정 조회 (주간)
+    useEffect(() => {
+        fetchEvents();
+        fetchAvailability();
+    }, [view]);
+
+
+    const fetchEvents = async () => {
+        setLoading(true);
+        try {
+            const apiUrl = view === 'month'
+                ? 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
+                : 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projId: "cse00001",
+                    date: "2025-01-01T00:02:27.Z",
+                    cate: "meeting"
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Event API 응답 데이터:", data);
+
+            if (data.teamSchedules?.cse00001) {
+                setEvents(data.teamSchedules.cse00001);
+            } else {
+                setEvents([]);
+                console.warn("일정을 불러올 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("API 호출 중 오류:", error.message);
+            setEvents([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchAvailability = async () => {
+        try {
+            const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/meeting/adjust/availability');
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setAvailability(data);
+            } else {
+                setAvailability([]);
+            }
+        } catch (error) {
+            console.error("API 호출 중 오류:", error.message);
+            setAvailability([]);
+        }
     };
 
     return (
@@ -734,6 +917,11 @@ const Schedule = () => {
                             <textarea
                                 value={newEvent.agenda}
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
+                            />
+                            <label>카테고리:</label>
+                            <textarea
+                                value={newEvent.category}
+                                onChange={(e) => setNewEvent({ ...newEvent, categoty: e.target.value })}
                             />
                             <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
                                 일정 추가

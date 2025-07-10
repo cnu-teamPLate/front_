@@ -33,7 +33,9 @@ function Login() {
         pwd: formData.password,
       });
 
+
       const url = new URL('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/login');
+
 
       const response = await fetch(url, {
         method: 'POST',

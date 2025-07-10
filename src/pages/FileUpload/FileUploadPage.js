@@ -59,7 +59,7 @@ function FileUploadPage() {
     if (filterParams.userId) queryParams.push(`userId=${filterParams.userId}`);
     if (filterParams.taskId) queryParams.push(`taskId=${filterParams.taskId}`);
     if (queryParams.length === 0 && !filterParams.isDefaultLoad) {
-        setFiles([]); return;
+      setFiles([]); return;
     }
     const url = queryParams.length > 0 ? `${baseUrl}?${queryParams.join('&')}` : baseUrl;
     console.log('파일 목록 요청 URL:', url);
@@ -112,7 +112,7 @@ function FileUploadPage() {
   const handleDeleteFromUploadForm = () => {
     setFormData(prev => ({ ...prev, file: [] }));
     if (document.querySelector('input[type="file"]')) { // 파일 입력 필드 초기화
-        document.querySelector('input[type="file"]').value = null;
+      document.querySelector('input[type="file"]').value = null;
     }
   };
 
@@ -146,12 +146,12 @@ function FileUploadPage() {
       formDataToSend.append('url', formData.url[0]); // 첫 번째 URL
     } else {
       formDataToSend.append('url', ''); // cURL의 'url=string'을 대체 (빈 문자열 또는 'string' 리터럴은 백엔드와 협의)
-                                      // 만약 'string' 리터럴을 보내야 한다면: formDataToSend.append('url', 'string');
+      // 만약 'string' 리터럴을 보내야 한다면: formDataToSend.append('url', 'string');
     }
     console.log("첨부할 메타데이터:", {
-        id: formData.id, projId: formData.projId, title: formData.title,
-        detail: formData.detail, category: String(formData.category),
-        url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
+      id: formData.id, projId: formData.projId, title: formData.title,
+      detail: formData.detail, category: String(formData.category),
+      url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
     });
 
 
@@ -167,7 +167,7 @@ function FileUploadPage() {
       // 파일이 없다면 에러 처리 또는 빈 파일을 보내는 로직이 필요할 수 있습니다.
       // (현재는 파일이 없으면 'files' 파트가 아예 추가되지 않음)
     }
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/file/upload`, {
         method: 'POST',
@@ -182,11 +182,11 @@ function FileUploadPage() {
       if (response.ok) {
         setStatusMessage(responseData.message || '업로드 완료되었습니다!');
         setFormData(prev => ({
-            ...prev, title: '', detail: '', category: -1, url: [], file: []
+          ...prev, title: '', detail: '', category: -1, url: [], file: []
         }));
         setUrlList([]); setSelectedTaskIndex(null);
         if (document.querySelector('input[type="file"]')) {
-            document.querySelector('input[type="file"]').value = null;
+          document.querySelector('input[type="file"]').value = null;
         }
         fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
       } else {
@@ -202,14 +202,14 @@ function FileUploadPage() {
   const formatDate = (dateArr) => {
     if (!dateArr) return 'N/A';
     if (Array.isArray(dateArr) && dateArr.length >= 3) {
-        const [y, m, d] = dateArr;
-        return `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+      const [y, m, d] = dateArr;
+      return `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
     } else if (typeof dateArr === 'string') {
-        try { return new Date(dateArr).toLocaleDateString('ko-KR'); } catch (e) { return dateArr; }
+      try { return new Date(dateArr).toLocaleDateString('ko-KR'); } catch (e) { return dateArr; }
     }
     return '날짜 형식 오류';
   };
- 
+
   const handleEditToggle = () => {
     setEditMode(!editMode); setDeleteMode(false);
     if (!editMode) {
@@ -231,7 +231,7 @@ function FileUploadPage() {
   const handleFileSelectForDeletion = (fileId) => {
     setSelectedFilesToDelete(prev => prev.includes(fileId) ? prev.filter(id => id !== fileId) : [...prev, fileId]);
   };
- 
+
   const handleSaveEdits = async () => {
     if (editedFiles.length === 0) { setStatusMessage("수정할 파일이 없습니다."); return; }
     setStatusMessage("수정 사항 저장 중..."); let allSuccess = true;
@@ -253,7 +253,7 @@ function FileUploadPage() {
     setStatusMessage(allSuccess ? "모든 수정 사항이 저장되었습니다." : "일부 파일 수정에 실패했습니다. 콘솔을 확인해주세요.");
     fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
   };
- 
+
   const handleDeleteSelectedFiles = async () => {
     if (selectedFilesToDelete.length === 0) { setStatusMessage("삭제할 파일을 선택해주세요."); return; }
     setStatusMessage("선택된 파일 삭제 중...");
@@ -263,7 +263,8 @@ function FileUploadPage() {
         body: JSON.stringify({ docs: selectedFilesToDelete })
       });
       const responseData = await response.json().catch(() => null);
-      if (response.ok) { setStatusMessage(responseData?.message || "선택된 파일이 삭제되었습니다."); setSelectedFilesToDelete([]);
+      if (response.ok) {
+        setStatusMessage(responseData?.message || "선택된 파일이 삭제되었습니다."); setSelectedFilesToDelete([]);
       } else { setStatusMessage(responseData?.message || `파일 삭제 실패: ${response.status}`); }
     } catch (error) { console.error('파일 삭제 중 네트워크 오류:', error); setStatusMessage(`파일 삭제 오류: ${error.message}`); }
     setDeleteMode(false);
@@ -279,7 +280,7 @@ function FileUploadPage() {
       case 'myproj': params.projId = currentProjId; params.userId = currentUserId; break;
       case 'task':
         if (selectedTaskIndex !== null && taskList[selectedTaskIndex]) {
-            params.taskId = taskList[selectedTaskIndex].taskId;
+          params.taskId = taskList[selectedTaskIndex].taskId;
         } else { setStatusMessage("연관 과제를 먼저 선택해주세요."); return; }
         break;
       default: params.projId = currentProjId;
@@ -297,86 +298,86 @@ function FileUploadPage() {
       <div className="upload-section">
         <h2>자료 업로드</h2>
         <form onSubmit={handleSubmit}>
-            <div className="form-group">
-                <label className="task-list-title">연관 과제 (선택)</label>
-                <div className="task-list-scroll">
-                {taskList.length > 0 ? taskList.map((task, index) => (
-                    <div
-                    key={task.taskId}
-                    className={`task-row ${selectedTaskIndex === index ? 'selected' : ''}`}
-                    onClick={() => handleTaskClick(index)}
-                    >
-                    <span className="task-type">{task.cate || '기타'}</span>
-                    <span className="task-title">{task.detail || task.title || `과제 ID: ${task.taskId}`}</span>
-                    </div>
-                )) : <p className="no-tasks">연관된 과제가 없습니다.</p>}
+          <div className="form-group">
+            <label className="task-list-title">연관 과제 (선택)</label>
+            <div className="task-list-scroll">
+              {taskList.length > 0 ? taskList.map((task, index) => (
+                <div
+                  key={task.taskId}
+                  className={`task-row ${selectedTaskIndex === index ? 'selected' : ''}`}
+                  onClick={() => handleTaskClick(index)}
+                >
+                  <span className="task-type">{task.cate || '기타'}</span>
+                  <span className="task-title">{task.detail || task.title || `과제 ID: ${task.taskId}`}</span>
                 </div>
+              )) : <p className="no-tasks">연관된 과제가 없습니다.</p>}
             </div>
+          </div>
 
-            <div className="form-group">
-                <label className="file-label main-file-label">
-                    파일 선택 (다중 선택 가능)
-                    <input type="file" multiple onChange={handleFileChange} />
-                </label>
-            </div>
+          <div className="form-group">
+            <label className="file-label main-file-label">
+              파일 선택 (다중 선택 가능)
+              <input type="file" multiple onChange={handleFileChange} />
+            </label>
+          </div>
 
-            {/* 업로드할 파일 미리보기 목록 */}
-            {filesForUploadUI.length > 0 && (
+          {/* 업로드할 파일 미리보기 목록 */}
+          {filesForUploadUI.length > 0 && (
             <div className="selected-files-preview">
-                <h4>선택된 파일 (업로드 예정):</h4>
-                <ul className="file-list">
+              <h4>선택된 파일 (업로드 예정):</h4>
+              <ul className="file-list">
                 {filesForUploadUI.map((file, index) => (
-                    <li key={index}>
-                    {file.name} ({file.size > 1024*1024 ? `${(file.size / (1024*1024)).toFixed(2)} MB` : `${Math.round(file.size / 1024)} KB`})
-                    </li>
+                  <li key={index}>
+                    {file.name} ({file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : `${Math.round(file.size / 1024)} KB`})
+                  </li>
                 ))}
-                </ul>
-                <button type="button" onClick={handleDeleteFromUploadForm} className="delete-all-selected-button">선택한 파일 모두 지우기</button>
+              </ul>
+              <button type="button" onClick={handleDeleteFromUploadForm} className="delete-all-selected-button">선택한 파일 모두 지우기</button>
             </div>
-            )}
-            
-            <div className="form-group">
-                <label htmlFor="file-title">제목</label>
-                <input id="file-title" className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.title} onChange={handleUploadInputChange}/>
-            </div>
+          )}
 
-            <div className="form-group">
-                <label htmlFor="file-detail">설명</label>
-                <textarea id="file-detail" className='detail' placeholder='설명을 입력해주세요' name='detail' value={formData.detail} onChange={handleUploadInputChange}/>
+          <div className="form-group">
+            <label htmlFor="file-title">제목</label>
+            <input id="file-title" className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.title} onChange={handleUploadInputChange} />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="file-detail">설명</label>
+            <textarea id="file-detail" className='detail' placeholder='설명을 입력해주세요' name='detail' value={formData.detail} onChange={handleUploadInputChange} />
+          </div>
+
+          <div className="form-group">
+            <label>외부 URL (선택 사항, 여러 개 추가 가능)</label>
+            <div className="url-input-wrapper">
+              <input className='url-input'
+                type="text"
+                placeholder="예: https://example.com"
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+              />
+              <button className='plus button-add-url' type="button" onClick={() => {
+                if (newUrl.trim()) {
+                  const updatedUrls = [...formData.url, newUrl.trim()];
+                  setFormData((prev) => ({ ...prev, url: updatedUrls }));
+                  setNewUrl('');
+                }
+              }}>URL 추가</button>
             </div>
-            
-            <div className="form-group">
-                <label>외부 URL (선택 사항, 여러 개 추가 가능)</label>
-                <div className="url-input-wrapper">
-                <input className='url-input'
-                    type="text"
-                    placeholder="예: https://example.com"
-                    value={newUrl}
-                    onChange={(e) => setNewUrl(e.target.value)}
-                />
-                <button className='plus button-add-url' type="button" onClick={() => {
-                    if (newUrl.trim()) {
-                    const updatedUrls = [...formData.url, newUrl.trim()];
-                    setFormData((prev) => ({ ...prev, url: updatedUrls }));
-                    setNewUrl('');
-                    }
-                }}>URL 추가</button>
-                </div>
-                {formData.url.length > 0 && (
-                <ul className="url-list added-url-list">
-                    <h4>추가된 URL:</h4>
-                    {formData.url.map((urlItem, index) => (
-                    <li key={index}>
-                        <a href={urlItem} target="_blank" rel="noopener noreferrer">{urlItem}</a>
-                        <button type="button" className="delete-url-button" onClick={() => {
-                        const updated = formData.url.filter((_, i) => i !== index);
-                        setFormData((prev) => ({ ...prev, url: updated }));
-                        }}>삭제</button>
-                    </li>
-                    ))}
-                </ul>
-                )}
-            </div>
+            {formData.url.length > 0 && (
+              <ul className="url-list added-url-list">
+                <h4>추가된 URL:</h4>
+                {formData.url.map((urlItem, index) => (
+                  <li key={index}>
+                    <a href={urlItem} target="_blank" rel="noopener noreferrer">{urlItem}</a>
+                    <button type="button" className="delete-url-button" onClick={() => {
+                      const updated = formData.url.filter((_, i) => i !== index);
+                      setFormData((prev) => ({ ...prev, url: updated }));
+                    }}>삭제</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <button type='submit' className="upload-button">업로드</button>
         </form>
         {statusMessage && <p className={`status-message ${statusMessage.includes('오류') || statusMessage.includes('실패') ? 'error' : 'success'}`}>{statusMessage}</p>}
@@ -396,10 +397,10 @@ function FileUploadPage() {
             {deleteMode && <button className='button-mode action-button' onClick={handleDeleteSelectedFiles}>선택 삭제</button>}
           </div>
         </div>
-        
+
         {/* 파일 목록의 상태 메시지는 테이블 내부에 표시하거나 별도 위치에 둘 수 있음 */}
         {/* {statusMessage && !statusMessage.includes('업로드') && <p className={`status-message list-status ${statusMessage.includes('오류') || statusMessage.includes('실패') ? 'error' : 'success'}`}>{statusMessage}</p>} */}
-        
+
         <div className="file-table-container">
           <table>
             <thead>
@@ -427,10 +428,10 @@ function FileUploadPage() {
                       <a href={`${API_BASE_URL}/file/download/${file.fileId}`} target="_blank" rel="noopener noreferrer">{file.title || file.origFilename || file.filename || '제목 없음'}</a>
                     )}
                   </td>
-                  <td>{file.taskName || (file.category && file.category !== -1 ? `과제ID: ${file.category}`: '없음')}</td>
+                  <td>{file.taskName || (file.category && file.category !== -1 ? `과제ID: ${file.category}` : '없음')}</td>
                   <td>{formatDate(file.uploadDate || file.date)}</td>
-                  {editMode && ( <td> <input className="edit-input" type="text" value={file.detail} onChange={(e) => handleInputChangeForListedFile(index, 'detail', e.target.value)} /> </td> )}
-                  {editMode && ( <td> <input className="edit-input" type="text" value={file.urls && file.urls[0] ? file.urls[0] : ''} onChange={(e) => handleInputChangeForListedFile(index, 'urls', [e.target.value])} placeholder="URL 입력" /> </td> )}
+                  {editMode && (<td> <input className="edit-input" type="text" value={file.detail} onChange={(e) => handleInputChangeForListedFile(index, 'detail', e.target.value)} /> </td>)}
+                  {editMode && (<td> <input className="edit-input" type="text" value={file.urls && file.urls[0] ? file.urls[0] : ''} onChange={(e) => handleInputChangeForListedFile(index, 'urls', [e.target.value])} placeholder="URL 입력" /> </td>)}
                 </tr>
               )) : (
                 <tr>

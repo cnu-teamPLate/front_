@@ -8,17 +8,46 @@ import { NotificationPopup } from '../../components/NotificationPopup/Notificati
 const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
 
 const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange }) => {
-    
+
     const isPast = new Date(item.date * 1000) < new Date();
 
     const cardClasses = `assignment-card ${isPast ? 'past-due' : ''} ${item.checkBox === 1 ? 'completed' : ''}`;
     const assigneeName = getAssigneeName(item.userName);
 
+    const testURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
+    const urlParams = new URLSearchParams(new URL(testURL).search);
+    const projectId = urlParams.get("projId");
+    const id = urlParams.get("id");
+    const getAssignment = `${testURL}`;
+
+
+    fetch(getAssignment, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw {
+                    message: "오류 메시지",
+                    checkbox: 400,
+                    cate: "bad_request"
+                };
+            }
+            return response.json();
+        })
+        .then(data => console.log(data))
+        .catch(error => {
+            console.error('Error:', error);
+            alert(`Error ${error.checkbox}: ${error.message}`);
+        });
+
 
     const onCheckboxClick = (e) => {
-        e.stopPropagation(); 
-        e.preventDefault();  
-        handleCheckboxChange(item.taskId); 
+        e.stopPropagation();
+        e.preventDefault();
+        handleCheckboxChange(item.taskId);
     };
 
     return (
@@ -31,18 +60,18 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
                         <input
                             type="checkbox"
                             checked={item.checkBox === 1}
-                            readOnly 
+                            readOnly
                         />
                         <span className="custom-checkbox"></span>
                     </div>
                 </div>
-                
+
                 <h4 className="card-title">{item.taskName}</h4>
                 <p className="card-description">{item.detail}</p>
-                
+
                 <div className="card-footer">
                     <div className="card-tags">
-                         <span className="tag assignee-tag">
+                        <span className="tag assignee-tag">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             {assigneeName}
                         </span>
@@ -72,7 +101,7 @@ function Assignment({ notifications = [] }) {
         complexity: 1,
         deadline: '',
         description: '',
-        assignee: '' 
+        assignee: ''
     });
 
     const [projectMembers, setProjectMembers] = useState([]);
@@ -110,7 +139,6 @@ function Assignment({ notifications = [] }) {
         };
         fetchProjectMembers();
     }, [projId]);
-
     useEffect(() => {
         if (!projId) return;
         const fetchAssignments = async () => {
@@ -120,18 +148,18 @@ function Assignment({ notifications = [] }) {
                     if (response.status === 404) {
                         setAllAssignments([]);
                         setMyAssignments([]);
-                        return; 
+                        return;
                     }
                     throw new Error(`과제 데이터를 불러오지 못했습니다. 상태 코드: ${response.status}`);
                 }
                 const data = await response.json();
                 const fetchedData = Array.isArray(data) ? data : [];
-                
+
                 const sortedData = sortData(fetchedData);
                 setAllAssignments(sortedData);
 
                 if (currentUserId) {
-                    
+
                     const myData = sortedData.filter(item => item.userName === currentUserId);
                     setMyAssignments(myData);
                 }
@@ -159,11 +187,11 @@ function Assignment({ notifications = [] }) {
             role: null,
             cate: formData.category,
             level: Number(formData.complexity),
-            date: new Date(formData.deadline).toISOString(), 
+            date: new Date(formData.deadline).toISOString(),
             detail: formData.description,
             checkBox: 0,
             taskName: formData.taskName,
-            userName: formData.assignee, 
+            userName: formData.assignee,
             files: [],
         };
 
@@ -206,9 +234,9 @@ function Assignment({ notifications = [] }) {
         });
     };
 
-  
+
     const handleCheckboxChange = (taskId) => {
-       
+
         const updatedAssignments = allAssignments.map((item) =>
             item.taskId === taskId ? { ...item, checkBox: item.checkBox === 1 ? 0 : 1 } : item
         );
@@ -221,22 +249,22 @@ function Assignment({ notifications = [] }) {
         }
     };
 
-    
+
     const formatDate = (timestamp) => {
         const date = new Date(timestamp * 1000);
         return date.toLocaleString("ko-KR", {
             year: "numeric", month: "2-digit", day: "2-digit",
             hour: "2-digit", minute: "2-digit", hour12: false,
-        }).replace(/\. /g, '.').slice(0, -1); 
+        }).replace(/\. /g, '.').slice(0, -1);
     };
 
-    
+
     const getAssigneeName = (assigneeId) => {
         const member = projectMembers.find(m => String(m.id) === String(assigneeId));
         return member ? member.name : 'Unknown';
     };
 
-    
+
     const getComplexityLabel = (complexity) => {
         return levelOptions.find(opt => opt.value === complexity)?.label || "알 수 없음";
     };
@@ -293,15 +321,15 @@ function Assignment({ notifications = [] }) {
                         </div>
                         <button type="submit" className="submit-button">생성</button>
                     </form>
-                    
+
                     <div className="Assignment-look">
                         <div className="my-assignment">
                             <h3>내 과제 보기</h3>
                             <div className="assignments-list">
                                 {myAssignments.length > 0 ? (
                                     myAssignments.map((item) => (
-                                        
-                                        <AssignmentCard 
+
+                                        <AssignmentCard
                                             key={item.taskId}
                                             item={item}
                                             getAssigneeName={getAssigneeName}
@@ -320,8 +348,8 @@ function Assignment({ notifications = [] }) {
                             <div className="assignments-list">
                                 {allAssignments.length > 0 ? (
                                     allAssignments.map((item) => (
-                                        
-                                        <AssignmentCard 
+
+                                        <AssignmentCard
                                             key={item.taskId}
                                             item={item}
                                             getAssigneeName={getAssigneeName}

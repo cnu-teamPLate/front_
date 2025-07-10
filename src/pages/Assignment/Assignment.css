@@ -11,9 +11,12 @@
     --border-radius-lg: 12px;
     --border-radius-md: 8px;
     --border-radius-sm: 5px;
-    --status-upcoming: #3b82f6; /* blue-500 */
-    --status-past-due: #ef4444; /* red-500 */
-    --status-completed: #22c55e; /* green-500 */
+    --status-upcoming: #3b82f6;
+    /* blue-500 */
+    --status-past-due: #ef4444;
+    /* red-500 */
+    --status-completed: #22c55e;
+    /* green-500 */
 }
 
 /* --- General & Form Styles --- */
@@ -26,8 +29,10 @@
 
 .As-create-form {
     margin-top: 1em;
-    width: 100%; /* Changed from 800px to 100% */
-    max-width: 960px; /* Added to match the content below */
+    width: 100%;
+    /* Changed from 800px to 100% */
+    max-width: 960px;
+    /* Added to match the content below */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,8 +65,23 @@
 .containerarea {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 100%;
+    padding: 0;
+}
+
+.As-title textarea,
+.As-detail textarea {
+    border: 1.5px solid #970005;
+    padding-top: 15px;
+    padding-left: 25px;
+    width: 800px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    resize: none;
+}
+
+.As-title textarea {
+    margin-top: 5px;
+    height: 50px;
 }
 
 .As-title textarea,
@@ -76,8 +96,13 @@
     transition: border-color 0.2s;
 }
 
-.As-title textarea { height: 50px; }
-.As-detail textarea { height: 100px; }
+.As-title textarea {
+    height: 50px;
+}
+
+.As-detail textarea {
+    height: 100px;
+}
 
 .As-title textarea:focus,
 .As-detail textarea:focus {
@@ -141,7 +166,8 @@
 .assignments-list {
     overflow-y: auto;
     flex-grow: 1;
-    padding-right: 5px; /* Space for scrollbar */
+    padding-right: 5px;
+    /* Space for scrollbar */
 }
 
 .no-assignments-msg {
@@ -171,13 +197,20 @@
 
 .card-status-bar {
     position: absolute;
-    left: 0; top: 0; bottom: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 6px;
     background-color: var(--status-upcoming);
 }
 
-.assignment-card.past-due .card-status-bar { background-color: var(--status-past-due); }
-.assignment-card.completed .card-status-bar { background-color: var(--status-completed); }
+.assignment-card.past-due .card-status-bar {
+    background-color: var(--status-past-due);
+}
+
+.assignment-card.completed .card-status-bar {
+    background-color: var(--status-completed);
+}
 
 .assignment-card.completed .card-title,
 .assignment-card.completed .card-description {
@@ -186,7 +219,8 @@
 }
 
 .card-content {
-    padding: 15px 15px 15px 25px; /* Left padding for status bar */
+    padding: 15px 15px 15px 25px;
+    /* Left padding for status bar */
 }
 
 .card-header {
@@ -212,7 +246,8 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 40px; /* Approx 2 lines */
+    min-height: 40px;
+    /* Approx 2 lines */
 }
 
 .card-footer {
@@ -240,12 +275,35 @@
     font-weight: 500;
 }
 
-.category-tag { background-color: #e0e7ff; color: #4338ca; }
-.assignee-tag { background-color: #d1fae5; color: #065f46; }
-.complexity-tag { color: #fff; }
-.complexity-tag.level-1 { background-color: #3b82f6; } /* 쉬움 */
-.complexity-tag.level-2 { background-color: #f97316; } /* 보통 */
-.complexity-tag.level-3 { background-color: #dc2626; } /* 어려움 */
+.category-tag {
+    background-color: #e0e7ff;
+    color: #4338ca;
+}
+
+.assignee-tag {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.complexity-tag {
+    color: #fff;
+}
+
+.complexity-tag.level-1 {
+    background-color: #3b82f6;
+}
+
+/* 쉬움 */
+.complexity-tag.level-2 {
+    background-color: #f97316;
+}
+
+/* 보통 */
+.complexity-tag.level-3 {
+    background-color: #dc2626;
+}
+
+/* 어려움 */
 
 .card-deadline {
     display: flex;
@@ -264,6 +322,7 @@
     color: var(--status-past-due);
     font-weight: 700;
 }
+
 .assignment-card.past-due .card-deadline svg {
     stroke: var(--status-past-due);
 }
@@ -285,25 +344,36 @@
 
 .custom-checkbox {
     position: absolute;
-    top: 0; left: 0;
-    height: 22px; width: 22px;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 22px;
     background-color: #eee;
     border-radius: 50%;
     transition: background-color 0.2s;
 }
 
-.card-checkbox-wrapper:hover .custom-checkbox { background-color: #ccc; }
-.card-checkbox-wrapper input:checked ~ .custom-checkbox { background-color: var(--status-completed); }
+.card-checkbox-wrapper:hover .custom-checkbox {
+    background-color: #ccc;
+}
+
+.card-checkbox-wrapper input:checked~.custom-checkbox {
+    background-color: var(--status-completed);
+}
 
 .custom-checkbox:after {
     content: "";
     position: absolute;
     display: none;
-    left: 8px; top: 4px;
-    width: 5px; height: 10px;
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
     border: solid white;
     border-width: 0 3px 3px 0;
     transform: rotate(45deg);
 }
 
-.card-checkbox-wrapper input:checked ~ .custom-checkbox:after { display: block; }
+.card-checkbox-wrapper input:checked~.custom-checkbox:after {
+    display: block;
+}
