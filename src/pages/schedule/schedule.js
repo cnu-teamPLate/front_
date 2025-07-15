@@ -550,7 +550,7 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-                                    <option value="1:00 PM">12:00 PM</option>
+                                    <option value="12:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                             <label>
@@ -579,7 +579,7 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-                                    <option value="1:00 PM">12:00 PM</option>
+                                    <option value="12:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                         </div>
