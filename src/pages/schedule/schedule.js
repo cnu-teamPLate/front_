@@ -300,7 +300,7 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
             <div className="time-grid-header">
                 <div className="time-header-cell"
                     style={{
-                        width: '100px',
+                        flex: 1,
                         border: '1px solid #ccc',
                         padding: '6px',
                         textAlign: 'center',
@@ -327,7 +327,7 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
                 <div key={slot} className="time-grid-row">
                     <div className="time-row-label"
                         style={{
-                            width: '100px',
+                            flex: 1,
                             border: '1px solid #ccc',
                             padding: '6px',
                             textAlign: 'center',
@@ -876,7 +876,7 @@ const Schedule = () => {
     };
 
     return (
-        <div className="Dashboard">
+        <div className="board">
             <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div>
                     <MyCalendar />
