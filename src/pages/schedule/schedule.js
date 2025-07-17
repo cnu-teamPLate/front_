@@ -30,8 +30,6 @@ export const dummyEvents = [
 ];
 const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
 // 📍 WhenToMeetGrid 맨 위쪽 state 모음 근처
-const [remoteForm, setRemoteForm] = useState(null);   // GET /form 응답
-const [remoteDetails, setRemoteDetails] = useState(null);   // GET /details 응답
 
 
 /** 함수 선언식(hoisting O) */
@@ -106,6 +104,7 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
 
 function AvailabilityMatrix({ form, details }) {
     /* ───────────────────── 기본 파싱 값 ───────────────────── */
+
     const selectedDates = form.dates.map(d => d.startDate);  // ["2025-05-27", …]
     const start = form.startTime;   // "09:00:00"
     const end = form.endTime;     // "22:00:00"
@@ -343,6 +342,9 @@ export { AvailabilityMatrix, TimeSelectionGrid };
 
 /* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit }) {
+    const [remoteForm, setRemoteForm] = useState(null);   // GET /form 응답
+    const [remoteDetails, setRemoteDetails] = useState(null);   // GET /details 응답
+
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -463,7 +465,7 @@ function WhenToMeetGrid({ onExit }) {
         return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
     };
     const handleCreatewhen2meet = async () => {
-        if (!validateStep()) return;
+        if (!validateStep()) return null;
         setIsLoading(true);
         setError('');
         const requestData = {
@@ -484,7 +486,7 @@ function WhenToMeetGrid({ onExit }) {
         };
         try {
             const response = await fetch(
-                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/meeting/upload/when2meet',
+                `${API}/schedule/meeting/upload/when2meet`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -494,26 +496,23 @@ function WhenToMeetGrid({ onExit }) {
 
             const data = await response.json();
 
-            if (response.ok) {
-                if (data.code === 0) {
-                    alert(data.message || '웬투밋 폼이 생성되었습니다.');
-                    const { when2meetId, message, code } = data;
-                    setFormId(when2meetId);
+            if (!response.ok) throw new Error(data.message || '폼 생성 실패');
 
-                } else {
-                    setError(data.message || '알 수 없는 오류가 발생했습니다.');
-                }   // 필요하면 when2meetId 저장
-                // TODO: data에 when2meetId가 들어오면 setWhen2MeetId(data.when2meetId) 등으로 저장        
+            // ✅ 정상 생성( code === 0 ) → id 반환
+            if (data.code === 0 && data.when2meetId) {
+                setFormId(data.when2meetId);   // state 보관
+                return data.when2meetId;       // **← 호출부에 id 전달**
             } else {
-                setError(data.message || '이벤트 생성에 실패했습니다.');
+                setError(data.message || '알 수 없는 오류');
+                return null;
             }
-        } catch (error) {
-            setError('서버와 연결할 수 없습니다.');
+        } catch (e) {
+            setError(e.message);
+            return null;
         } finally {
             setIsLoading(false);
         }
     };
-
     const validateStep = () => {
         const newErrors = {};
         if (step === 1) {
@@ -692,13 +691,11 @@ function WhenToMeetGrid({ onExit }) {
                                 selectedTimes={selectedTimes}
                                 onSelectTimes={handleSelectTimes}
                             />
-                            <AvailabilityMatrix
-                                form={{
-                                    dates: selectedDates.map(d => ({ startDate: d, endDate: d })),
-                                    startTime: toHHMMSS(start),   // "09:00:00"
-                                    endTime: toHHMMSS(end)      // "22:00:00"
-                                }}
-                                details={dummyDetails} />
+                            {remoteForm && remoteDetails ? (
+                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} />
+                            ) : (
+                                <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
+                            )}
                         </div>
                         {/* ───────── navigation-buttons 영역 ───────── */}
                         <div className="navigation-buttons">
