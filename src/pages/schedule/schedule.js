@@ -6,43 +6,6 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-const dummyEvents = [
-    {
-        userId: "20211079",
-        projId: "cse00001",
-        start: "2025-01-14T09:00:00.000Z",
-        end: "2025-01-14T10:00:00.000Z",
-        title: "Dummy Event 1"
-    },
-    {
-        userId: "20211080",
-        projId: "cse00001",
-        start: "2025-01-14T09:15:00.000Z",
-        end: "2025-01-14T09:45:00.000Z",
-        title: "Dummy Event 2"
-    },
-    {
-        userId: "20211079",
-        projId: "cse00001",
-        start: "2025-01-14T10:00:00.000Z",
-        end: "2025-01-14T10:30:00.000Z",
-        title: "Dummy Event 3"
-    },
-    {
-        userId: "20211080",
-        projId: "cse00001",
-        start: "2025-01-14T10:15:00.000Z",
-        end: "2025-01-14T11:00:00.000Z",
-        title: "Dummy Event 4"
-    },
-    {
-        userId: "20211079",
-        projId: "cse00001",
-        start: "2025-01-14T11:00:00.000Z",
-        end: "2025-01-14T12:00:00.000Z",
-        title: "Dummy Event 5"
-    }
-];
 
 const userInfo = {
     "20211079": "Alice",
@@ -105,139 +68,121 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
+// 사용 가능 시간 매트릭스를 렌더링하는 컴포넌트
 function AvailabilityMatrix({ selectedDates, start, end, events }) {
+    // 마우스 오버된 셀에 표시할 사용자 리스트 상태
     const [hoveredUsers, setHoveredUsers] = useState([]);
+
+    // 시간 문자열("9:00 AM" 등)을 시,분 객체로 변환
     const parseTime = (timeStr) => {
-        const [hourMinute, ampm] = timeStr.split(' ');
-        let [hour, minute] = hourMinute.split(':').map(Number);
-        if (ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
-        if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
-        return { hour, minute };
+        const [hourMinute, ampm] = timeStr.split(' ');           // "9:00"과 "AM" 분리
+        let [hour, minute] = hourMinute.split(':').map(Number);    // 시(hour), 분(minute) 숫자로 변환
+        if (ampm.toLowerCase() === 'pm' && hour < 12) hour += 12; // PM일 때 12시간 추가
+        if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0; // AM 12시 -> 0시
+        return { hour, minute };                                  // { hour, minute } 객체 반환
     };
 
+    // 시작 시간과 종료 시간 사이를 15분 단위로 분할한 타임슬롯 배열 생성
     const getTimeSlots = (startTimeStr, endTimeStr) => {
         const slots = [];
-        const start = parseTime(startTimeStr);
-        const end = parseTime(endTimeStr);
-        let current = new Date(2000, 0, 1, start.hour, start.minute, 0);
-        const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);
-        while (current <= endDate) {
-            let hours = current.getHours();
-            const minutes = current.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            if (hours === 0) hours = 12;
-            const minuteStr = minutes === 0 ? '00' : minutes;
-            slots.push(`${hours}:${minuteStr} ${ampm}`);
-            current = new Date(current.getTime() + 15 * 60000);
+        const start = parseTime(startTimeStr);                    // 시작 시간 파싱
+        const end = parseTime(endTimeStr);                        // 종료 시간 파싱
+        let current = new Date(2000, 0, 1, start.hour, start.minute, 0);  // 임시 시작 Date
+        const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);     // 임시 종료 Date
+        while (current <= endDate) {                              // current가 end까지 돌 때까지 반복
+            let hours = current.getHours();                       // 24시간 기준 시 얻기
+            const minutes = current.getMinutes();                 // 분 얻기
+            const ampm = hours >= 12 ? 'PM' : 'AM';               // AM/PM 결정
+            hours = hours % 12;                                   // 12시간제로 변환
+            if (hours === 0) hours = 12;                          // 0시 -> 12시
+            const minuteStr = minutes === 0 ? '00' : minutes;     // 분 문자열 포매팅
+            slots.push(`${hours}:${minuteStr} ${ampm}`);          // "h:mm AM/PM" 문자열 추가
+            current = new Date(current.getTime() + 15 * 60000);   // 15분 증가
         }
-        return slots;
+        return slots;                                            // 타임슬롯 배열 반환
     };
 
-    const timeSlots = getTimeSlots(start, end);
+    const timeSlots = getTimeSlots(start, end);                  // 타임슬롯 생성
 
+    // 날짜 문자열과 시간 문자열을 합쳐 Date 객체로 반환
     const getCellDateTime = (dateStr, timeSlot) => {
-        const { hour, minute } = parseTime(timeSlot);
-        const [year, month, day] = dateStr.split('-').map(Number);
-        return new Date(year, month - 1, day, hour, minute, 0);
+        const { hour, minute } = parseTime(timeSlot);            // 시간 파싱
+        const [year, month, day] = dateStr.split('-').map(Number); // "2025-7-15" -> [2025,7,15]
+        return new Date(year, month - 1, day, hour, minute, 0);   // Date 객체 생성
     };
 
+    // 특정 셀에 해당하는 가능한 사용자 리스트 반환
     const getUsersForCell = (dateStr, timeSlot) => {
-        const cellTime = getCellDateTime(dateStr, timeSlot);
+        const cellTime = getCellDateTime(dateStr, timeSlot);     // 셀의 Date
         const overlappingEvents = events.filter(event => {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
+            const eventStart = new Date(event.start);            // 이벤트 시작 Date
+            const eventEnd = new Date(event.end);                // 이벤트 종료 Date
+            // 셀 시간에 이벤트가 겹치는지 확인
             return cellTime >= eventStart && cellTime < eventEnd;
         });
+        // 겹치는 이벤트에서 사용자 이름 추출 후 중복 제거
         const names = overlappingEvents.map(event => userInfo[event.userId]).filter(Boolean);
-        return [...new Set(names)];
-    };
-    const calculateCellColor = (userCount) => {
-        // 최대 사용자 수에 비례하여 색상 결정 (최대 9명 가능)
-        const maxCount = 9;
-        const intensity = Math.min(userCount / maxCount, 1);
-        return `rgba(0, 200, 0, ${intensity})`;
+        return [...new Set(names)];                              // 고유 사용자 리스트 반환
     };
 
+    // 사용자 수에 비례해 셀 배경 투명도 조정
+    const calculateCellColor = (userCount) => {
+        const maxCount = 20;                                      // 최대 사용자 수 기준
+        const intensity = Math.min(userCount / maxCount, 1);      // 투명도 비율 계산
+        return `rgba(0, 200, 0, ${intensity})`;                   // 녹색 계열 rgba 문자열 반환
+    };
 
     return (
         <div className="availability-matrix">
+            {/* 헤더: 비어있는 첫 칸 + 날짜 칸 */}
             <div className="matrix-header" style={{ display: 'flex' }}>
-                <div
-                    className="matrix-header-cell"
-                    style={{
-                        width: '100px',
-                        border: '1px solid #ccc',
-                        padding: '6px',
-                        textAlign: 'center',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    {selectedDates.map(date => (
-                        <div key={date} className="matrix-header-cell" style={{ flex: 1, fontWeight: 'bold' }}>
-                            {date}
-                        </div>
-                    ))}
+                <div className="matrix-header-cell" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                    {/* 빈 시간 레이블 칸 */}
                 </div>
                 {selectedDates.map(date => (
-                    <div
-                        key={date}
-                        className="matrix-header-cell"
-                        style={{
-                            flex: 1,
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        {date}
+                    <div key={date} className="matrix-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                        {date}                                          {/* 날짜 문자열 표시 */}
                     </div>
                 ))}
             </div>
+
+            {/* 각 타임슬롯 행 렌더링 */}
             {timeSlots.map(slot => (
                 <div key={slot} className="matrix-row" style={{ display: 'flex' }}>
-                    <div
-                        className="matrix-row-label"
-                        style={{
-                            width: '100px',
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: '600'
-                        }}
-                    >
+                    {/* 시간 레이블 칸 */}
+                    <div className="matrix-row-label" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
                         {slot}
                     </div>
+                    {/* 각 날짜 셀 */}
                     {selectedDates.map(date => {
-                        const users = getUsersForCell(date, slot);
+                        const users = getUsersForCell(date, slot);    // 셀별 가능한 사용자
                         return (
                             <div
                                 key={`${date}-${slot}`}
                                 className="matrix-cell"
                                 style={{
-
                                     flex: 1,
                                     backgroundColor: calculateCellColor(users.length),
                                     minHeight: '40px',
                                     position: 'relative'
                                 }}
-                                onMouseEnter={() => setHoveredUsers(users)}
-                                onMouseLeave={() => setHoveredUsers([])}                            >
-                                {users.length > 0 ? (
-                                    <span>{users.length}명 가능</span>
-                                ) : null}
+                                onMouseEnter={() => setHoveredUsers(users)}    // 마우스 올릴 때 사용자 리스트 저장
+                                onMouseLeave={() => setHoveredUsers([])}       // 마우스 떠날 때 초기화
+                            >
+                                {users.length > 0 && <span>{users.length}명 가능</span>} {/* 사용자 수 표시 */}
                             </div>
                         );
                     })}
                 </div>
             ))}
+
+            {/* 마우스 오버 시 팝업으로 사용자 리스트 표시 */}
             {hoveredUsers.length > 0 && (
                 <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
                     <h4>가능한 사용자</h4>
                     <ul>
                         {hoveredUsers.map(user => (
-                            <li key={user}>{user}</li>
+                            <li key={user}>{user}</li>            /* 사용자 이름 리스트 */
                         ))}
                     </ul>
                 </div>
@@ -246,10 +191,13 @@ function AvailabilityMatrix({ selectedDates, start, end, events }) {
     );
 }
 
-function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
-    const [isDragging, setIsDragging] = useState(false);
-    const [toggleTo, setToggleTo] = useState(false);
 
+// 시간 선택 그리드를 렌더링하는 컴포넌트
+function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
+    const [isDragging, setIsDragging] = useState(false);  // 드래그 중 여부
+    const [toggleTo, setToggleTo] = useState(false);      // 드래그 시작 시 토글 상태 저장
+
+    // 시간 문자열을 Date 객체로 변환 (오늘 날짜 기준)
     const parseTime = (timeStr) => {
         const [hourMinute, ampm] = timeStr.split(' ');
         let [hour, minute] = hourMinute.split(':').map(Number);
@@ -257,9 +205,10 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
         if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
         const date = new Date();
         date.setHours(hour, minute, 0, 0);
-        return date;
+        return date;                                       // 오늘 날짜 기반 시간 설정
     };
 
+    // 시작/끝 시간 기준으로 15분 단위 라벨 생성
     const startDate = parseTime(start);
     const endDate = parseTime(end);
     const timeSlots = [];
@@ -271,98 +220,77 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
         const hour12 = hh % 12 === 0 ? 12 : hh % 12;
         const minuteStr = mm === 0 ? '00' : mm;
         const label = `${hour12}:${minuteStr} ${ampm}`;
-        timeSlots.push(label);
+        timeSlots.push(label);                             // "h:mm AM/PM" 추가
         tempDate.setMinutes(tempDate.getMinutes() + 15);
     }
 
+    // 드래그 시작 핸들러
     const handleMouseDown = (date, slot) => {
         setIsDragging(true);
         const cellKey = `${date}-${slot}`;
-        const isSelected = selectedTimes.includes(cellKey);
-        setToggleTo(!isSelected);
-        onSelectTimes(cellKey, !isSelected);
+        const isSelected = selectedTimes.includes(cellKey); // 기존 선택 여부 확인
+        setToggleTo(!isSelected);                           // 반대 상태로 토글 목표 설정
+        onSelectTimes(cellKey, !isSelected);                // 첫 셀 토글
     };
 
+    // 드래그 중 셀 엔터 핸들러
     const handleMouseEnter = (date, slot) => {
-        if (!isDragging) return;
+        if (!isDragging) return;                           // 드래그 중 아닐 땐 무시
         const cellKey = `${date}-${slot}`;
         const isSelected = selectedTimes.includes(cellKey);
         if (toggleTo !== isSelected) {
-            onSelectTimes(cellKey, toggleTo);
+            onSelectTimes(cellKey, toggleTo);              // toggleTo 기준으로 상태 변경
         }
     };
 
+    // 드래그 종료 핸들러
     const handleMouseUp = () => {
         setIsDragging(false);
     };
+
     return (
-        <div className="time-selection-grid" onMouseUp={handleMouseUp}>
-            <div className="time-grid-header">
-                <div className="time-header-cell"
-                    style={{
-                        flex: 1,
-                        border: '1px solid #ccc',
-                        padding: '6px',
-                        textAlign: 'center',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    Time</div>
+        <div className="time-selection-grid" onMouseUp={handleMouseUp}> {/* 마우스 업 이벤트로 드래그 종료 */}
+            {/* 헤더 행: Time 라벨 + 날짜들 */}
+            <div className="time-grid-header" style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="time-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                    Time
+                </div>
                 {selectedDates.map((date) => (
-                    <div key={date}
-                        className="date-header-cell"
-                        style={{
-                            flex: 1,
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: 'bold'
-                        }}
-                    >
+                    <div key={date} className="date-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
                         {date}
                     </div>
                 ))}
             </div>
+
+            {/* 각 타임슬롯 행 렌더링 */}
             {timeSlots.map((slot) => (
-                <div key={slot} className="time-grid-row">
-                    <div className="time-row-label"
-                        style={{
-                            flex: 1,
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: '600'
-                        }}
-                    >
+                <div key={slot} className="time-grid-row" style={{ display: 'flex' }}>
+                    {/* 시간 레이블 */}
+                    <div className="time-row-label" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
                         {slot}
                     </div>
+                    {/* 날짜별 슬롯 */}
                     {selectedDates.map((date) => {
                         const cellKey = `${date}-${slot}`;
-                        const isSelected = selectedTimes.includes(cellKey);
+                        const isSelected = selectedTimes.includes(cellKey); // 선택 여부 체크
                         return (
                             <div
                                 key={cellKey}
-                                className={`time-slot ${isSelected ? 'selected' : ''}`}
-                                style={{
-                                    flex: 1,
-                                    border: '1px solid #ccc',
-                                    padding: '6px',
-                                    minHeight: '40px',
-                                    textAlign: 'center'
-                                }}
-
-                                onMouseDown={() => handleMouseDown(date, slot)}
-                                onMouseEnter={() => handleMouseEnter(date, slot)}
+                                className={`time-slot ${isSelected ? 'selected' : ''}`} // 선택된 셀 클래스
+                                style={{ flex: 1, border: '1px solid #ccc', padding: '6px', minHeight: '40px', textAlign: 'center' }}
+                                onMouseDown={() => handleMouseDown(date, slot)} // 마우스 다운
+                                onMouseEnter={() => handleMouseEnter(date, slot)} // 드래그 시 엔터
                             />
                         );
-                    })
-                    }
+                    })}
                 </div>
-            ))
-            }
-        </div >
+            ))}
+        </div>
     );
 }
+
+export { AvailabilityMatrix, TimeSelectionGrid };
+
 
 /* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit }) {
@@ -937,7 +865,7 @@ const Schedule = () => {
             <div className="calender-container">
                 {!whenToMeet ? (
                     <>
-                        <div className="buttons">
+                        <div className="buttonys">
                             <button className="create-schedule-button" onClick={handleCreateEvent}>
                                 일정 생성하기
                             </button>
@@ -951,6 +879,7 @@ const Schedule = () => {
                                 시간 맞추기
                             </button>
                         </div>
+
                         <Calendar
                             localizer={localizer}
                             events={events}

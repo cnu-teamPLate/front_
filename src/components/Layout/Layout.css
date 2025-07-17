@@ -4,6 +4,8 @@
     flex-direction: column;
     min-height: 100vh;
     /* 화면 높이 100% 유지 */
+    overflow-x: auto;
+    /* 가로 스크롤 허용 */
 }
 
 /* 📌 사이드바가 열릴 때 컨텐츠 밀리도록 설정 */
@@ -37,25 +39,34 @@ footer {
     color: #666;
     max-height: 100px;
 }
+
 .menu-btn {
     position: relative;
-    top:-25%;
+    top: -25%;
     right: 87.5%;
-    transform: translateY(-50%); /* 수직 중앙 정렬 */
-    
-    background: none; /* 배경 제거 */
-    border: none; /* 테두리 제거 */
-    font-size: 20px; /* 버튼 크기 조절 */
+    transform: translateY(-50%);
+    /* 수직 중앙 정렬 */
+
+    background: none;
+    /* 배경 제거 */
+    border: none;
+    /* 테두리 제거 */
+    font-size: 20px;
+    /* 버튼 크기 조절 */
     cursor: pointer;
-    color: rgb(255, 255, 255); /* 텍스트 색상 */
+    color: rgb(255, 255, 255);
+    /* 텍스트 색상 */
 }
 
 /* 버튼에 마우스를 올렸을 때 */
 .menu-btn:hover {
-    background: none; /* 배경 제거 */
+    background: none;
+    /* 배경 제거 */
 
-    color: #ddd; /* 버튼 색상 변경 */
-    transform: translateY(-50%) scale(1.1); /* 살짝 확대 효과 */
+    color: #ddd;
+    /* 버튼 색상 변경 */
+    transform: translateY(-50%) scale(1.1);
+    /* 살짝 확대 효과 */
 }
 
 /* 버튼이 클릭되었을 때 */
@@ -67,7 +78,7 @@ footer {
 
 /* 📌 반응형 (768px 이하일 때 사이드바 크기 조정) */
 @media screen and (max-width: 768px) {
-    
+
     .sidebar-open {
         margin-left: 200px;
         /* 작은 화면에서는 사이드바 크기 줄이기 */
