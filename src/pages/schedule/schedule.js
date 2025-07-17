@@ -18,14 +18,41 @@ export const dummyEvents = [
         username: 'Alice',
         startTime: '14:30:00',
         endTime: '16:30:00',
-        date: '2025-05-27'
+        date: '2025-03-04'
     },
     {
         userId: '20211080',
         username: 'Bob',
         startTime: '15:00:00',
         endTime: '16:00:00',
-        date: '2025-05-27'
+        date: '2025-03-04'
+    },
+    {
+        userId: '20211080',
+        username: 'Bob',
+        startTime: '5:00:00',
+        endTime: '6:00:00',
+        date: '2025-03-04'
+    }, {
+        userId: '20211079',
+        username: 'Alice',
+        startTime: '12:30:00',
+        endTime: '15:30:00',
+        date: '2025-03-06'
+    },
+    {
+        userId: '20211080',
+        username: 'Bob',
+        startTime: '15:00:00',
+        endTime: '16:00:00',
+        date: '2025-03-05'
+    },
+    {
+        userId: '20211080',
+        username: 'Bob',
+        startTime: '5:00:00',
+        endTime: '6:00:00',
+        date: '2025-03-04'
     }
 ];
 const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
@@ -362,15 +389,22 @@ function WhenToMeetGrid({ onExit }) {
             return;
         }
 
-        // helper: "2025‑03‑10-2:30 PM" → Date 객체
+        // ─── uploadAvailability 안의 helper 함수만 교체 ───
         const parseCellKey = (key) => {
-            const [d, t, ampm] = key.split(/-| /);        // [YYYY‑M‑D, H:MM, AM]
-            const [y, m, day] = d.split('-').map(Number);
-            let [h, min] = t.split(':').map(Number);
+            // 예: "2025-05-27-2:30 PM"
+            const lastDash = key.lastIndexOf('-');      // 날짜·시간 구분 위치
+            const datePart = key.slice(0, lastDash);    // "2025-05-27"
+            const timePart = key.slice(lastDash + 1);   // "2:30 PM"
+
+            const [time, ampm] = timePart.split(' ');   // ["2:30", "PM"]
+            let [h, m] = time.split(':').map(Number);   // [2, 30]
             if (ampm === 'PM' && h < 12) h += 12;
             if (ampm === 'AM' && h === 12) h = 0;
-            return new Date(y, m - 1, day, h, min, 0, 0);
+
+            const [y, mo, d] = datePart.split('-').map(Number); // [2025, 05, 27]
+            return new Date(y, mo - 1, d, h, m, 0, 0);          // 정상 Date 객체
         };
+
 
         // ① 셀 목록 → 연속 구간 묶기 (15분 간격)
         const sorted = [...selectedTimes].sort(
@@ -512,8 +546,8 @@ function WhenToMeetGrid({ onExit }) {
             prev.includes(dateKey) ? prev.filter((d) => d !== dateKey) : [...prev, dateKey]
         );
     };
-    const dummyEvents = [{ userId: '20211079', start: '2025-05-27T14:30:00', end: '2025-05-27T16:30:00' }
-    ];
+    // const dummyEvents = [{ userId: '20211079', start: '2025-03-04T14:30:00', end: '2025-03-04T16:30:00' }, { userId: '20211079', start: '2025-03-06T14:30:00', end: '2025-03-06T16:30:00' }, { userId: '20211010', start: '2025-03-04T12:30:00', end: '2025-03-04T16:30:00' }, { userId: '20211008', start: '2025-03-04T14:00:00', end: '2025-03-04T20:30:00' }
+    // ];
     const [formId, setFormId] = useState(null);
 
     const handleSelectTimes = (cellKey, shouldSelect) => {
@@ -530,19 +564,19 @@ function WhenToMeetGrid({ onExit }) {
     };
     const navigate = useNavigate();
     // 선택적 유틸 (테스트용 더미 이벤트 → details 구조)
-    function dummyEventsToDetails(events) {
-        const obj = {};
-        events.forEach(({ start, end, userId }) => {
-            const date = start.slice(0, 10);                 // "YYYY-MM-DD"
-            if (!obj[date]) obj[date] = [];
-            obj[date].push({
-                startTime: start.slice(11, 19),                // "HH:MM:SS"
-                endTime: end.slice(11, 19),
-                username: userInfo[userId] || userId
-            });
-        });
-        return obj;
-    }
+    // function dummyEventsToDetails(events) {
+    //     const obj = {};
+    //     events.forEach(({ start, end, userId }) => {
+    //         const date = start.slice(0, 10);                 // "YYYY-MM-DD"
+    //         if (!obj[date]) obj[date] = [];
+    //         obj[date].push({
+    //             startTime: start.slice(11, 19),                // "HH:MM:SS"
+    //             endTime: end.slice(11, 19),
+    //             username: userInfo[userId] || userId
+    //         });
+    //     });
+    //     return obj;
+    // }
 
 
     return (
@@ -682,13 +716,18 @@ function WhenToMeetGrid({ onExit }) {
                             <button onClick={prevStep}>Back</button>
                             <button onClick={() => navigate('/schedule')}>Next</button>
 
-                            <button
+                            {/* <button
                                 disabled={!formId || isLoading}
                                 onClick={() => uploadAvailability(formId)}
                             >
                                 확정(가용 시간 업로드)
+                            </button> */}
+                            <button
+                                disabled={isLoading} //API연결시 위에꺼로 써야함 //To do //⭐
+                                onClick={() => uploadAvailability(1)}
+                            >
+                                확정(가용 시간 업로드)
                             </button>
-
                             {isLoading && <div className="loading">로딩 중…</div>}
                             {error && <div className="error-message">{error}</div>}
                         </div>
@@ -940,7 +979,6 @@ const Schedule = () => {
             const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${id}`;
             const res = await fetch(url);
             const data = await res.json();
-            // 서버 응답이 { details:{…} } 라면 구조에 맞춰 처리
             if (data && typeof data === 'object') {
                 setAvailability(data.details || data);   // 필요에 따라 수정
             } else {
