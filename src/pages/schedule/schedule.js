@@ -102,10 +102,13 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
-function AvailabilityMatrix({ form, details }) {
+function AvailabilityMatrix({ form, details, allData }) {
     /* ───────────────────── 기본 파싱 값 ───────────────────── */
+    console.log("form: ", form);
+    console.log("details: ", details);
 
     const selectedDates = form.dates.map(d => d.startDate);  // ["2025-05-27", …]
+    console.log('selectedDates', selectedDates);
     const start = form.startTime;   // "09:00:00"
     const end = form.endTime;     // "22:00:00"
     const padDate = (dateStr) => {
@@ -219,7 +222,9 @@ function AvailabilityMatrix({ form, details }) {
                                 onMouseEnter={() => setHovered(users)}
                                 onMouseLeave={() => setHovered([])}
                             >
-                                {users.length > 0 && <span>{users.length}명 가능</span>}
+                                {/* {users.length > 0 && <span>{users.length}명 가능</span>} */}
+                                {users.length > 0 && <span>{allData[date] === undefined ? "" : allData[date].length}명 가능</span>}
+                                {/* {<span>{date}</span>} */}
                             </div>
                         );
                     })}
@@ -241,7 +246,7 @@ function AvailabilityMatrix({ form, details }) {
     );
 }
 // 시간 선택 그리드를 렌더링하는 컴포넌트
-function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
+function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes, allData }) {
     const [isDragging, setIsDragging] = useState(false);  // 드래그 중 여부
     const [toggleTo, setToggleTo] = useState(false);      // 드래그 시작 시 토글 상태 저장
 
@@ -548,6 +553,7 @@ function WhenToMeetGrid({ onExit }) {
             const json = await res.json();
             setRemoteForm(json.form);        // form 객체 그대로
             setRemoteDetails(json.details);  // { "YYYY‑MM‑DD": [ … ] } 형태
+            console.log("웬투밋 호출 결과", json.details);
         } catch (e) {
             console.error('view API 실패', e);
             setError('폼 정보를 가져오지 못했습니다.');
@@ -666,14 +672,27 @@ function WhenToMeetGrid({ onExit }) {
                         </div>
                         <div className="navigation-buttons">
                             <button
-                                onClick={() => {
-                                    nextStep();                 // ① step +1
-                                    handleCreatewhen2meet();    // ② API 호출
+                                onClick={async () => {
+                                    /* ① 입력 검증 */
+                                    if (!validateStep()) return;
+
+                                    /* ② 폼 생성 → id */
+
+                                    //const id = await handleCreatewhen2meet();
+                                    const id = 1;//⭐//Todo //API들어오면 바꾸기
+
+                                    if (!id) return;                // 실패 시 중단
+
+                                    /* ③ state 에 저장 + 서버에서 최신 form/details 가져오기 */
+                                    setFormId(id);
+                                    await loadWhen2Meet(id);
+
+                                    /* ④ 다음 단계로 이동 */
+                                    nextStep();
                                 }}
                             >
                                 Next
-                            </button>
-                            {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
+                            </button>                            {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
                             {errors.selectedDates && <div className="error">{errors.selectedDates}</div>}
                         </div>
                     </div>
@@ -690,9 +709,10 @@ function WhenToMeetGrid({ onExit }) {
                                 end={end}
                                 selectedTimes={selectedTimes}
                                 onSelectTimes={handleSelectTimes}
+                                allData={remoteDetails}
                             />
                             {remoteForm && remoteDetails ? (
-                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} />
+                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails} />
                             ) : (
                                 <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
                             )}
@@ -709,17 +729,15 @@ function WhenToMeetGrid({ onExit }) {
                                 확정(가용 시간 업로드)
                             </button> */}
                             <button
-                                disabled={isLoading || !formId}      // 폼ID가 올 때까지도 비활성
+                                disabled={isLoading}            // formId 체크 제거
                                 onClick={() => {
-                                    // ① 내가 선택한 가용 시간 업로드
-                                    uploadAvailability(formId);
-
-                                    // ② 서버에 다시 물어서 최신 form / details 가져오기
-                                    loadWhen2Meet(formId);
+                                    uploadAvailability(1);        // 🔹
+                                    loadWhen2Meet(1);             // 다시 불러오기
                                 }}
                             >
                                 확정(가용 시간 업로드)
                             </button>
+
 
                             {isLoading && <div className="loading">로딩 중…</div>}
                             {error && <div className="error-message">{error}</div>}
