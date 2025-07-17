@@ -29,6 +29,9 @@ export const dummyEvents = [
     }
 ];
 const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
+// 📍 WhenToMeetGrid 맨 위쪽 state 모음 근처
+const [remoteForm, setRemoteForm] = useState(null);   // GET /form 응답
+const [remoteDetails, setRemoteDetails] = useState(null);   // GET /details 응답
 
 
 /** 함수 선언식(hoisting O) */
@@ -496,6 +499,7 @@ function WhenToMeetGrid({ onExit }) {
                     alert(data.message || '웬투밋 폼이 생성되었습니다.');
                     const { when2meetId, message, code } = data;
                     setFormId(when2meetId);
+
                 } else {
                     setError(data.message || '알 수 없는 오류가 발생했습니다.');
                 }   // 필요하면 when2meetId 저장
@@ -539,7 +543,17 @@ function WhenToMeetGrid({ onExit }) {
         );
     };
     const [formId, setFormId] = useState(null);
-
+    const loadWhen2Meet = async (id) => {
+        try {
+            const res = await fetch(`${API}/schedule/meeting/view/when2meet?when2meetId=${id}`);
+            const json = await res.json();
+            setRemoteForm(json.form);        // form 객체 그대로
+            setRemoteDetails(json.details);  // { "YYYY‑MM‑DD": [ … ] } 형태
+        } catch (e) {
+            console.error('view API 실패', e);
+            setError('폼 정보를 가져오지 못했습니다.');
+        }
+    };
     const handleSelectTimes = (cellKey, shouldSelect) => {
         setSelectedTimes((prev) => {
             if (shouldSelect) {
@@ -698,11 +712,18 @@ function WhenToMeetGrid({ onExit }) {
                                 확정(가용 시간 업로드)
                             </button> */}
                             <button
-                                disabled={isLoading} //API연결시 위에꺼로 써야함 //To do //⭐
-                                onClick={() => uploadAvailability(1)}
+                                disabled={isLoading || !formId}      // 폼ID가 올 때까지도 비활성
+                                onClick={() => {
+                                    // ① 내가 선택한 가용 시간 업로드
+                                    uploadAvailability(formId);
+
+                                    // ② 서버에 다시 물어서 최신 form / details 가져오기
+                                    loadWhen2Meet(formId);
+                                }}
                             >
                                 확정(가용 시간 업로드)
                             </button>
+
                             {isLoading && <div className="loading">로딩 중…</div>}
                             {error && <div className="error-message">{error}</div>}
                         </div>
