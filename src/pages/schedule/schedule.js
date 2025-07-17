@@ -296,7 +296,7 @@ export { AvailabilityMatrix, TimeSelectionGrid };
 function WhenToMeetGrid({ onExit }) {
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState('false');
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     // 이벤트 관련 상태
     const [eventTitle, setEventTitle] = useState('');
@@ -326,29 +326,109 @@ function WhenToMeetGrid({ onExit }) {
         const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
         return localDate.toISOString();
     };
+
+    // ────────────────────────────────────────────────────────────────
+    // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
+    const uploadAvailability = async (when2meetId) => {
+        if (selectedTimes.length === 0) {
+            alert('한 칸 이상 선택해 주세요.');
+            return;
+        }
+
+        // helper: "2025‑03‑10-2:30 PM" → Date 객체
+        const parseCellKey = (key) => {
+            const [d, t, ampm] = key.split(/-| /);        // [YYYY‑M‑D, H:MM, AM]
+            const [y, m, day] = d.split('-').map(Number);
+            let [h, min] = t.split(':').map(Number);
+            if (ampm === 'PM' && h < 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+            return new Date(y, m - 1, day, h, min, 0, 0);
+        };
+
+        // ① 셀 목록 → 연속 구간 묶기 (15분 간격)
+        const sorted = [...selectedTimes].sort(
+            (a, b) => parseCellKey(a) - parseCellKey(b)
+        );
+        const ranges = [];
+        let rangeStart = parseCellKey(sorted[0]);
+        let prev = rangeStart;
+
+        for (let i = 1; i < sorted.length; i++) {
+            const cur = parseCellKey(sorted[i]);
+            const diff = (cur - prev) / 60000;           // 분 단위 차이
+            if (diff !== 15) {                           // 끊김 발생
+                ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
+                rangeStart = cur;
+            }
+            prev = cur;
+        }
+        // 마지막 구간 push
+        ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
+
+        // ② 구간 → Swagger 스키마 형식
+        const userRanges = ranges.map(r => ({
+            startDate: r.start.toISOString().slice(0, 19),   // "YYYY‑MM‑DDTHH:MM:SS"
+            endDate: r.end.toISOString().slice(0, 19)
+        }));
+
+        const body = {
+            when2meetId,
+            details: [{
+                userId: '20211079',
+                username: '홍길동',
+                dates: userRanges
+            }]
+        };
+
+        try {
+            const res = await fetch(`${API}/schedule/meeting/upload/when2meet/detail`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || '업로드 실패');
+            alert(data.message || '가용 시간이 업로드되었습니다.');
+        } catch (e) {
+            setError(e.message);
+        }
+    };
+    // ────────────────────────────────────────────────────────────────
+
+    /** "9:00 AM" → "09:00:00" */
+    const toHHMMSS = (timeStr) => {
+        const [hourMinute, ampm] = timeStr.split(' ');
+        let [h, m] = hourMinute.split(':').map(Number);
+        if (ampm?.toLowerCase() === 'pm' && h < 12) h += 12;
+        if (ampm?.toLowerCase() === 'am' && h === 12) h = 0;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+    };
     const handleCreateEvent = async () => {
         if (!validateStep()) return;
         setIsLoading(true);
         setError('');
-
-        // 선택된 날짜에서 가장 첫 번째 날짜 사용
-        const startDate = selectedDates[0];
-        const endDate = selectedDates[selectedDates.length - 1];
-
-        // ISO 형식으로 변환
-        const startISO = convertToISO(startDate, start, timeZone);
-        const endISO = convertToISO(endDate, end, timeZone);
-
         const requestData = {
-            userId: "20211079",
-            projId: "cse00001",
-            start: startISO,
-            end: endISO,
-        };
+            title: eventTitle.trim(),
+            projId: 'cse00001',
+            startTime: toHHMMSS(start),   // "09:00:00"
+            endTime: toHHMMSS(end),     // "22:00:00" 등
+            dates: selectedDates
+                .sort()                   // 날짜 배열 오름차순 정리 
+                .map(d => {
+                    // d 예시: "2025-5-1" → "2025-05-01"
+                    const [y, m, day] = d.split('-').map(Number);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    const dateStr = `${y}-${pad(m)}-${pad(day)}`;
+                    return { startDate: dateStr, endDate: dateStr };
+                })
 
+        };
         try {
             const response = await fetch(
-                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/schedule/meeting/adjust/upload',
+                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/meeting/upload/when2meet',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -359,7 +439,12 @@ function WhenToMeetGrid({ onExit }) {
             const data = await response.json();
 
             if (response.ok) {
-                alert('이벤트가 성공적으로 생성되었습니다.');
+                if (data.code === 0) {
+                    alert(data.message || '웬투밋 폼이 생성되었습니다.');
+                } else {
+                    setError(data.message || '알 수 없는 오류가 발생했습니다.');
+                }   // 필요하면 when2meetId 저장
+                // TODO: data에 when2meetId가 들어오면 setWhen2MeetId(data.when2meetId) 등으로 저장        
             } else {
                 setError(data.message || '이벤트 생성에 실패했습니다.');
             }
@@ -537,11 +622,18 @@ function WhenToMeetGrid({ onExit }) {
                                 start={start}
                                 end={end}
                                 events={dummyEvents}
+
                             />
                         </div>
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={() => navigate('/schedule')}>Next</button>
+                            {/* when2meetId 값은 1단계에서 setFormId(...)로 저장했다고 가정 */}
+                            <button onClick={() => uploadAvailability(formId)}>
+                                확정(가용 시간 업로드)
+                            </button>
+                            {isLoading && <div className="loading">로딩 중...</div>}
+                            {error && <div className="error-message">{error}</div>}
                             {isLoading && <div className="loading">로딩 중...</div>}
                             {error && <div className="error-message">{error}</div>}
                         </div>
