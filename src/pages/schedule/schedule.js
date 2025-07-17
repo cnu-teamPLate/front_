@@ -6,7 +6,40 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
+// 파일 맨 위쪽
+const API = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
+// --- state 선언들 바로 아래 ---
+// 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 
+// ✱ 파일 상단 --------------------------------------------
+export const dummyEvents = [
+    {
+        userId: '20211079',
+        username: 'Alice',
+        startTime: '14:30:00',
+        endTime: '16:30:00',
+        date: '2025-05-27'
+    },
+    {
+        userId: '20211080',
+        username: 'Bob',
+        startTime: '15:00:00',
+        endTime: '16:00:00',
+        date: '2025-05-27'
+    }
+];
+const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
+
+
+/** 함수 선언식(hoisting O) */
+function buildDetails(events) {
+    const obj = {};
+    events.forEach(({ date, startTime, endTime, username }) => {
+        if (!obj[date]) obj[date] = [];
+        obj[date].push({ startTime, endTime, username });
+    });
+    return obj;
+}
 const userInfo = {
     "20211079": "Alice",
     "20211080": "Bob"
@@ -68,137 +101,124 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
-// 사용 가능 시간 매트릭스를 렌더링하는 컴포넌트
-const availabilityMap = useMemo(() => {
-    const map = new Map();              // key: `${date}-${slot}` → Set<username>
-    Object.entries(details).forEach(([date, arr]) => {
-        arr.forEach(({ startTime, endTime, username }) => {
-            let cur = moment(`${date}T${startTime}`);
-            const last = moment(`${date}T${endTime}`);
-            while (cur < last) {
-                const slot = cur.format('h:mm A');        // 라벨과 동일 포맷
-                const key = `${date}-${slot}`;
-                if (!map.has(key)) map.set(key, new Set());
-                map.get(key).add(username);
-                cur.add(15, 'minutes');
-            }
+function AvailabilityMatrix({ form, details }) {
+    /* ───────────────────── 기본 파싱 값 ───────────────────── */
+    const selectedDates = form.dates.map(d => d.startDate);  // ["2025-05-27", …]
+    const start = form.startTime;   // "09:00:00"
+    const end = form.endTime;     // "22:00:00"
+
+    /* ───────────── 1) 날짜·슬롯 → 사용자 Set 매핑 ───────────── */
+    const availabilityMap = useMemo(() => {
+        const map = new Map();                         // key = `${date}-${slot}`
+        Object.entries(details).forEach(([date, arr]) => {
+            arr.forEach(({ startTime, endTime, username }) => {
+                let cur = moment(`${date}T${startTime}`);
+                const last = moment(`${date}T${endTime}`);
+                while (cur < last) {
+                    const slotLabel = cur.format('h:mm A');  // "2:15 PM"
+                    const key = `${date}-${slotLabel}`;
+                    if (!map.has(key)) map.set(key, new Set());
+                    map.get(key).add(username);
+                    cur.add(15, 'minutes');
+                }
+            });
         });
-    });
-    return map;
-}, [details]);
-// ① 24h "HH:mm:ss" → {hour, minute}
-const parseTime24 = (hhmmss) => {
-    const [h, m] = hhmmss.split(':').map(Number);
-    return { hour: h, minute: m };
-};
+        return map;
+    }, [details]);
 
-// ② 라벨 "h:mm AM/PM" → {hour, minute}
-const parseSlotLabel = (label) => {
-    const [hourMinute, ampm] = label.split(' ');
-    let [h, m] = hourMinute.split(':').map(Number);
-    if (ampm === 'PM' && h < 12) h += 12;
-    if (ampm === 'AM' && h === 12) h = 0;
-    return { hour: h, minute: m };
-};
+    /* ───────────── 2) 24h 문자열 → 시·분 파서 ────────────── */
+    const parseTime24 = (hhmmss) => {
+        const [h, m] = hhmmss.split(':').map(Number);
+        return { hour: h, minute: m };
+    };
 
-// 시작 시간과 종료 시간 사이를 15분 단위로 분할한 타임슬롯 배열 생성
-const getTimeSlots = (startTimeStr, endTimeStr) => {
-    const slots = [];
-    const start = parseTime(startTimeStr);                    // 시작 시간 파싱
-    const end = parseTime(endTimeStr);                        // 종료 시간 파싱
-    let current = new Date(2000, 0, 1, start.hour, start.minute, 0);  // 임시 시작 Date
-    const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);     // 임시 종료 Date
-    while (current <= endDate) {                              // current가 end까지 돌 때까지 반복
-        let hours = current.getHours();                       // 24시간 기준 시 얻기
-        const minutes = current.getMinutes();                 // 분 얻기
-        const ampm = hours >= 12 ? 'PM' : 'AM';               // AM/PM 결정
-        hours = hours % 12;                                   // 12시간제로 변환
-        if (hours === 0) hours = 12;                          // 0시 -> 12시
-        const minuteStr = minutes === 0 ? '00' : minutes;     // 분 문자열 포매팅
-        slots.push(`${hours}:${minuteStr} ${ampm}`);          // "h:mm AM/PM" 문자열 추가
-        current = new Date(current.getTime() + 15 * 60000);   // 15분 증가
-    }
-    return slots;                                            // 타임슬롯 배열 반환
-};
+    /* ───────────── 3) 타임슬롯 라벨 생성 ────────────── */
+    const getTimeSlots = (from, to) => {
+        const slots = [];
+        const s = parseTime24(from);
+        const e = parseTime24(to);
+        let cur = new Date(2000, 0, 1, s.hour, s.minute);
+        const endDate = new Date(2000, 0, 1, e.hour, e.minute);
+        while (cur <= endDate) {
+            let h = cur.getHours();
+            const m = cur.getMinutes();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12; if (h === 0) h = 12;
+            slots.push(`${h}:${m.toString().padStart(2, '0')} ${ampm}`);
+            cur = new Date(cur.getTime() + 15 * 60000);
+        }
+        return slots;
+    };
 
-const timeSlots = getTimeSlots(start, end);                  // 타임슬롯 생성
+    const timeSlots = useMemo(() => getTimeSlots(start, end), [start, end]);
 
-const getUsersForCell = (dateStr, timeSlot) => {
-    // availabilityMap: key = `${date}-${slot}`, value = Set<username>
-    const key = `${dateStr}-${timeSlot}`;
-    const users = availabilityMap.get(key);    // Set 또는 undefined
+    /* ───────────── 4) 셀별 사용자 조회 ────────────── */
+    const getUsersForCell = (date, slot) => {
+        const users = availabilityMap.get(`${date}-${slot}`);
+        return users ? [...users] : [];
+    };
 
-    // Set → 배열로 변환, 없으면 빈 배열 반환
-    return users ? [...users] : [];
-};
+    /* ───────────── 5) 셀 배경 색상 계산 ────────────── */
+    const maxCount = useMemo(() => {
+        let max = 1;
+        availabilityMap.forEach(set => { if (set.size > max) max = set.size; });
+        return max;
+    }, [availabilityMap]);
 
-// 사용자 수에 비례해 셀 배경 투명도 조정
-const calculateCellColor = (userCount) => {
-    const maxCount = 20;                                      // 최대 사용자 수 기준
-    const intensity = Math.min(userCount / maxCount, 1);      // 투명도 비율 계산
-    return `rgba(0, 200, 0, ${intensity})`;                   // 녹색 계열 rgba 문자열 반환
-};
+    const bgColor = (cnt) => `rgba(0,200,0,${cnt / maxCount})`;
 
-return (
-    <div className="availability-matrix">
-        {/* 헤더: 비어있는 첫 칸 + 날짜 칸 */}
-        <div className="matrix-header" style={{ display: 'flex' }}>
-            <div className="matrix-header-cell" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
-                {/* 빈 시간 레이블 칸 */}
+    /* ───────────── 6) 렌더링 ────────────── */
+    const [hovered, setHovered] = useState([]);
+
+    return (
+        <div className="availability-matrix" style={{ position: 'relative' }}>
+            {/* 헤더 */}
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: 100 }} />
+                {selectedDates.map(d => (
+                    <div key={d} style={{ flex: 1, border: '1px solid #ccc', padding: 6, fontWeight: 'bold', textAlign: 'center' }}>
+                        {d}
+                    </div>
+                ))}
             </div>
-            {selectedDates.map(date => (
-                <div key={date} className="matrix-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
-                    {date}                                          {/* 날짜 문자열 표시 */}
+
+            {/* 바디 */}
+            {timeSlots.map(slot => (
+                <div key={slot} style={{ display: 'flex' }}>
+                    <div style={{ width: 100, border: '1px solid #ccc', padding: 6, textAlign: 'center', fontWeight: 600 }}>
+                        {slot}
+                    </div>
+                    {selectedDates.map(date => {
+                        const users = getUsersForCell(date, slot);
+                        return (
+                            <div
+                                key={`${date}-${slot}`}
+                                style={{ flex: 1, border: '1px solid #ccc', minHeight: 40, background: bgColor(users.length) }}
+                                onMouseEnter={() => setHovered(users)}
+                                onMouseLeave={() => setHovered([])}
+                            >
+                                {users.length > 0 && <span>{users.length}명 가능</span>}
+                            </div>
+                        );
+                    })}
                 </div>
             ))}
-        </div>
 
-        {/* 각 타임슬롯 행 렌더링 */}
-        {timeSlots.map(slot => (
-            <div key={slot} className="matrix-row" style={{ display: 'flex' }}>
-                {/* 시간 레이블 칸 */}
-                <div className="matrix-row-label" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
-                    {slot}
+            {/* Hover 팝업 */}
+            {hovered.length > 0 && (
+                <div style={{
+                    position: 'absolute', top: 10, right: 10, background: '#fff',
+                    border: '1px solid #ddd', padding: 10
+                }}>
+                    <strong>가능한 사용자</strong>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {hovered.map(u => <li key={u}>{u}</li>)}
+                    </ul>
                 </div>
-                {/* 각 날짜 셀 */}
-                {selectedDates.map(date => {
-                    const users = getUsersForCell(date, slot);    // 셀별 가능한 사용자
-                    return (
-                        <div
-                            key={`${date}-${slot}`}
-                            className="matrix-cell"
-                            style={{
-                                flex: 1,
-                                backgroundColor: calculateCellColor(users.length),
-                                minHeight: '40px',
-                                position: 'relative'
-                            }}
-                            onMouseEnter={() => setHoveredUsers(users)}    // 마우스 올릴 때 사용자 리스트 저장
-                            onMouseLeave={() => setHoveredUsers([])}       // 마우스 떠날 때 초기화
-                        >
-                            {users.length > 0 && <span>{users.length}명 가능</span>} {/* 사용자 수 표시 */}
-                        </div>
-                    );
-                })}
-            </div>
-        ))}
-
-        {/* 마우스 오버 시 팝업으로 사용자 리스트 표시 */}
-        {hoveredUsers.length > 0 && (
-            <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
-                <h4>가능한 사용자</h4>
-                <ul>
-                    {hoveredUsers.map(user => (
-                        <li key={user}>{user}</li>            /* 사용자 이름 리스트 */
-                    ))}
-                </ul>
-            </div>
-        )}
-    </div>
-);
-
-
-
+            )}
+        </div>
+    );
+}
 // 시간 선택 그리드를 렌더링하는 컴포넌트
 function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
     const [isDragging, setIsDragging] = useState(false);  // 드래그 중 여부
@@ -448,6 +468,8 @@ function WhenToMeetGrid({ onExit }) {
             if (response.ok) {
                 if (data.code === 0) {
                     alert(data.message || '웬투밋 폼이 생성되었습니다.');
+                    const { when2meetId, message, code } = data;
+                    setFormId(when2meetId);
                 } else {
                     setError(data.message || '알 수 없는 오류가 발생했습니다.');
                 }   // 필요하면 when2meetId 저장
@@ -490,6 +512,9 @@ function WhenToMeetGrid({ onExit }) {
             prev.includes(dateKey) ? prev.filter((d) => d !== dateKey) : [...prev, dateKey]
         );
     };
+    const dummyEvents = [{ userId: '20211079', start: '2025-05-27T14:30:00', end: '2025-05-27T16:30:00' }
+    ];
+    const [formId, setFormId] = useState(null);
 
     const handleSelectTimes = (cellKey, shouldSelect) => {
         setSelectedTimes((prev) => {
@@ -504,6 +529,20 @@ function WhenToMeetGrid({ onExit }) {
         });
     };
     const navigate = useNavigate();
+    // 선택적 유틸 (테스트용 더미 이벤트 → details 구조)
+    function dummyEventsToDetails(events) {
+        const obj = {};
+        events.forEach(({ start, end, userId }) => {
+            const date = start.slice(0, 10);                 // "YYYY-MM-DD"
+            if (!obj[date]) obj[date] = [];
+            obj[date].push({
+                startTime: start.slice(11, 19),                // "HH:MM:SS"
+                endTime: end.slice(11, 19),
+                username: userInfo[userId] || userId
+            });
+        });
+        return obj;
+    }
 
 
     return (
@@ -624,30 +663,32 @@ function WhenToMeetGrid({ onExit }) {
                                 onSelectTimes={handleSelectTimes}
                             />
                             <AvailabilityMatrix
-                                selectedDates={selectedDates}
-
-                                start={start}
-                                end={end}
-                                events={dummyEvents}
-
-                            />
+                                form={{
+                                    dates: selectedDates.map(d => ({ startDate: d, endDate: d })),
+                                    startTime: toHHMMSS(start),   // "09:00:00"
+                                    endTime: toHHMMSS(end)      // "22:00:00"
+                                }}
+                                details={dummyDetails} />
                         </div>
+                        {/* ───────── navigation-buttons 영역 ───────── */}
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={() => navigate('/schedule')}>Next</button>
-                            {/* when2meetId 값은 1단계에서 setFormId(...)로 저장했다고 가정 */}
-                            <button onClick={() => uploadAvailability(formId)}>
+
+                            <button
+                                disabled={!formId || isLoading}
+                                onClick={() => uploadAvailability(formId)}
+                            >
                                 확정(가용 시간 업로드)
                             </button>
-                            {isLoading && <div className="loading">로딩 중...</div>}
-                            {error && <div className="error-message">{error}</div>}
-                            {isLoading && <div className="loading">로딩 중...</div>}
+
+                            {isLoading && <div className="loading">로딩 중…</div>}
                             {error && <div className="error-message">{error}</div>}
                         </div>
                     </div>
-                </>
-            )}
-        </div>
+                </>)
+            }
+        </div >
     );
 };
 //-----------------여기까지가 웬투밋-----------------------------------------------------------------
@@ -887,17 +928,19 @@ const Schedule = () => {
             setLoading(false);
         }
     };
-    const fetchAvailability = async () => {
+    const fetchAvailability = async (id) => {
         try {
-            const response = await fetch('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/meeting/adjust/availability');
-            const data = await response.json();
-            if (Array.isArray(data)) {
-                setAvailability(data);
+            const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${id}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            // 서버 응답이 { details:{…} } 라면 구조에 맞춰 처리
+            if (data && typeof data === 'object') {
+                setAvailability(data.details || data);   // 필요에 따라 수정
             } else {
                 setAvailability([]);
             }
-        } catch (error) {
-            console.error("API 호출 중 오류:", error.message);
+        } catch (e) {
+            console.error('가용 시간 조회 실패', e);
             setAvailability([]);
         }
     };
