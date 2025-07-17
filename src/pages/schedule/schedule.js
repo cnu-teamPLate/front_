@@ -133,19 +133,34 @@ function AvailabilityMatrix({ form, details }) {
     const selectedDates = form.dates.map(d => d.startDate);  // ["2025-05-27", …]
     const start = form.startTime;   // "09:00:00"
     const end = form.endTime;     // "22:00:00"
-
-    /* ───────────── 1) 날짜·슬롯 → 사용자 Set 매핑 ───────────── */
+    const padDate = (dateStr) => {
+        // "2025-3-4" → "2025-03-04"
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${y}-${pad(m)}-${pad(d)}`;
+    };
     const availabilityMap = useMemo(() => {
-        const map = new Map();                         // key = `${date}-${slot}`
-        Object.entries(details).forEach(([date, arr]) => {
+        const map = new Map(); // key = `${date}-${slot}`
+        Object.entries(details).forEach(([dateFull, arr]) => {
+            const dateUnpadded = `${+dateFull.slice(0, 4)}-${+dateFull.slice(5, 7)}-${+dateFull.slice(8)}`;
+            // ex) "2025-03-04" → "2025-3-4"
+
             arr.forEach(({ startTime, endTime, username }) => {
-                let cur = moment(`${date}T${startTime}`);
-                const last = moment(`${date}T${endTime}`);
-                while (cur < last) {
-                    const slotLabel = cur.format('h:mm A');  // "2:15 PM"
-                    const key = `${date}-${slotLabel}`;
-                    if (!map.has(key)) map.set(key, new Set());
-                    map.get(key).add(username);
+                let cur = moment(`${dateFull}T${startTime}`);
+                const end = moment(`${dateFull}T${endTime}`);
+
+                while (cur < end) {
+                    const slot = cur.format('h:mm A');           // "2:15 PM"
+                    // ① 패딩 있는 key
+                    const key1 = `${dateFull}-${slot}`;
+                    if (!map.has(key1)) map.set(key1, new Set());
+                    map.get(key1).add(username);
+
+                    // ② 패딩 없는 key
+                    const key2 = `${dateUnpadded}-${slot}`;
+                    if (!map.has(key2)) map.set(key2, new Set());
+                    map.get(key2).add(username);
+
                     cur.add(15, 'minutes');
                 }
             });
@@ -179,11 +194,15 @@ function AvailabilityMatrix({ form, details }) {
 
     const timeSlots = useMemo(() => getTimeSlots(start, end), [start, end]);
 
-    /* ───────────── 4) 셀별 사용자 조회 ────────────── */
     const getUsersForCell = (date, slot) => {
-        const users = availabilityMap.get(`${date}-${slot}`);
-        return users ? [...users] : [];
+        // date 는 달력에서 온 값. 패딩이 없을 수 있음
+        const padded = padDate(date);          // "2025-3-4" → "2025-03-04"
+        return [
+            ...(availabilityMap.get(`${date}-${slot}`) || []), // un‑padded
+            ...(availabilityMap.get(`${padded}-${slot}`) || [])  // padded
+        ];
     };
+
 
     /* ───────────── 5) 셀 배경 색상 계산 ────────────── */
     const maxCount = useMemo(() => {
