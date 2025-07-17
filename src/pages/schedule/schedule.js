@@ -26,33 +26,6 @@ export const dummyEvents = [
         startTime: '15:00:00',
         endTime: '16:00:00',
         date: '2025-03-04'
-    },
-    {
-        userId: '20211080',
-        username: 'Bob',
-        startTime: '5:00:00',
-        endTime: '6:00:00',
-        date: '2025-03-04'
-    }, {
-        userId: '20211079',
-        username: 'Alice',
-        startTime: '12:30:00',
-        endTime: '15:30:00',
-        date: '2025-03-06'
-    },
-    {
-        userId: '20211080',
-        username: 'Bob',
-        startTime: '15:00:00',
-        endTime: '16:00:00',
-        date: '2025-03-05'
-    },
-    {
-        userId: '20211080',
-        username: 'Bob',
-        startTime: '5:00:00',
-        endTime: '6:00:00',
-        date: '2025-03-04'
     }
 ];
 const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
@@ -63,7 +36,7 @@ function buildDetails(events) {
     const obj = {};
     events.forEach(({ date, startTime, endTime, username }) => {
         if (!obj[date]) obj[date] = [];
-        obj[date].push({ startTime, endTime, username });
+        obj[date].push({ startTime: moment(startTime, 'H:mm:ss').format('HH:mm:ss'), endTime: moment(endTime, 'H:mm:ss').format('HH:mm:ss'), username });
     });
     return obj;
 }
@@ -146,9 +119,10 @@ function AvailabilityMatrix({ form, details }) {
             // ex) "2025-03-04" → "2025-3-4"
 
             arr.forEach(({ startTime, endTime, username }) => {
-                let cur = moment(`${dateFull}T${startTime}`);
-                const end = moment(`${dateFull}T${endTime}`);
 
+
+                const fmt = 'YYYY-MM-DDTH:mm:ss';
+                let cur = moment(`${dateFull}T${startTime}`, fmt, true); const end = moment(`${dateFull}T${endTime}`, fmt, true);
                 while (cur < end) {
                     const slot = cur.format('h:mm A');           // "2:15 PM"
                     // ① 패딩 있는 key
@@ -258,8 +232,7 @@ function AvailabilityMatrix({ form, details }) {
                 }}>
                     <strong>가능한 사용자</strong>
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {hovered.map(u => <li key={u}>{u}</li>)}
-                    </ul>
+                        {hovered.map((u, idx) => <li key={`${u}-${idx}`}>{u}</li>)}                    </ul>
                 </div>
             )}
         </div>
@@ -565,8 +538,6 @@ function WhenToMeetGrid({ onExit }) {
             prev.includes(dateKey) ? prev.filter((d) => d !== dateKey) : [...prev, dateKey]
         );
     };
-    // const dummyEvents = [{ userId: '20211079', start: '2025-03-04T14:30:00', end: '2025-03-04T16:30:00' }, { userId: '20211079', start: '2025-03-06T14:30:00', end: '2025-03-06T16:30:00' }, { userId: '20211010', start: '2025-03-04T12:30:00', end: '2025-03-04T16:30:00' }, { userId: '20211008', start: '2025-03-04T14:00:00', end: '2025-03-04T20:30:00' }
-    // ];
     const [formId, setFormId] = useState(null);
 
     const handleSelectTimes = (cellKey, shouldSelect) => {
@@ -582,21 +553,6 @@ function WhenToMeetGrid({ onExit }) {
         });
     };
     const navigate = useNavigate();
-    // 선택적 유틸 (테스트용 더미 이벤트 → details 구조)
-    // function dummyEventsToDetails(events) {
-    //     const obj = {};
-    //     events.forEach(({ start, end, userId }) => {
-    //         const date = start.slice(0, 10);                 // "YYYY-MM-DD"
-    //         if (!obj[date]) obj[date] = [];
-    //         obj[date].push({
-    //             startTime: start.slice(11, 19),                // "HH:MM:SS"
-    //             endTime: end.slice(11, 19),
-    //             username: userInfo[userId] || userId
-    //         });
-    //     });
-    //     return obj;
-    // }
-
 
     return (
         <div className="new-event-container">
