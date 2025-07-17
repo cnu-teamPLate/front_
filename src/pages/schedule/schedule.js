@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -69,127 +69,134 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
 }
 
 // 사용 가능 시간 매트릭스를 렌더링하는 컴포넌트
-function AvailabilityMatrix({ selectedDates, start, end, events }) {
-    // 마우스 오버된 셀에 표시할 사용자 리스트 상태
-    const [hoveredUsers, setHoveredUsers] = useState([]);
-
-    // 시간 문자열("9:00 AM" 등)을 시,분 객체로 변환
-    const parseTime = (timeStr) => {
-        const [hourMinute, ampm] = timeStr.split(' ');           // "9:00"과 "AM" 분리
-        let [hour, minute] = hourMinute.split(':').map(Number);    // 시(hour), 분(minute) 숫자로 변환
-        if (ampm.toLowerCase() === 'pm' && hour < 12) hour += 12; // PM일 때 12시간 추가
-        if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0; // AM 12시 -> 0시
-        return { hour, minute };                                  // { hour, minute } 객체 반환
-    };
-
-    // 시작 시간과 종료 시간 사이를 15분 단위로 분할한 타임슬롯 배열 생성
-    const getTimeSlots = (startTimeStr, endTimeStr) => {
-        const slots = [];
-        const start = parseTime(startTimeStr);                    // 시작 시간 파싱
-        const end = parseTime(endTimeStr);                        // 종료 시간 파싱
-        let current = new Date(2000, 0, 1, start.hour, start.minute, 0);  // 임시 시작 Date
-        const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);     // 임시 종료 Date
-        while (current <= endDate) {                              // current가 end까지 돌 때까지 반복
-            let hours = current.getHours();                       // 24시간 기준 시 얻기
-            const minutes = current.getMinutes();                 // 분 얻기
-            const ampm = hours >= 12 ? 'PM' : 'AM';               // AM/PM 결정
-            hours = hours % 12;                                   // 12시간제로 변환
-            if (hours === 0) hours = 12;                          // 0시 -> 12시
-            const minuteStr = minutes === 0 ? '00' : minutes;     // 분 문자열 포매팅
-            slots.push(`${hours}:${minuteStr} ${ampm}`);          // "h:mm AM/PM" 문자열 추가
-            current = new Date(current.getTime() + 15 * 60000);   // 15분 증가
-        }
-        return slots;                                            // 타임슬롯 배열 반환
-    };
-
-    const timeSlots = getTimeSlots(start, end);                  // 타임슬롯 생성
-
-    // 날짜 문자열과 시간 문자열을 합쳐 Date 객체로 반환
-    const getCellDateTime = (dateStr, timeSlot) => {
-        const { hour, minute } = parseTime(timeSlot);            // 시간 파싱
-        const [year, month, day] = dateStr.split('-').map(Number); // "2025-7-15" -> [2025,7,15]
-        return new Date(year, month - 1, day, hour, minute, 0);   // Date 객체 생성
-    };
-
-    // 특정 셀에 해당하는 가능한 사용자 리스트 반환
-    const getUsersForCell = (dateStr, timeSlot) => {
-        const cellTime = getCellDateTime(dateStr, timeSlot);     // 셀의 Date
-        const overlappingEvents = events.filter(event => {
-            const eventStart = new Date(event.start);            // 이벤트 시작 Date
-            const eventEnd = new Date(event.end);                // 이벤트 종료 Date
-            // 셀 시간에 이벤트가 겹치는지 확인
-            return cellTime >= eventStart && cellTime < eventEnd;
+const availabilityMap = useMemo(() => {
+    const map = new Map();              // key: `${date}-${slot}` → Set<username>
+    Object.entries(details).forEach(([date, arr]) => {
+        arr.forEach(({ startTime, endTime, username }) => {
+            let cur = moment(`${date}T${startTime}`);
+            const last = moment(`${date}T${endTime}`);
+            while (cur < last) {
+                const slot = cur.format('h:mm A');        // 라벨과 동일 포맷
+                const key = `${date}-${slot}`;
+                if (!map.has(key)) map.set(key, new Set());
+                map.get(key).add(username);
+                cur.add(15, 'minutes');
+            }
         });
-        // 겹치는 이벤트에서 사용자 이름 추출 후 중복 제거
-        const names = overlappingEvents.map(event => userInfo[event.userId]).filter(Boolean);
-        return [...new Set(names)];                              // 고유 사용자 리스트 반환
-    };
+    });
+    return map;
+}, [details]);
+// ① 24h "HH:mm:ss" → {hour, minute}
+const parseTime24 = (hhmmss) => {
+    const [h, m] = hhmmss.split(':').map(Number);
+    return { hour: h, minute: m };
+};
 
-    // 사용자 수에 비례해 셀 배경 투명도 조정
-    const calculateCellColor = (userCount) => {
-        const maxCount = 20;                                      // 최대 사용자 수 기준
-        const intensity = Math.min(userCount / maxCount, 1);      // 투명도 비율 계산
-        return `rgba(0, 200, 0, ${intensity})`;                   // 녹색 계열 rgba 문자열 반환
-    };
+// ② 라벨 "h:mm AM/PM" → {hour, minute}
+const parseSlotLabel = (label) => {
+    const [hourMinute, ampm] = label.split(' ');
+    let [h, m] = hourMinute.split(':').map(Number);
+    if (ampm === 'PM' && h < 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return { hour: h, minute: m };
+};
 
-    return (
-        <div className="availability-matrix">
-            {/* 헤더: 비어있는 첫 칸 + 날짜 칸 */}
-            <div className="matrix-header" style={{ display: 'flex' }}>
-                <div className="matrix-header-cell" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
-                    {/* 빈 시간 레이블 칸 */}
-                </div>
-                {selectedDates.map(date => (
-                    <div key={date} className="matrix-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
-                        {date}                                          {/* 날짜 문자열 표시 */}
-                    </div>
-                ))}
+// 시작 시간과 종료 시간 사이를 15분 단위로 분할한 타임슬롯 배열 생성
+const getTimeSlots = (startTimeStr, endTimeStr) => {
+    const slots = [];
+    const start = parseTime(startTimeStr);                    // 시작 시간 파싱
+    const end = parseTime(endTimeStr);                        // 종료 시간 파싱
+    let current = new Date(2000, 0, 1, start.hour, start.minute, 0);  // 임시 시작 Date
+    const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);     // 임시 종료 Date
+    while (current <= endDate) {                              // current가 end까지 돌 때까지 반복
+        let hours = current.getHours();                       // 24시간 기준 시 얻기
+        const minutes = current.getMinutes();                 // 분 얻기
+        const ampm = hours >= 12 ? 'PM' : 'AM';               // AM/PM 결정
+        hours = hours % 12;                                   // 12시간제로 변환
+        if (hours === 0) hours = 12;                          // 0시 -> 12시
+        const minuteStr = minutes === 0 ? '00' : minutes;     // 분 문자열 포매팅
+        slots.push(`${hours}:${minuteStr} ${ampm}`);          // "h:mm AM/PM" 문자열 추가
+        current = new Date(current.getTime() + 15 * 60000);   // 15분 증가
+    }
+    return slots;                                            // 타임슬롯 배열 반환
+};
+
+const timeSlots = getTimeSlots(start, end);                  // 타임슬롯 생성
+
+const getUsersForCell = (dateStr, timeSlot) => {
+    // availabilityMap: key = `${date}-${slot}`, value = Set<username>
+    const key = `${dateStr}-${timeSlot}`;
+    const users = availabilityMap.get(key);    // Set 또는 undefined
+
+    // Set → 배열로 변환, 없으면 빈 배열 반환
+    return users ? [...users] : [];
+};
+
+// 사용자 수에 비례해 셀 배경 투명도 조정
+const calculateCellColor = (userCount) => {
+    const maxCount = 20;                                      // 최대 사용자 수 기준
+    const intensity = Math.min(userCount / maxCount, 1);      // 투명도 비율 계산
+    return `rgba(0, 200, 0, ${intensity})`;                   // 녹색 계열 rgba 문자열 반환
+};
+
+return (
+    <div className="availability-matrix">
+        {/* 헤더: 비어있는 첫 칸 + 날짜 칸 */}
+        <div className="matrix-header" style={{ display: 'flex' }}>
+            <div className="matrix-header-cell" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                {/* 빈 시간 레이블 칸 */}
             </div>
-
-            {/* 각 타임슬롯 행 렌더링 */}
-            {timeSlots.map(slot => (
-                <div key={slot} className="matrix-row" style={{ display: 'flex' }}>
-                    {/* 시간 레이블 칸 */}
-                    <div className="matrix-row-label" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
-                        {slot}
-                    </div>
-                    {/* 각 날짜 셀 */}
-                    {selectedDates.map(date => {
-                        const users = getUsersForCell(date, slot);    // 셀별 가능한 사용자
-                        return (
-                            <div
-                                key={`${date}-${slot}`}
-                                className="matrix-cell"
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: calculateCellColor(users.length),
-                                    minHeight: '40px',
-                                    position: 'relative'
-                                }}
-                                onMouseEnter={() => setHoveredUsers(users)}    // 마우스 올릴 때 사용자 리스트 저장
-                                onMouseLeave={() => setHoveredUsers([])}       // 마우스 떠날 때 초기화
-                            >
-                                {users.length > 0 && <span>{users.length}명 가능</span>} {/* 사용자 수 표시 */}
-                            </div>
-                        );
-                    })}
+            {selectedDates.map(date => (
+                <div key={date} className="matrix-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                    {date}                                          {/* 날짜 문자열 표시 */}
                 </div>
             ))}
-
-            {/* 마우스 오버 시 팝업으로 사용자 리스트 표시 */}
-            {hoveredUsers.length > 0 && (
-                <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
-                    <h4>가능한 사용자</h4>
-                    <ul>
-                        {hoveredUsers.map(user => (
-                            <li key={user}>{user}</li>            /* 사용자 이름 리스트 */
-                        ))}
-                    </ul>
-                </div>
-            )}
         </div>
-    );
-}
+
+        {/* 각 타임슬롯 행 렌더링 */}
+        {timeSlots.map(slot => (
+            <div key={slot} className="matrix-row" style={{ display: 'flex' }}>
+                {/* 시간 레이블 칸 */}
+                <div className="matrix-row-label" style={{ width: '100px', border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
+                    {slot}
+                </div>
+                {/* 각 날짜 셀 */}
+                {selectedDates.map(date => {
+                    const users = getUsersForCell(date, slot);    // 셀별 가능한 사용자
+                    return (
+                        <div
+                            key={`${date}-${slot}`}
+                            className="matrix-cell"
+                            style={{
+                                flex: 1,
+                                backgroundColor: calculateCellColor(users.length),
+                                minHeight: '40px',
+                                position: 'relative'
+                            }}
+                            onMouseEnter={() => setHoveredUsers(users)}    // 마우스 올릴 때 사용자 리스트 저장
+                            onMouseLeave={() => setHoveredUsers([])}       // 마우스 떠날 때 초기화
+                        >
+                            {users.length > 0 && <span>{users.length}명 가능</span>} {/* 사용자 수 표시 */}
+                        </div>
+                    );
+                })}
+            </div>
+        ))}
+
+        {/* 마우스 오버 시 팝업으로 사용자 리스트 표시 */}
+        {hoveredUsers.length > 0 && (
+            <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
+                <h4>가능한 사용자</h4>
+                <ul>
+                    {hoveredUsers.map(user => (
+                        <li key={user}>{user}</li>            /* 사용자 이름 리스트 */
+                    ))}
+                </ul>
+            </div>
+        )}
+    </div>
+);
+
 
 
 // 시간 선택 그리드를 렌더링하는 컴포넌트
