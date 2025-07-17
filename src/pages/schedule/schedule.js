@@ -433,7 +433,7 @@ function WhenToMeetGrid({ onExit }) {
         if (ampm?.toLowerCase() === 'am' && h === 12) h = 0;
         return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
     };
-    const handleCreateEvent = async () => {
+    const handleCreatewhen2meet = async () => {
         if (!validateStep()) return;
         setIsLoading(true);
         setError('');
@@ -643,7 +643,14 @@ function WhenToMeetGrid({ onExit }) {
                             </label>
                         </div>
                         <div className="navigation-buttons">
-                            <button onClick={nextStep}>Next</button>
+                            <button
+                                onClick={() => {
+                                    nextStep();                 // ① step +1
+                                    handleCreatewhen2meet();    // ② API 호출
+                                }}
+                            >
+                                Next
+                            </button>
                             {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
                             {errors.selectedDates && <div className="error">{errors.selectedDates}</div>}
                         </div>
