@@ -6,7 +6,6 @@ import Header from '../../components/Header'; // Header 경로 수정
 
 
 function MyPage() {
-  const { userId } = useParams(); // useParams를 통해 URL에서 userId 가져오기
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,6 +18,15 @@ function MyPage() {
   // 마이페이지 접속 시 사용자 정보 불러오기
   useEffect(() => {
     const fetchMyInfo = async () => {
+      const userId = localStorage.getItem('userId');
+      const accessToken = localStorage.getItem('accessToken');
+
+      if (!userId || !accessToken) {
+        alert("로그인이 필요합니다.");
+        // navigate('/login'); 
+        return;
+      }
+
       try {
         const response = await fetch(
           `http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/read-my-info?userId=${userId}`,
@@ -26,6 +34,7 @@ function MyPage() {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`,
             },
           }
         );
@@ -36,10 +45,10 @@ function MyPage() {
         console.log("받아온 사용자 정보:", data);
 
         setFormData({
-          name: data.name || "",
-          email: data.mail || "",
+          name: data.username || "",
+          email: data.email || "",
           studentId: data.id || "",
-          password: data.pwd || "",
+          password: "", // 비밀번호는 보통 다시 표시하지 않습니다.
           phone: data.phone || "",
         });
       } catch (error) {
@@ -48,10 +57,8 @@ function MyPage() {
       }
     };
 
-    if (userId) {
-      fetchMyInfo();
-    }
-  }, [userId]); // userId가 변경되면 다시 불러오도록 설정
+    fetchMyInfo();
+  }, []); // 페이지 로드 시 한 번만 실행
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,6 +69,12 @@ function MyPage() {
   };
 
   const handleUpdate = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     try {
       const response = await fetch(
         "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/update-my-info",
@@ -69,23 +82,24 @@ function MyPage() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
-            id: formData.studentId, // studentId로 수정
+            id: formData.studentId,
             pwd: formData.password,
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            studentNumber: formData.studentId,
           }),
         }
       );
 
       if (response.ok) {
         alert("정보가 정상적으로 수정되었습니다.");
+        setEditMode(false); // 수정 후 보기 모드로 전환
       } else {
-        const errorText = await response.text();
-        throw new Error(errorText || "정보 수정에 실패했습니다.");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "정보 수정에 실패했습니다.");
       }
     } catch (error) {
       console.error("정보 수정 요청 오류:", error.message);

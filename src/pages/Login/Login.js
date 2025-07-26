@@ -33,7 +33,9 @@ function Login() {
         pwd: formData.password,
       });
 
+
       const url = new URL('http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/login');
+
 
       const response = await fetch(url, {
         method: 'POST',
@@ -48,12 +50,10 @@ function Login() {
 
       if (response.ok) {
         if (data && data.userId) {
-          // ✅ 로그인 성공 시 사용자 정보 localStorage에 저장
           localStorage.setItem('userId', data.userId);
           localStorage.setItem('accessToken', data.accessToken);
           localStorage.setItem('name', data.name);
 
-          // ✅ 대시보드로 이동
           navigate('/dashboard');
         } else {
           setError('로그인에 실패했습니다. 사용자 정보가 없습니다.');

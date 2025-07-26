@@ -1,49 +1,46 @@
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-const dummyEvents = [
+// 파일 맨 위쪽
+const API = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
+// --- state 선언들 바로 아래 ---
+// 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
+
+// ✱ 파일 상단 --------------------------------------------
+export const dummyEvents = [
     {
-        userId: "20211079",
-        projId: "cse00001",
-        start: "2025-01-14T09:00:00.000Z",
-        end: "2025-01-14T10:00:00.000Z",
-        title: "Dummy Event 1"
+        userId: '20211079',
+        username: 'Alice',
+        startTime: '14:30:00',
+        endTime: '16:30:00',
+        date: '2025-03-04'
     },
     {
-        userId: "20211080",
-        projId: "cse00001",
-        start: "2025-01-14T09:15:00.000Z",
-        end: "2025-01-14T09:45:00.000Z",
-        title: "Dummy Event 2"
-    },
-    {
-        userId: "20211079",
-        projId: "cse00001",
-        start: "2025-01-14T10:00:00.000Z",
-        end: "2025-01-14T10:30:00.000Z",
-        title: "Dummy Event 3"
-    },
-    {
-        userId: "20211080",
-        projId: "cse00001",
-        start: "2025-01-14T10:15:00.000Z",
-        end: "2025-01-14T11:00:00.000Z",
-        title: "Dummy Event 4"
-    },
-    {
-        userId: "20211079",
-        projId: "cse00001",
-        start: "2025-01-14T11:00:00.000Z",
-        end: "2025-01-14T12:00:00.000Z",
-        title: "Dummy Event 5"
+        userId: '20211080',
+        username: 'Bob',
+        startTime: '15:00:00',
+        endTime: '16:00:00',
+        date: '2025-03-04'
     }
 ];
+const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
+// 📍 WhenToMeetGrid 맨 위쪽 state 모음 근처
 
+
+/** 함수 선언식(hoisting O) */
+function buildDetails(events) {
+    const obj = {};
+    events.forEach(({ date, startTime, endTime, username }) => {
+        if (!obj[date]) obj[date] = [];
+        obj[date].push({ startTime: moment(startTime, 'H:mm:ss').format('HH:mm:ss'), endTime: moment(endTime, 'H:mm:ss').format('HH:mm:ss'), username });
+    });
+    return obj;
+}
 const userInfo = {
     "20211079": "Alice",
     "20211080": "Bob"
@@ -105,108 +102,115 @@ function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates
     );
 }
 
-function AvailabilityMatrix({ selectedDates, start, end, events }) {
-    const [hoveredUsers, setHoveredUsers] = useState([]);
-    const parseTime = (timeStr) => {
-        const [hourMinute, ampm] = timeStr.split(' ');
-        let [hour, minute] = hourMinute.split(':').map(Number);
-        if (ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
-        if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
-        return { hour, minute };
+function AvailabilityMatrix({ form, details, allData }) {
+    /* ───────────────────── 기본 파싱 값 ───────────────────── */
+    console.log("form: ", form);
+    console.log("details: ", details);
+
+    const selectedDates = form.dates.map(d => d.startDate);  // ["2025-05-27", …]
+    console.log('selectedDates', selectedDates);
+    const start = form.startTime;   // "09:00:00"
+    const end = form.endTime;     // "22:00:00"
+    const padDate = (dateStr) => {
+        // "2025-3-4" → "2025-03-04"
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${y}-${pad(m)}-${pad(d)}`;
+    };
+    const availabilityMap = useMemo(() => {
+        const map = new Map(); // key = `${date}-${slot}`
+        Object.entries(details).forEach(([dateFull, arr]) => {
+            const dateUnpadded = `${+dateFull.slice(0, 4)}-${+dateFull.slice(5, 7)}-${+dateFull.slice(8)}`;
+            // ex) "2025-03-04" → "2025-3-4"
+
+            arr.forEach(({ startTime, endTime, username }) => {
+
+
+                const fmt = 'YYYY-MM-DDTH:mm:ss';
+                let cur = moment(`${dateFull}T${startTime}`, fmt, true); const end = moment(`${dateFull}T${endTime}`, fmt, true);
+                while (cur < end) {
+                    const slot = cur.format('h:mm A');           // "2:15 PM"
+                    // ① 패딩 있는 key
+                    const key1 = `${dateFull}-${slot}`;
+                    if (!map.has(key1)) map.set(key1, new Set());
+                    map.get(key1).add(username);
+
+                    // ② 패딩 없는 key
+                    const key2 = `${dateUnpadded}-${slot}`;
+                    if (!map.has(key2)) map.set(key2, new Set());
+                    map.get(key2).add(username);
+
+                    cur.add(15, 'minutes');
+                }
+            });
+        });
+        return map;
+    }, [details]);
+
+    /* ───────────── 2) 24h 문자열 → 시·분 파서 ────────────── */
+    const parseTime24 = (hhmmss) => {
+        const [h, m] = hhmmss.split(':').map(Number);
+        return { hour: h, minute: m };
     };
 
-    const getTimeSlots = (startTimeStr, endTimeStr) => {
+    /* ───────────── 3) 타임슬롯 라벨 생성 ────────────── */
+    const getTimeSlots = (from, to) => {
         const slots = [];
-        const start = parseTime(startTimeStr);
-        const end = parseTime(endTimeStr);
-        let current = new Date(2000, 0, 1, start.hour, start.minute, 0);
-        const endDate = new Date(2000, 0, 1, end.hour, end.minute, 0);
-        while (current <= endDate) {
-            let hours = current.getHours();
-            const minutes = current.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            if (hours === 0) hours = 12;
-            const minuteStr = minutes === 0 ? '00' : minutes;
-            slots.push(`${hours}:${minuteStr} ${ampm}`);
-            current = new Date(current.getTime() + 15 * 60000);
+        const s = parseTime24(from);
+        const e = parseTime24(to);
+        let cur = new Date(2000, 0, 1, s.hour, s.minute);
+        const endDate = new Date(2000, 0, 1, e.hour, e.minute);
+        while (cur <= endDate) {
+            let h = cur.getHours();
+            const m = cur.getMinutes();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12; if (h === 0) h = 12;
+            slots.push(`${h}:${m.toString().padStart(2, '0')} ${ampm}`);
+            cur = new Date(cur.getTime() + 15 * 60000);
         }
         return slots;
     };
 
-    const timeSlots = getTimeSlots(start, end);
+    const timeSlots = useMemo(() => getTimeSlots(start, end), [start, end]);
 
-    const getCellDateTime = (dateStr, timeSlot) => {
-        const { hour, minute } = parseTime(timeSlot);
-        const [year, month, day] = dateStr.split('-').map(Number);
-        return new Date(year, month - 1, day, hour, minute, 0);
+    const getUsersForCell = (date, slot) => {
+        // date 는 달력에서 온 값. 패딩이 없을 수 있음
+        const padded = padDate(date);          // "2025-3-4" → "2025-03-04"
+        return [
+            ...(availabilityMap.get(`${date}-${slot}`) || []), // un‑padded
+            ...(availabilityMap.get(`${padded}-${slot}`) || [])  // padded
+        ];
     };
 
-    const getUsersForCell = (dateStr, timeSlot) => {
-        const cellTime = getCellDateTime(dateStr, timeSlot);
-        const overlappingEvents = events.filter(event => {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
-            return cellTime >= eventStart && cellTime < eventEnd;
-        });
-        const names = overlappingEvents.map(event => userInfo[event.userId]).filter(Boolean);
-        return [...new Set(names)];
-    };
-    const calculateCellColor = (userCount) => {
-        // 최대 사용자 수에 비례하여 색상 결정 (최대 9명 가능)
-        const maxCount = 9;
-        const intensity = Math.min(userCount / maxCount, 1);
-        return `rgba(0, 200, 0, ${intensity})`;
-    };
 
+    /* ───────────── 5) 셀 배경 색상 계산 ────────────── */
+    const maxCount = useMemo(() => {
+        let max = 1;
+        availabilityMap.forEach(set => { if (set.size > max) max = set.size; });
+        return max;
+    }, [availabilityMap]);
+
+    const bgColor = (cnt) => `rgba(0,200,0,${cnt / maxCount})`;
+
+    /* ───────────── 6) 렌더링 ────────────── */
+    const [hovered, setHovered] = useState([]);
 
     return (
-        <div className="availability-matrix">
-            <div className="matrix-header" style={{ display: 'flex' }}>
-                <div
-                    className="matrix-header-cell"
-                    style={{
-                        width: '100px',
-                        border: '1px solid #ccc',
-                        padding: '6px',
-                        textAlign: 'center',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    {selectedDates.map(date => (
-                        <div key={date} className="matrix-header-cell" style={{ flex: 1, fontWeight: 'bold' }}>
-                            {date}
-                        </div>
-                    ))}
-                </div>
-                {selectedDates.map(date => (
-                    <div
-                        key={date}
-                        className="matrix-header-cell"
-                        style={{
-                            flex: 1,
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        {date}
+        <div className="availability-matrix" style={{ position: 'relative' }}>
+            {/* 헤더 */}
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: 100 }} />
+                {selectedDates.map(d => (
+                    <div key={d} style={{ flex: 1, border: '1px solid #ccc', padding: 6, fontWeight: 'bold', textAlign: 'center' }}>
+                        {d}
                     </div>
                 ))}
             </div>
+
+            {/* 바디 */}
             {timeSlots.map(slot => (
-                <div key={slot} className="matrix-row" style={{ display: 'flex' }}>
-                    <div
-                        className="matrix-row-label"
-                        style={{
-                            width: '100px',
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: '600'
-                        }}
-                    >
+                <div key={slot} style={{ display: 'flex' }}>
+                    <div style={{ width: 100, border: '1px solid #ccc', padding: 6, textAlign: 'center', fontWeight: 600 }}>
                         {slot}
                     </div>
                     {selectedDates.map(date => {
@@ -214,42 +218,39 @@ function AvailabilityMatrix({ selectedDates, start, end, events }) {
                         return (
                             <div
                                 key={`${date}-${slot}`}
-                                className="matrix-cell"
-                                style={{
-
-                                    flex: 1,
-                                    backgroundColor: calculateCellColor(users.length),
-                                    minHeight: '40px',
-                                    position: 'relative'
-                                }}
-                                onMouseEnter={() => setHoveredUsers(users)}
-                                onMouseLeave={() => setHoveredUsers([])}                            >
-                                {users.length > 0 ? (
-                                    <span>{users.length}명 가능</span>
-                                ) : null}
+                                style={{ flex: 1, border: '1px solid #ccc', minHeight: 40, background: bgColor(users.length) }}
+                                onMouseEnter={() => setHovered(users)}
+                                onMouseLeave={() => setHovered([])}
+                            >
+                                {/* {users.length > 0 && <span>{users.length}명 가능</span>} */}
+                                {users.length > 0 && <span>{allData[date] === undefined ? "" : allData[date].length}명 가능</span>}
+                                {/* {<span>{date}</span>} */}
                             </div>
                         );
                     })}
                 </div>
             ))}
-            {hoveredUsers.length > 0 && (
-                <div className="hover-popup" style={{ position: 'absolute', top: '10px', right: '10px', padding: '10px', backgroundColor: '#fff', border: '1px solid #ddd' }}>
-                    <h4>가능한 사용자</h4>
-                    <ul>
-                        {hoveredUsers.map(user => (
-                            <li key={user}>{user}</li>
-                        ))}
-                    </ul>
+
+            {/* Hover 팝업 */}
+            {hovered.length > 0 && (
+                <div style={{
+                    position: 'absolute', top: 10, right: 10, background: '#fff',
+                    border: '1px solid #ddd', padding: 10
+                }}>
+                    <strong>가능한 사용자</strong>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {hovered.map((u, idx) => <li key={`${u}-${idx}`}>{u}</li>)}                    </ul>
                 </div>
             )}
         </div>
     );
 }
+// 시간 선택 그리드를 렌더링하는 컴포넌트
+function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes, allData }) {
+    const [isDragging, setIsDragging] = useState(false);  // 드래그 중 여부
+    const [toggleTo, setToggleTo] = useState(false);      // 드래그 시작 시 토글 상태 저장
 
-function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedTimes }) {
-    const [isDragging, setIsDragging] = useState(false);
-    const [toggleTo, setToggleTo] = useState(false);
-
+    // 시간 문자열을 Date 객체로 변환 (오늘 날짜 기준)
     const parseTime = (timeStr) => {
         const [hourMinute, ampm] = timeStr.split(' ');
         let [hour, minute] = hourMinute.split(':').map(Number);
@@ -257,9 +258,10 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
         if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
         const date = new Date();
         date.setHours(hour, minute, 0, 0);
-        return date;
+        return date;                                       // 오늘 날짜 기반 시간 설정
     };
 
+    // 시작/끝 시간 기준으로 15분 단위 라벨 생성
     const startDate = parseTime(start);
     const endDate = parseTime(end);
     const timeSlots = [];
@@ -271,104 +273,86 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
         const hour12 = hh % 12 === 0 ? 12 : hh % 12;
         const minuteStr = mm === 0 ? '00' : mm;
         const label = `${hour12}:${minuteStr} ${ampm}`;
-        timeSlots.push(label);
+        timeSlots.push(label);                             // "h:mm AM/PM" 추가
         tempDate.setMinutes(tempDate.getMinutes() + 15);
     }
 
+    // 드래그 시작 핸들러
     const handleMouseDown = (date, slot) => {
         setIsDragging(true);
         const cellKey = `${date}-${slot}`;
-        const isSelected = selectedTimes.includes(cellKey);
-        setToggleTo(!isSelected);
-        onSelectTimes(cellKey, !isSelected);
+        const isSelected = selectedTimes.includes(cellKey); // 기존 선택 여부 확인
+        setToggleTo(!isSelected);                           // 반대 상태로 토글 목표 설정
+        onSelectTimes(cellKey, !isSelected);                // 첫 셀 토글
     };
 
+    // 드래그 중 셀 엔터 핸들러
     const handleMouseEnter = (date, slot) => {
-        if (!isDragging) return;
+        if (!isDragging) return;                           // 드래그 중 아닐 땐 무시
         const cellKey = `${date}-${slot}`;
         const isSelected = selectedTimes.includes(cellKey);
         if (toggleTo !== isSelected) {
-            onSelectTimes(cellKey, toggleTo);
+            onSelectTimes(cellKey, toggleTo);              // toggleTo 기준으로 상태 변경
         }
     };
 
+    // 드래그 종료 핸들러
     const handleMouseUp = () => {
         setIsDragging(false);
     };
+
     return (
-        <div className="time-selection-grid" onMouseUp={handleMouseUp}>
-            <div className="time-grid-header">
-                <div className="time-header-cell"
-                    style={{
-                        width: '100px',
-                        border: '1px solid #ccc',
-                        padding: '6px',
-                        textAlign: 'center',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    Time</div>
+        <div className="time-selection-grid" onMouseUp={handleMouseUp}> {/* 마우스 업 이벤트로 드래그 종료 */}
+            {/* 헤더 행: Time 라벨 + 날짜들 */}
+            <div className="time-grid-header" style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="time-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                    Time
+                </div>
                 {selectedDates.map((date) => (
-                    <div key={date}
-                        className="date-header-cell"
-                        style={{
-                            flex: 1,
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: 'bold'
-                        }}
-                    >
+                    <div key={date} className="date-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
                         {date}
                     </div>
                 ))}
             </div>
+
+            {/* 각 타임슬롯 행 렌더링 */}
             {timeSlots.map((slot) => (
-                <div key={slot} className="time-grid-row">
-                    <div className="time-row-label"
-                        style={{
-                            width: '100px',
-                            border: '1px solid #ccc',
-                            padding: '6px',
-                            textAlign: 'center',
-                            fontWeight: '600'
-                        }}
-                    >
+                <div key={slot} className="time-grid-row" style={{ display: 'flex' }}>
+                    {/* 시간 레이블 */}
+                    <div className="time-row-label" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
                         {slot}
                     </div>
+                    {/* 날짜별 슬롯 */}
                     {selectedDates.map((date) => {
                         const cellKey = `${date}-${slot}`;
-                        const isSelected = selectedTimes.includes(cellKey);
+                        const isSelected = selectedTimes.includes(cellKey); // 선택 여부 체크
                         return (
                             <div
                                 key={cellKey}
-                                className={`time-slot ${isSelected ? 'selected' : ''}`}
-                                style={{
-                                    flex: 1,
-                                    border: '1px solid #ccc',
-                                    padding: '6px',
-                                    minHeight: '40px',
-                                    textAlign: 'center'
-                                }}
-
-                                onMouseDown={() => handleMouseDown(date, slot)}
-                                onMouseEnter={() => handleMouseEnter(date, slot)}
+                                className={`time-slot ${isSelected ? 'selected' : ''}`} // 선택된 셀 클래스
+                                style={{ flex: 1, border: '1px solid #ccc', padding: '6px', minHeight: '40px', textAlign: 'center' }}
+                                onMouseDown={() => handleMouseDown(date, slot)} // 마우스 다운
+                                onMouseEnter={() => handleMouseEnter(date, slot)} // 드래그 시 엔터
                             />
                         );
-                    })
-                    }
+                    })}
                 </div>
-            ))
-            }
-        </div >
+            ))}
+        </div>
     );
 }
 
+export { AvailabilityMatrix, TimeSelectionGrid };
+
+
 /* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit }) {
+    const [remoteForm, setRemoteForm] = useState(null);   // GET /form 응답
+    const [remoteDetails, setRemoteDetails] = useState(null);   // GET /details 응답
+
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState('false');
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     // 이벤트 관련 상태
     const [eventTitle, setEventTitle] = useState('');
@@ -398,33 +382,116 @@ function WhenToMeetGrid({ onExit }) {
         const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
         return localDate.toISOString();
     };
-    const handleCreateEvent = async () => {
-        if (!validateStep()) return;
-        setIsLoading(true);
-        setError('');
 
-        // 선택된 날짜에서 가장 첫 번째 날짜 사용
-        const startDate = selectedDates[0];
-        const endDate = selectedDates[selectedDates.length - 1];
+    // ────────────────────────────────────────────────────────────────
+    // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
+    const uploadAvailability = async (when2meetId) => {
+        if (selectedTimes.length === 0) {
+            alert('한 칸 이상 선택해 주세요.');
+            return;
+        }
 
-        // ISO 형식으로 변환
-        const startISO = convertToISO(startDate, start, timeZone);
-        const endISO = convertToISO(endDate, end, timeZone);
+        // ─── uploadAvailability 안의 helper 함수만 교체 ───
+        const parseCellKey = (key) => {
+            // 예: "2025-05-27-2:30 PM"
+            const lastDash = key.lastIndexOf('-');      // 날짜·시간 구분 위치
+            const datePart = key.slice(0, lastDash);    // "2025-05-27"
+            const timePart = key.slice(lastDash + 1);   // "2:30 PM"
 
-        const requestData = {
-            userId: "20211079",
-            projId: "cse00001",
-            start: startISO,
-            end: endISO,
+            const [time, ampm] = timePart.split(' ');   // ["2:30", "PM"]
+            let [h, m] = time.split(':').map(Number);   // [2, 30]
+            if (ampm === 'PM' && h < 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+
+            const [y, mo, d] = datePart.split('-').map(Number); // [2025, 05, 27]
+            return new Date(y, mo - 1, d, h, m, 0, 0);          // 정상 Date 객체
+        };
+
+
+        // ① 셀 목록 → 연속 구간 묶기 (15분 간격)
+        const sorted = [...selectedTimes].sort(
+            (a, b) => parseCellKey(a) - parseCellKey(b)
+        );
+        const ranges = [];
+        let rangeStart = parseCellKey(sorted[0]);
+        let prev = rangeStart;
+
+        for (let i = 1; i < sorted.length; i++) {
+            const cur = parseCellKey(sorted[i]);
+            const diff = (cur - prev) / 60000;           // 분 단위 차이
+            if (diff !== 15) {                           // 끊김 발생
+                ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
+                rangeStart = cur;
+            }
+            prev = cur;
+        }
+        // 마지막 구간 push
+        ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
+
+        // ② 구간 → Swagger 스키마 형식
+        const userRanges = ranges.map(r => ({
+            startDate: r.start.toISOString().slice(0, 19),   // "YYYY‑MM‑DDTHH:MM:SS"
+            endDate: r.end.toISOString().slice(0, 19)
+        }));
+
+        const body = {
+            when2meetId,
+            details: [{
+                userId: '20211079',
+                username: '홍길동',
+                dates: userRanges
+            }]
         };
 
         try {
-            if (!process.env.REACT_APP_API_URL) {
-                console.warn("API URL이 지정되지 않았습니다.");
-                return;
-            }
+            const res = await fetch(`${API}/schedule/meeting/upload/when2meet/detail`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || '업로드 실패');
+            alert(data.message || '가용 시간이 업로드되었습니다.');
+        } catch (e) {
+            setError(e.message);
+        }
+    };
+    // ────────────────────────────────────────────────────────────────
+
+    /** "9:00 AM" → "09:00:00" */
+    const toHHMMSS = (timeStr) => {
+        const [hourMinute, ampm] = timeStr.split(' ');
+        let [h, m] = hourMinute.split(':').map(Number);
+        if (ampm?.toLowerCase() === 'pm' && h < 12) h += 12;
+        if (ampm?.toLowerCase() === 'am' && h === 12) h = 0;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+    };
+    const handleCreatewhen2meet = async () => {
+        if (!validateStep()) return null;
+        setIsLoading(true);
+        setError('');
+        const requestData = {
+            title: eventTitle.trim(),
+            projId: 'cse00001',
+            startTime: toHHMMSS(start),   // "09:00:00"
+            endTime: toHHMMSS(end),     // "22:00:00" 등
+            dates: selectedDates
+                .sort()                   // 날짜 배열 오름차순 정리 
+                .map(d => {
+                    // d 예시: "2025-5-1" → "2025-05-01"
+                    const [y, m, day] = d.split('-').map(Number);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    const dateStr = `${y}-${pad(m)}-${pad(day)}`;
+                    return { startDate: dateStr, endDate: dateStr };
+                })
+
+        };
+        try {
             const response = await fetch(
-                'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/teamProj/auth/schedule/meeting/adjust/upload',
+                `${API}/schedule/meeting/upload/when2meet`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -434,18 +501,23 @@ function WhenToMeetGrid({ onExit }) {
 
             const data = await response.json();
 
-            if (response.ok) {
-                alert('이벤트가 성공적으로 생성되었습니다.');
+            if (!response.ok) throw new Error(data.message || '폼 생성 실패');
+
+            // ✅ 정상 생성( code === 0 ) → id 반환
+            if (data.code === 0 && data.when2meetId) {
+                setFormId(data.when2meetId);   // state 보관
+                return data.when2meetId;       // **← 호출부에 id 전달**
             } else {
-                setError(data.message || '이벤트 생성에 실패했습니다.');
+                setError(data.message || '알 수 없는 오류');
+                return null;
             }
-        } catch (error) {
-            setError('서버와 연결할 수 없습니다.');
+        } catch (e) {
+            setError(e.message);
+            return null;
         } finally {
             setIsLoading(false);
         }
     };
-
     const validateStep = () => {
         const newErrors = {};
         if (step === 1) {
@@ -474,7 +546,19 @@ function WhenToMeetGrid({ onExit }) {
             prev.includes(dateKey) ? prev.filter((d) => d !== dateKey) : [...prev, dateKey]
         );
     };
-
+    const [formId, setFormId] = useState(null);
+    const loadWhen2Meet = async (id) => {
+        try {
+            const res = await fetch(`${API}/schedule/meeting/view/when2meet?when2meetId=${id}`);
+            const json = await res.json();
+            setRemoteForm(json.form);        // form 객체 그대로
+            setRemoteDetails(json.details);  // { "YYYY‑MM‑DD": [ … ] } 형태
+            console.log("웬투밋 호출 결과", json.details);
+        } catch (e) {
+            console.error('view API 실패', e);
+            setError('폼 정보를 가져오지 못했습니다.');
+        }
+    };
     const handleSelectTimes = (cellKey, shouldSelect) => {
         setSelectedTimes((prev) => {
             if (shouldSelect) {
@@ -488,7 +572,6 @@ function WhenToMeetGrid({ onExit }) {
         });
     };
     const navigate = useNavigate();
-
 
     return (
         <div className="new-event-container">
@@ -554,7 +637,7 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-                                    <option value="1:00 PM">12:00 PM</option>
+                                    <option value="12:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                             <label>
@@ -583,13 +666,33 @@ function WhenToMeetGrid({ onExit }) {
                                     <option value="9:00 PM">9:00 PM</option>
                                     <option value="10:00 PM">10:00 PM</option>
                                     <option value="11:00 PM">11:00 PM</option>
-                                    <option value="1:00 PM">12:00 PM</option>
+                                    <option value="12:00 PM">12:00 PM</option>
                                 </select>
                             </label>
                         </div>
                         <div className="navigation-buttons">
-                            <button onClick={nextStep}>Next</button>
-                            {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
+                            <button
+                                onClick={async () => {
+                                    /* ① 입력 검증 */
+                                    if (!validateStep()) return;
+
+                                    /* ② 폼 생성 → id */
+
+                                    //const id = await handleCreatewhen2meet();
+                                    const id = 1;//⭐//Todo //API들어오면 바꾸기
+
+                                    if (!id) return;                // 실패 시 중단
+
+                                    /* ③ state 에 저장 + 서버에서 최신 form/details 가져오기 */
+                                    setFormId(id);
+                                    await loadWhen2Meet(id);
+
+                                    /* ④ 다음 단계로 이동 */
+                                    nextStep();
+                                }}
+                            >
+                                Next
+                            </button>                            {errors.eventTitle && <div className="error">{errors.eventTitle}</div>}
                             {errors.selectedDates && <div className="error">{errors.selectedDates}</div>}
                         </div>
                     </div>
@@ -606,25 +709,43 @@ function WhenToMeetGrid({ onExit }) {
                                 end={end}
                                 selectedTimes={selectedTimes}
                                 onSelectTimes={handleSelectTimes}
+                                allData={remoteDetails}
                             />
-                            <AvailabilityMatrix
-                                selectedDates={selectedDates}
-
-                                start={start}
-                                end={end}
-                                events={dummyEvents}
-                            />
+                            {remoteForm && remoteDetails ? (
+                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails} />
+                            ) : (
+                                <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
+                            )}
                         </div>
+                        {/* ───────── navigation-buttons 영역 ───────── */}
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={() => navigate('/schedule')}>Next</button>
-                            {isLoading && <div className="loading">로딩 중...</div>}
+
+                            {/* <button
+                                disabled={!formId || isLoading}
+                                onClick={() => uploadAvailability(formId)}
+                            >
+                                확정(가용 시간 업로드)
+                            </button> */}
+                            <button
+                                disabled={isLoading}            // formId 체크 제거
+                                onClick={() => {
+                                    uploadAvailability(1);        // 🔹
+                                    loadWhen2Meet(1);             // 다시 불러오기
+                                }}
+                            >
+                                확정(가용 시간 업로드)
+                            </button>
+
+
+                            {isLoading && <div className="loading">로딩 중…</div>}
                             {error && <div className="error-message">{error}</div>}
                         </div>
                     </div>
-                </>
-            )}
-        </div>
+                </>)
+            }
+        </div >
     );
 };
 //-----------------여기까지가 웬투밋-----------------------------------------------------------------
@@ -651,20 +772,29 @@ const localizer = momentLocalizer(moment);
 
 /* 6) Schedule 메인 컴포넌트 */
 const Schedule = () => {
+    const [view, setView] = useState('month');
+
+    const handleMonthVersion = () => {
+        setView('month');
+    };
+
+    const handleWeekVersion = () => {
+        setView('week');
+    };
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [newEvent, setNewEvent] = useState({
-        title: '',
-        start: '',
-        end: '',
-        location: '',
-        attendees: '',
-        agenda: '',
+        scheId: '',
+        projId: '',
+        date: '',
+        scheName: '',
+        place: '',
         category: '',
+        detail: '',
+        participants: '',
     });
     const [whenToMeet, setWhenToMeet] = useState(false);
-    const [view, setView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
@@ -717,14 +847,6 @@ const Schedule = () => {
         }
     };
 
-    const handleMonthVersion = () => {
-        setView('month');
-    };
-
-    const handleWeekVersion = () => {
-        setView('week');
-    };
-
     const CustomToolbar = (toolbar) => {
         const goToBack = () => {
             toolbar.onNavigate('PREV');
@@ -768,7 +890,7 @@ const Schedule = () => {
             left: e.clientX + 10 + 'px'
         });
     };
-
+    const [availability, setAvailability] = useState([]);
     const handleEventMouseOut = () => {
         setPopupStyle({ display: 'none' });
     };
@@ -783,6 +905,7 @@ const Schedule = () => {
         const projId = currentProject.id;
 
         const newEvent = {
+            //scheId: scheId,
             projId: projId,
             date: eventObject.start,
             scheName: eventObject.title,
@@ -793,10 +916,7 @@ const Schedule = () => {
         };
 
         try {
-            if (!process.env.REACT_APP_API_URL) {
-                console.warn("API URL이 지정되지 않았습니다.");
-                return;
-            }
+
             const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/upload', {
                 method: 'POST',
                 headers: {
@@ -819,47 +939,70 @@ const Schedule = () => {
             alert("서버와 연결할 수 없습니다.");
         }
     };
-
+    const [loading, setLoading] = useState(false);
     // 일정 조회 (주간)
     useEffect(() => {
-        const fetchAvailability = async () => {
-            if (!process.env.REACT_APP_API_URL) {
-                console.warn("API URL이 지정되지 않았습니다.");
-                return;
-            }
-            const response = await fetch('https://your-api-endpoint.com/schedule/meeting/adjust/availability');
-            const data = await response.json();
-            setEvents(data); // data 형식: [{ start, end, userName }]
-        };
-        fetchAvailability();
-
-        const fetchEvents = async () => {
-            try {
-                if (!process.env.REACT_APP_API_URL) {
-                    console.warn("API URL이 지정되지 않았습니다.");
-                    return;
-                }
-                const response = await fetch(`https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/weekly`, {
-                    method: 'GET'
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setEvents(data.teamSchedules[currentProject.id] || []);
-                } else {
-                    const error = await response.text();
-                    console.error("Failed to load events:", error);
-                }
-            } catch (error) {
-                console.error("Error loading events:", error);
-            }
-        };
-
         fetchEvents();
-    }, [currentProject]);
+        fetchAvailability();
+    }, [view]);
+
+
+    const fetchEvents = async () => {
+        setLoading(true);
+        try {
+            const apiUrl = view === 'month'
+                ? 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
+                : 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projId: "cse00001",
+                    date: "2025-01-01T00:02:27.Z",
+                    cate: "meeting"
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Event API 응답 데이터:", data);
+
+            if (data.teamSchedules?.cse00001) {
+                setEvents(data.teamSchedules.cse00001);
+            } else {
+                setEvents([]);
+                console.warn("일정을 불러올 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("API 호출 중 오류:", error.message);
+            setEvents([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchAvailability = async (id) => {
+        try {
+            const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${id}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && typeof data === 'object') {
+                setAvailability(data.details || data);   // 필요에 따라 수정
+            } else {
+                setAvailability([]);
+            }
+        } catch (e) {
+            console.error('가용 시간 조회 실패', e);
+            setAvailability([]);
+        }
+    };
 
     return (
-        <div className="Dashboard">
+        <div className="board">
             <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div>
                     <MyCalendar />
@@ -920,7 +1063,7 @@ const Schedule = () => {
             <div className="calender-container">
                 {!whenToMeet ? (
                     <>
-                        <div className="buttons">
+                        <div className="buttonys">
                             <button className="create-schedule-button" onClick={handleCreateEvent}>
                                 일정 생성하기
                             </button>
@@ -934,6 +1077,7 @@ const Schedule = () => {
                                 시간 맞추기
                             </button>
                         </div>
+
                         <Calendar
                             localizer={localizer}
                             events={events}

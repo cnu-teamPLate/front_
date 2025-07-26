@@ -1,86 +1,75 @@
-.App {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+/* --- Root Variables for Theming --- */
+:root {
+    --primary-color: #970005;
+    --light-gray: #f7f7f8;
+    --medium-gray: #ececec;
+    --dark-gray: #7c7c7c;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.12);
+    --border-radius-lg: 12px;
+    --border-radius-md: 8px;
+    --border-radius-sm: 5px;
+    --status-upcoming: #3b82f6;
+    /* blue-500 */
+    --status-past-due: #ef4444;
+    /* red-500 */
+    --status-completed: #22c55e;
+    /* green-500 */
 }
 
-.login-signup, .my-page-logout {
-    display: flex;
-    align-items: center;
-    margin-right: 1em;
-}
-
-.login-signup a, .my-page-logout a {
-    color: rgb(255, 255, 255);
-    text-decoration: none;
-    margin: 0 10px;
-}
-*,
-*::before,
-*::after {
-    box-sizing: border-box;}
-
+/* --- General & Form Styles --- */
 .center-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    
+    padding: 0 20px;
 }
 
 .As-create-form {
     margin-top: 1em;
-    width: 800px;
+    width: 100%;
+    /* Changed from 800px to 100% */
+    max-width: 960px;
+    /* Added to match the content below */
     display: flex;
     flex-direction: column;
-    border-style: none;
     align-items: center;
-
-}
-
-.submit-button {
-    margin-top: 0px!important;
-    padding: 0.5em!important;
-    margin-right: 0;
+    gap: 10px;
 }
 
 .setting-list {
     display: flex;
-    margin-right: auto;
-    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
 }
 
-.setting-list select {
-    background-color:#ececec;
-    width: 90px;
-    height: 30px;
-    margin-right: 5px;
-    border-width: 2px;
-    border-radius: 5px;
-    text-align: center;
-
-
-}
-
+.setting-list select,
 .setting-list input {
-    background-color:#ececec;
-    max-width: 130px;
-    width: 80%;
-    height: 30px;
-    text-align: center;
-    border-radius: 5px;
-    border-style: solid;
-    border-width: 2px;
+    background-color: var(--medium-gray);
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-sm);
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: border-color 0.2s;
 }
 
-.container {
+.setting-list select:focus,
+.setting-list input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.containerarea {
     display: flex;
-    justify-content: center;
-    gap: 5px;
     flex-direction: column;
-    padding: 0!important;
+    padding: 0;
 }
 
-.As-title textarea, .As-detail textarea {
+.As-title textarea,
+.As-detail textarea {
     border: 1.5px solid #970005;
     padding-top: 15px;
     padding-left: 25px;
@@ -92,61 +81,299 @@
 
 .As-title textarea {
     margin-top: 5px;
-    height:50px;
+    height: 50px;
+}
+
+.As-title textarea,
+.As-detail textarea {
+    border: 1.5px solid #ddd;
+    padding: 15px;
+    width: 100%;
+    border-radius: var(--border-radius-sm);
+    box-sizing: border-box;
+    resize: vertical;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.As-title textarea {
+    height: 50px;
 }
 
 .As-detail textarea {
-    margin-bottom: 5px;
     height: 100px;
-    overflow: auto;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-
 }
 
+.As-title textarea:focus,
+.As-detail textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
 
-.As-create-form button {
+.submit-button {
+    align-self: flex-end;
     width: 100px;
-    padding: 10px;
-    margin-left: auto;
-    text-align: center;
+    padding: 12px;
     font-weight: bold;
-    border-radius: 5px;
-    background-color: #970005;
+    border-radius: var(--border-radius-sm);
+    background-color: var(--primary-color);
     color: white;
-    border-style: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
+.submit-button:hover {
+    background-color: #b50006;
+}
 
+/* --- Assignment View Section --- */
 .Assignment-look {
-    width: 920px;
+    width: 100%;
+    max-width: 960px;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    margin-top: 40px;
     padding-top: 20px;
+}
+
+.all-assignment,
+.my-assignment {
+    background-color: var(--light-gray);
+    flex: 1;
+    min-width: 300px;
+    max-width: 450px;
+    height: 550px;
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.all-assignment h3,
+.my-assignment h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 0 20px 0;
+    color: var(--text-color);
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.assignments-list {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 5px;
+    /* Space for scrollbar */
+}
+
+.no-assignments-msg {
+    color: var(--dark-gray);
     text-align: center;
+    padding-top: 40px;
 }
 
-
-.all-assignment, .my-assignment{
-    background-color:#f8f8f8;
-    margin-left:30px;
-    margin-right: 30px;
-    width: 400px;
-    height: 500px;
-    border-radius: 10px;
+/* --- New Assignment Card --- */
+.assignment-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 15px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
-/*
 
-.look-item {
-    border: 1px solid gray;
-    background-color: #f0f0f0;
-    padding: 10px;
+.assignment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.card-status-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background-color: var(--status-upcoming);
+}
+
+.assignment-card.past-due .card-status-bar {
+    background-color: var(--status-past-due);
+}
+
+.assignment-card.completed .card-status-bar {
+    background-color: var(--status-completed);
+}
+
+.assignment-card.completed .card-title,
+.assignment-card.completed .card-description {
+    text-decoration: line-through;
+    color: var(--dark-gray);
+}
+
+.card-content {
+    padding: 15px 15px 15px 25px;
+    /* Left padding for status bar */
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
 }
 
-.look-item.past-deadline {
-    border-color: red;
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 8px 0;
 }
-    */
+
+.card-description {
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    margin: 0 0 15px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 40px;
+    /* Approx 2 lines */
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.category-tag {
+    background-color: #e0e7ff;
+    color: #4338ca;
+}
+
+.assignee-tag {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.complexity-tag {
+    color: #fff;
+}
+
+.complexity-tag.level-1 {
+    background-color: #3b82f6;
+}
+
+/* 쉬움 */
+.complexity-tag.level-2 {
+    background-color: #f97316;
+}
+
+/* 보통 */
+.complexity-tag.level-3 {
+    background-color: #dc2626;
+}
+
+/* 어려움 */
+
+.card-deadline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--dark-gray);
+    font-weight: 500;
+}
+
+.card-deadline svg {
+    stroke: var(--dark-gray);
+}
+
+.assignment-card.past-due .card-deadline {
+    color: var(--status-past-due);
+    font-weight: 700;
+}
+
+.assignment-card.past-due .card-deadline svg {
+    stroke: var(--status-past-due);
+}
+
+/* --- Custom Checkbox --- */
+.card-checkbox-wrapper {
+    position: relative;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    z-index: 10;
+}
+
+.card-checkbox-wrapper input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-checkbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 22px;
+    background-color: #eee;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.card-checkbox-wrapper:hover .custom-checkbox {
+    background-color: #ccc;
+}
+
+.card-checkbox-wrapper input:checked~.custom-checkbox {
+    background-color: var(--status-completed);
+}
+
+.custom-checkbox:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+.card-checkbox-wrapper input:checked~.custom-checkbox:after {
+    display: block;
+}

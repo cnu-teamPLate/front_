@@ -37,7 +37,6 @@ function App() {
             <>
               <Header />
               <Home />
-              <Footer />
             </>
           }
         />
@@ -62,7 +61,12 @@ function App() {
           </>
         }
         />
-        <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+        <Route path="/dashboard" element={
+          <>
+            <Header /><Dashboard />
+          </>
+        }
+        />
         <Route path="/MyPage/:userId" element={<MyPage />} />
         <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
 
@@ -75,7 +79,7 @@ function App() {
           }
         />
         <Route path="/AssignmentDetail" element={<Layout><AssignmentDetail /></Layout>} />
-        <Route path="/project-detail" element={<Layout><ProjectDetail /></Layout>} />
+        <Route path="/project/:projectId" element={<Layout><ProjectDetail /></Layout>} />
         <Route path="/FileUpload" element={<Layout><FileUploadPage /></Layout>} />
         <Route path="/MeetingLog" element={<Layout><MeetingLog /></Layout>} />
         <Route path="/MeetingLogView" element={<Layout><MeetingLogView /></Layout>} />

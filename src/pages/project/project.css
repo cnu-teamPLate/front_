@@ -1,97 +1,142 @@
-.ProjectDetail {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+/* --- ProjectDetail General Layout --- */
+.ProjectPage {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f9fafb; /* Light gray background */
 }
 
-
-
-.my-page-logout {
-    display: flex;
-    align-items: center;
-    margin-right: 1em;
+/* --- Project Sidebar --- */
+.project-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.my-page-logout a {
-    color: rgb(0, 0, 0);
-    text-decoration: none;
-    margin: 0 10px;
+.project-sidebar nav {
+  height: 100%;
 }
 
-.sidebar-toggle {
-    position: fixed;
-    top: 1em;
-    left: 1em;
-    z-index: 1001;
-    background: none;
-    border: none;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
+.project-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.App-sidebar {
-    position: fixed;
-    left: -285px;
-    top: 0;
-    width: 250px;
-    height: 100%;
-    background-color: #f8f8f8;
-    color: rgb(0, 0, 0);
-    transition: left 0.3s;
-    padding: 1em;
-    z-index: 1000;
+.project-sidebar li a {
+  display: block;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #374151; /* Dark gray text */
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.App-sidebar.open {
-    left: 0;
+.project-sidebar li a:hover {
+  background-color: #f3f4f6; /* Lighter gray on hover */
+  color: #1f2937;
 }
 
-.sidebar-content ul {
-    list-style-type: none;
-    padding: 0;
+.project-sidebar hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
 }
 
-.sidebar-content ul li {
-    margin: 15px 0;
+/* --- Main Project Content --- */
+.project-content {
+  flex-grow: 1;
+  padding: 2rem 3rem;
+  overflow-y: auto;
 }
 
-.sidebar-content ul li a {
-    color: rgb(0, 0, 0);
-    text-decoration: none;
-    font-weight: bold;
+.project-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.App-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    padding: 2em;
-    margin-top: 60px; /* Adjust based on header height */
-    text-align: center;
+.project-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
 }
 
-.App-content h1 {
-    font-size: 2.5em;
-    margin-bottom: 20px;
+.project-header .project-goal {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin: 0;
 }
 
-.App-content h2 {
-    font-size: 1.5em;
-    margin-bottom: 10px;
+/* --- Main Content Area --- */
+.project-main-content {
+  display: grid;
+  gap: 2rem;
 }
 
-.App-content ul {
-    list-style-type: none;
-    padding: 0;
+/* --- Team Members Card --- */
+.team-members-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
 }
 
-.App-content ul li {
-    font-size: 1.2em;
-    margin: 5px 0;
+.team-members-card h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 1.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 1rem;
 }
 
-.shifted {
-    margin-left: 250px; /* To shift the main content when the sidebar is open */
+.team-members-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.team-members-card li {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.team-members-card li:last-child {
+  border-bottom: none;
+}
+
+.team-members-card .member-name {
+  font-weight: 500;
+  color: #374151;
+  width: 120px;
+}
+
+.team-members-card .member-id {
+  color: #6b7280;
+  font-size: 0.9rem;
+  width: 150px;
+}
+
+.team-members-card .member-email {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* --- Loading and Error States --- */
+.project-loading, .project-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #6b7280;
 }
