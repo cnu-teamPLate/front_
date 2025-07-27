@@ -12,7 +12,7 @@ const ProjectSidebar = ({ projectId }) => {
   const sidebarLinks = [
     { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
     { path: `/project/${projectId}/schedule`, label: '프로젝트 일정' },
-    { path: `/project/${projectId}/meeting-log`, label: '회의록' },
+    { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
     { path: `/project/${projectId}/FileUpload`, label: '자료 업로드' },
   ];
 
