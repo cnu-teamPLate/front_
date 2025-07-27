@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -10,6 +10,36 @@ import MyCalendar from '../../components/Calendar/Calendar';
 const API = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
+const ProjectSidebar = ({ projectId }) => {
+    const userId = localStorage.getItem('userId');
+    const sidebarLinks = [
+        { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
+        { path: `/project/${projectId}/schedule`, label: '프로젝트 일정' },
+        { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
+        { path: `/project/${projectId}/FileUpload`, label: '자료 업로드' },
+    ];
+
+    return (
+        <aside className="project-sidebar">
+            <nav>
+                <ul>
+                    {sidebarLinks.map(link => (
+                        <li key={link.path}>
+                            <Link to={link.path}>{link.label}</Link>
+                        </li>
+                    ))}
+                </ul>
+                <hr />
+                <ul>
+                    <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer">깃허브 바로가기</a></li>
+                    <li><Link to="/useful-sites">팀플 유용 사이트</Link></li>
+                    <li><Link to="/experiences">경험담 보기</Link></li>
+                    <li><Link to="/meeting-rooms">우리 학교 회의실</Link></li>
+                </ul>
+            </nav>
+        </aside>
+    );
+};
 
 // ✱ 파일 상단 --------------------------------------------
 export const dummyEvents = [
@@ -346,7 +376,11 @@ export { AvailabilityMatrix, TimeSelectionGrid };
 
 
 /* 전체 흐름 관리 */
-function WhenToMeetGrid({ onExit }) {
+function WhenToMeetGrid({ onExit, notifications = [] }) {
+    const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
+    const projId = urlParams.get("projectId");
+    const currentUserId = localStorage.getItem('userId');
     const [remoteForm, setRemoteForm] = useState(null);   // GET /form 응답
     const [remoteDetails, setRemoteDetails] = useState(null);   // GET /details 응답
 
@@ -382,6 +416,12 @@ function WhenToMeetGrid({ onExit }) {
         const localDate = new Date(date.toLocaleString("en-US", { timeZone }));
         return localDate.toISOString();
     };
+    useEffect(() => {
+        if (!projId) return;
+    }, [projId]);
+    useEffect(() => {
+        if (!projId) return;
+    }, [projId, currentUserId]);
 
     // ────────────────────────────────────────────────────────────────
     // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
@@ -701,7 +741,7 @@ function WhenToMeetGrid({ onExit }) {
             {step === 2 && (
                 <>
                     <div className="step-container">
-                        <button className="back" onClick={onExit}>뒤로 가기</button>
+                        <button className="back" onClick={onExit}>홈으로 가기</button>
                         <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
                             <TimeSelectionGrid
                                 selectedDates={selectedDates}
@@ -772,6 +812,10 @@ const localizer = momentLocalizer(moment);
 
 /* 6) Schedule 메인 컴포넌트 */
 const Schedule = () => {
+    const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
+    const currentProject = urlParams.get("projectId");
+    const currentUser = localStorage.getItem("userId");
     const [view, setView] = useState('month');
 
     const handleMonthVersion = () => {
@@ -799,8 +843,6 @@ const Schedule = () => {
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
 
-    const currentUser = { id: "20211079" };
-    const currentProject = { id: "cse00001" };
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);

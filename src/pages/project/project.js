@@ -11,9 +11,9 @@ const ProjectSidebar = ({ projectId }) => {
   const userId = localStorage.getItem('userId');
   const sidebarLinks = [
     { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
-    { path: `/project/${projectId}/schedule`, label: '프로젝트 일정' },
-    { path: `/project/${projectId}/meeting-log`, label: '회의록' },
-    { path: `/project/${projectId}/files`, label: '자료 업로드' },
+    { path: `/schedule?projectId=${projectId}&userId=${userId}/schedule`, label: '프로젝트 일정' },
+    { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
+    { path: `/project/${projectId}/FileUpload`, label: '자료 업로드' },
   ];
 
   return (
@@ -67,16 +67,16 @@ function ProjectDetail() {
         const allProjects = await projectsResponse.json();
         const currentProject = allProjects.find(p => p.projId === projectId);
         if (currentProject) {
-            setProject(currentProject);
+          setProject(currentProject);
         } else {
-            throw new Error('해당 프로젝트 정보를 찾을 수 없습니다.');
+          throw new Error('해당 프로젝트 정보를 찾을 수 없습니다.');
         }
 
         // 2. Fetch project members
         const membersResponse = await fetch(`${API_BASE_URL}/member/project/${projectId}`);
         if (!membersResponse.ok) {
-            if(membersResponse.status === 404) throw new Error('존재하지 않는 프로젝트입니다.');
-            throw new Error('팀원 정보를 불러오는 데 실패했습니다.');
+          if (membersResponse.status === 404) throw new Error('존재하지 않는 프로젝트입니다.');
+          throw new Error('팀원 정보를 불러오는 데 실패했습니다.');
         }
         const memberData = await membersResponse.json();
         setMembers(memberData);
@@ -119,23 +119,23 @@ function ProjectDetail() {
         </div>
 
         <div className="project-main-content">
-            <div className="team-members-card">
-                <h2>팀원 목록</h2>
-                {members.length > 0 ? (
-                    <ul>
-                        {members.map((member) => (
-                            <li key={member.id}>
-                                <span className="member-name">{member.name}</span>
-                                <span className="member-id">({member.id})</span>
-                                <span className="member-email">{member.mail}</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>이 프로젝트에 참여중인 팀원이 없습니다.</p>
-                )}
-            </div>
-            {/* 과제 보러가기 버튼 제거됨 */}
+          <div className="team-members-card">
+            <h2>팀원 목록</h2>
+            {members.length > 0 ? (
+              <ul>
+                {members.map((member) => (
+                  <li key={member.id}>
+                    <span className="member-name">{member.name}</span>
+                    <span className="member-id">({member.id})</span>
+                    <span className="member-email">{member.mail}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>이 프로젝트에 참여중인 팀원이 없습니다.</p>
+            )}
+          </div>
+          {/* 과제 보러가기 버튼 제거됨 */}
         </div>
       </main>
     </div>
