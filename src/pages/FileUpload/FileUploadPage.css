@@ -177,6 +177,41 @@ h2 {
   display: none !important;
 }
 
+.file-title-container {
+  display: block;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #000;
+  text-decoration: none;
+  text-align: left;
+}
+
+.file-detail-subtext {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 1px;
+  text-align: left;
+}
+
+.category-text {
+  font-size: 0.85rem;
+  color: #888;
+  padding: 0%!important;
+}
+
+.date-text {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.file-cell-text {
+  padding-left: 1em!important;
+  padding-right: 1em!important;
+  max-width: 300px;
+}
+
+
+
 .file-list,
 .url-list {
   list-style: none !important;
@@ -234,6 +269,15 @@ td {
   text-align: center !important;
   padding: 10px !important;
   border-bottom: 1px solid #ccc !important;
+}
+
+.task-link {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.task-link:hover {
+  color: #0056b3;
 }
 
 .upload-button {

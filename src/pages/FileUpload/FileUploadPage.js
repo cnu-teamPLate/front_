@@ -1,6 +1,7 @@
 import './FileUploadPage.css';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // 파일 상단에 추가
 
 const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
 
@@ -68,6 +69,11 @@ function FileUploadPage() {
       const response = await fetch(url);
       const responseData = await response.json().catch(() => null);
       if (response.ok) {
+        const sorted = (responseData || []).sort((a, b) => {
+          const dateA = new Date(a.uploadDate || a.date);
+          const dateB = new Date(b.uploadDate || b.date);
+          return dateB - dateA; // 최신순 정렬 (내림차순)
+        });
         setFiles(responseData || []);
         setStatusMessage(responseData && responseData.length > 0 ? '' : '표시할 파일이 없습니다.');
       } else {
@@ -407,8 +413,8 @@ function FileUploadPage() {
               <tr>
                 {deleteMode && <th className="checkbox-column">선택</th>}
                 <th>{editMode ? '제목 (수정)' : '제목'}</th>
-                <th>연관 과제</th>
-                <th>업로드 날짜</th>
+                <th className='task-title-box'>연관 과제</th>
+                <th className='date-title-box'>업로드 날짜</th>
                 {editMode && <th>설명 (수정)</th>}
                 {editMode && <th>URL (수정)</th>}
               </tr>
@@ -421,15 +427,51 @@ function FileUploadPage() {
                       <input type="checkbox" checked={selectedFilesToDelete.includes(file.fileId)} onChange={() => handleFileSelectForDeletion(file.fileId)} />
                     </td>
                   )}
-                  <td>
-                    {editMode ? (
-                      <input className="edit-input" type="text" value={file.title} onChange={(e) => handleInputChangeForListedFile(index, 'title', e.target.value)} />
-                    ) : (
-                      <a href={`${API_BASE_URL}/file/download/${file.fileId}`} target="_blank" rel="noopener noreferrer">{file.title || file.origFilename || file.filename || '제목 없음'}</a>
-                    )}
-                  </td>
-                  <td>{file.taskName || (file.category && file.category !== -1 ? `과제ID: ${file.category}` : '없음')}</td>
-                  <td>{formatDate(file.uploadDate || file.date)}</td>
+                <td className='file-cell-text'>
+                  {!editMode ? (
+                    <div>
+                      <a
+                        href={`${API_BASE_URL}/file/download/${file.fileId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="file-title-container"
+                      >
+                        {file.title || file.origFilename || file.filename || '제목 없음'}
+                      </a>
+                      {file.detail && (
+                        <div className="file-detail-subtext">
+                          {file.detail}
+                        </div>
+                      )}
+                    </div>
+                    
+                  ) : (
+                    <input
+                      className="edit-input"
+                      type="text"
+                      value={file.title}
+                      onChange={(e) =>
+                        handleInputChangeForListedFile(index, 'title', e.target.value)
+                      }
+                    />
+                  )}
+                </td>
+                <td className='category-text'>
+                  {file.taskName?.trim() && file.category !== -1 && file.category != null ? (
+                    <Link
+                      to={`/task/${file.category}`} // ← 나중에 링크 구조 바꾸셔도 됩니다
+                      className="task-link"
+                    >
+                      {file.taskName}
+                    </Link>
+                  ) : (
+                    '없음'
+                  )}
+                </td>
+
+
+
+                  <td className='date-text'>{formatDate(file.uploadDate || file.date)}</td>
                   {editMode && (<td> <input className="edit-input" type="text" value={file.detail} onChange={(e) => handleInputChangeForListedFile(index, 'detail', e.target.value)} /> </td>)}
                   {editMode && (<td> <input className="edit-input" type="text" value={file.urls && file.urls[0] ? file.urls[0] : ''} onChange={(e) => handleInputChangeForListedFile(index, 'urls', [e.target.value])} placeholder="URL 입력" /> </td>)}
                 </tr>

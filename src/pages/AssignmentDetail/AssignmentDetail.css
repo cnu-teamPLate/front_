@@ -1,135 +1,144 @@
-
-.App {
+.assignment-detail-container {
     display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
-
-
-
-.login-signup, .my-page-logout {
-    display: flex;
+    justify-content: center;
     align-items: center;
-    margin-right: 1em;
+    padding: 2rem;
+    background-color: #f4f7f6;
+    min-height: 100vh;
 }
 
-.login-signup a, .my-page-logout a {
-    color: rgb(255, 255, 255);
-    text-decoration: none;
-    margin: 0 10px;
+.assignment-detail-container .assignment-detail-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1000px;
+    overflow: hidden;
+    padding-right: 40px;
 }
 
-.sidebar-toggle {
-    position: fixed;
-    top: 1em;
-    left: 1em;
-    z-index: 1001;
-    background: none;
-    border: none;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
+.assignment-detail-container .card-header {
+    background-color: #007bff;
+    color: white;
+    padding: 1.5rem;
 }
 
-.App-sidebar {
-    position: fixed;
-    left: -285px;
-    top: 0;
-    width: 250px;
-    height: 100%;
-    background-color: #f8f8f8;
-    color: rgb(0, 0, 0);
-    transition: left 0.3s;
-    padding: 1em;
-    z-index: 1000;
+.assignment-detail-container .card-header h1 {
+    margin: 0;
+    font-size: 2rem;
 }
 
-.App-sidebar.open {
-    left: 0;
+.assignment-detail-container .header-meta {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
 }
 
-.sidebar-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.assignment-detail-container .card-body {
+    padding: 1.5rem;
 }
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
+.assignment-detail-container .task-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.As-detail main {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
+.assignment-detail-container .task-info p {
+    margin: 0;
+    font-size: 1rem;
 }
 
-.view {
-    width: 100vh;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-
+.assignment-detail-container .level-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-weight: bold;
+    color: white;
 }
 
-.inform {
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
+.assignment-detail-container .level-1 { background-color: #28a745; }
+.assignment-detail-container .level-2 { background-color: #ffc107; color: #333; }
+.assignment-detail-container .level-3 { background-color: #dc3545; }
+
+.assignment-detail-container .task-description h3, .assignment-detail-container .task-files h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    color: #333;
 }
 
-.substance h2, .substance p {
-    padding: 10px;
+.assignment-detail-container .task-description p {
+    line-height: 1.6;
 }
 
-.white-box {
-    display: flex;
-    width: 310px;
+.assignment-detail-container .task-files ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.editable-post {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    padding: 20px;
-    width: 500px;
-    margin: 20px auto;
-}
-  
-.editable-post .setting {
+.assignment-detail-container .task-files li {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
-  
-.editable-post .setting select,
-.editable-post .setting input[type="date"] {
-    margin-right: 10px;
-    padding: 5px;
+
+.assignment-detail-container .task-files li:hover {
+    background-color: #f1f1f1;
 }
-  
-.editable-post h2,
-.editable-post p,
-.editable-post textarea,
-.editable-post input[type="text"] {
-    width: 100%;
-    margin-bottom: 10px;
+
+.assignment-detail-container .task-files a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
 }
-  
-.editable-post .file-link,
-.editable-post .link {
-    margin-bottom: 10px;
+
+.assignment-detail-container .upload-date {
+    font-size: 0.85rem;
+    color: #6c757d;
 }
-  
-.editable-post .button-row {
+
+.assignment-detail-container .card-footer {
     display: flex;
     justify-content: flex-end;
+    padding: 1rem 1.5rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
 }
-  
-.editable-post button {
-    padding: 5px 10px;
-    margin-left: 10px;
+
+.assignment-detail-container .action-button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: 0.5rem;
 }
-  
+
+.assignment-detail-container .action-button:hover {
+    background-color: #0056b3;
+}
+
+.assignment-detail-container .delete-button {
+    background-color: #dc3545;
+}
+
+.assignment-detail-container .delete-button:hover {
+    background-color: #c82333;
+}
+
+.assignment-detail-container .error {
+    color: #dc3545;
+    font-size: 1.2rem;
+    text-align: center;
+}
