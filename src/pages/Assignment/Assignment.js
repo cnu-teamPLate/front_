@@ -274,6 +274,9 @@ function Assignment({ notifications = [] }) {
             <main>
                 <div className="center-content">
                     <form className="As-create-form" onSubmit={handleSubmit}>
+                        <div className="form-header">
+                            <h2>새 과제 생성</h2>
+                        </div>
                         <div className="setting-list">
                             <select name="assignee" value={formData.assignee} onChange={handleChange} required>
                                 <option value="" disabled>담당자</option>
