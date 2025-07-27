@@ -578,7 +578,7 @@ function WhenToMeetGrid({ onExit }) {
             {step === 1 && (
                 <>
                     <div className="step-container">
-                        <button className="back" onClick={onExit}>뒤로 가기</button>
+                        <button className="back" onClick={onExit}>홈으로 가기</button>
                         <h1>Create New Event</h1>
                         <label>
                             Event Title:
@@ -785,7 +785,7 @@ const Schedule = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [newEvent, setNewEvent] = useState({
-        scheId: '',
+        //scheId: '',//스웨거에 생성할 때 생기는거라서 따로 전달해줄 필요 없음
         projId: '',
         date: '',
         scheName: '',
