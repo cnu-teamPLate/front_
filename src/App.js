@@ -80,8 +80,8 @@ function App() {
         />
         <Route path="/AssignmentDetail" element={<Layout><AssignmentDetail /></Layout>} />
         <Route path="/project/:projectId" element={<Layout><ProjectDetail /></Layout>} />
-        <Route path="/project/:projectId/FileUpload" element={<Layout><FileUploadPage /></Layout>} />
-        <Route path="/project/:projectId/MeetingLog" element={<Layout><MeetingLog /></Layout>} />
+        <Route path="/FileUpload" element={<Layout><FileUploadPage /></Layout>} />
+        <Route path="/project/:projId/MeetingLog" element={<Layout><MeetingLog /></Layout>} />
         <Route path="/MeetingLogView" element={<Layout><MeetingLogView /></Layout>} />
       </Routes>
     </Router>

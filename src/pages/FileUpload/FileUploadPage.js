@@ -22,8 +22,9 @@ function FileUploadPage() {
   const [editedFiles, setEditedFiles] = useState([]);
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState([]);
 
-  const currentUserId = '20241121'; // 예시 사용자 ID (cURL 예시와 다름, 확인 필요)
-  const currentProjId = 'cse00001'; // 예시 프로젝트 ID
+  const urlParams = new URLSearchParams(location.search);
+  const currentUserId = urlParams.get("userId");
+  const currentProjId = urlParams.get("projectId");
 
   const [formData, setFormData] = useState({
     id: currentUserId, // cURL에서는 20211079 사용, 여기서는 currentUserId로 통일
