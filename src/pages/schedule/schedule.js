@@ -871,6 +871,10 @@ const Schedule = () => {
     const handleWeekVersion = () => {
         setView('week');
     };
+
+    const handleDayVersion = () => {
+        setView('day');
+    };
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
