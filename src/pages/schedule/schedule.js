@@ -14,7 +14,7 @@ const ProjectSidebar = ({ projectId }) => {
     const userId = localStorage.getItem('userId');
     const sidebarLinks = [
         { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
-        { path: `/project/${projectId}/schedule`, label: '프로젝트 일정' },
+        { path: `/schedule?projectId=${projectId}&userId=${userId}`, label: '프로젝트 일정' },
         { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
         { path: `/project/${projectId}/FileUpload`, label: '자료 업로드' },
     ];
@@ -40,26 +40,6 @@ const ProjectSidebar = ({ projectId }) => {
         </aside>
     );
 };
-
-// ✱ 파일 상단 --------------------------------------------
-export const dummyEvents = [
-    {
-        userId: '20211079',
-        username: 'Alice',
-        startTime: '14:30:00',
-        endTime: '16:30:00',
-        date: '2025-03-04'
-    },
-    {
-        userId: '20211080',
-        username: 'Bob',
-        startTime: '15:00:00',
-        endTime: '16:00:00',
-        date: '2025-03-04'
-    }
-];
-const dummyDetails = buildDetails(dummyEvents);  // or dummyEventsToDetails
-// 📍 WhenToMeetGrid 맨 위쪽 state 모음 근처
 
 
 /** 함수 선언식(hoisting O) */
@@ -1083,11 +1063,13 @@ const Schedule = () => {
                             />
                             <label>안건:</label>
                             <textarea
+                                rows={4}
                                 value={newEvent.agenda}
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
                             />
                             <label>카테고리:</label>
                             <textarea
+                                rows={4}
                                 value={newEvent.category}
                                 onChange={(e) => setNewEvent({ ...newEvent, categoty: e.target.value })}
                             />

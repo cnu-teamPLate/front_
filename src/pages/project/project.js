@@ -11,7 +11,7 @@ const ProjectSidebar = ({ projectId }) => {
   const userId = localStorage.getItem('userId');
   const sidebarLinks = [
     { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
-    { path: `/schedule?projectId=${projectId}&userId=${userId}/schedule`, label: '프로젝트 일정' },
+    { path: `/schedule?projectId=${projectId}&userId=${userId}`, label: '프로젝트 일정' },
     { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
     { path: `/project/${projectId}/FileUpload`, label: '자료 업로드' },
   ];

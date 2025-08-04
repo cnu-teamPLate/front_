@@ -68,7 +68,7 @@ function App() {
         }
         />
         <Route path="/MyPage/:userId" element={<MyPage />} />
-        <Route path="/project/:projectId/schedule" element={<Layout><Schedule /></Layout>} />
+        <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
 
         <Route
           path="/Assignment"
