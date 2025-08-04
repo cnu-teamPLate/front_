@@ -131,6 +131,13 @@ body {
     gap: 20px;
 }
 
+/* 날짜 셀만 텍스트 선택 방지 */
+.date-picker-grid .day-cell {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
 /* Date Selection Styles */
 .date-selection {
     width: 400px;

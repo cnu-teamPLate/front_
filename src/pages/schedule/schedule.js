@@ -56,57 +56,130 @@ const userInfo = {
     "20211080": "Bob"
 };
 
-function DatePickerGrid({ currentYear, currentMonth, onSelectDate, selectedDates }) {
+function DatePickerGrid({
+    currentYear,
+    currentMonth,
+    onSelectDate,
+    selectedDates,
+    onMouseDownDay,
+    onMouseEnterDay,
+    onMouseUp
+}) {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
     const startDay = firstDayOfMonth.getDay();
 
     const calendarCells = [];
-    for (let i = 0; i < startDay; i++) {
-        calendarCells.push(null);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-        calendarCells.push(day);
-    }
+    for (let i = 0; i < startDay; i++) calendarCells.push(null);
+    for (let day = 1; day <= daysInMonth; day++) calendarCells.push(day);
 
-    const handleClickDay = (day) => {
-        if (!day) return;
-        const dateKey = `${currentYear}-${currentMonth + 1}-${day}`;
-        onSelectDate(dateKey);
-    };
+    const pad = (n) => String(n).padStart(2, '0');
 
     return (
-        <div className="date-picker-grid">
+        <div className="date-picker-grid" onMouseUp={onMouseUp}>
             <div className="month-label">
                 {currentYear}년 {currentMonth + 1}월
             </div>
+
             <div className="weekdays">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
+                <div>Sun</div><div>Mon</div><div>Tue</div>
+                <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             </div>
+
             <div className="days">
                 {calendarCells.map((cell, index) => {
-                    if (cell === null) {
-                        return <div key={index} className="day-cell empty" />;
-                    }
-                    const dateKey = `${currentYear}-${currentMonth + 1}-${cell}`;
+                    if (cell === null) return <div key={index} className="day-cell empty" />;
+
+                    const dateKey = `${currentYear}-${pad(currentMonth + 1)}-${pad(cell)}`; // YYYY-MM-DD
                     const isSelected = selectedDates.includes(dateKey);
+
                     return (
                         <div
                             key={index}
                             className={`day-cell ${isSelected ? 'selected' : ''}`}
-                            onClick={() => handleClickDay(cell)}
+                            onMouseDown={(e) => {
+                                e.preventDefault(); // 텍스트 선택 방지
+                                if (onMouseDownDay) onMouseDownDay(dateKey);
+                                else onSelectDate?.(dateKey); // 드래그 미사용 시 클릭 토글
+                            }}
+                            onMouseEnter={() => onMouseEnterDay?.(dateKey)}
                         >
                             {cell}
                         </div>
                     );
                 })}
+            </div>
+        </div>
+    );
+}
+
+function addMonths(date, n) {
+    return new Date(date.getFullYear(), date.getMonth() + n, 1);
+}
+
+function TwoMonthPicker({ selectedDates, onSelectDate }) {
+    const today = new Date();
+    const [baseDate, setBaseDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+    const nextDate = addMonths(baseDate, 1);
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragToSelect, setDragToSelect] = useState(true); // 드래그로 '선택'할지 '해제'할지
+
+    // onSelectDate는 토글이라서, 원하는 상태(선택/해제)로 '맞추기'
+    const ensureState = (dateKey, shouldSelect) => {
+        const has = selectedDates.includes(dateKey);
+        if (shouldSelect && !has) onSelectDate(dateKey);
+        if (!shouldSelect && has) onSelectDate(dateKey);
+    };
+
+    const handleMouseDownDay = (dateKey) => {
+        const already = selectedDates.includes(dateKey);
+        const target = !already;             // 클릭 시 반대로
+        setDragToSelect(target);
+        setIsDragging(true);
+        ensureState(dateKey, target);        // 첫 칸 즉시 반영
+    };
+
+    const handleMouseEnterDay = (dateKey) => {
+        if (!isDragging) return;
+        ensureState(dateKey, dragToSelect);  // 드래그 중엔 모두 동일 상태로
+    };
+
+    const handleMouseUp = () => setIsDragging(false);
+
+    // 캘린더 바깥에서 마우스 떼어도 드래그 종료
+    useEffect(() => {
+        const up = () => setIsDragging(false);
+        window.addEventListener('mouseup', up);
+        return () => window.removeEventListener('mouseup', up);
+    }, []);
+
+    return (
+        <div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <button type="button" onClick={() => setBaseDate(addMonths(baseDate, -1))}>이전</button>
+                <button type="button" onClick={() => setBaseDate(addMonths(baseDate, 1))}>다음</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: 16, userSelect: 'none' }}>
+                <DatePickerGrid
+                    currentYear={baseDate.getFullYear()}
+                    currentMonth={baseDate.getMonth()}
+                    selectedDates={selectedDates}
+                    onSelectDate={onSelectDate}            // 그대로 전달(단일 클릭 토글에도 쓰임)
+                    onMouseDownDay={handleMouseDownDay}    // ⬅ 추가
+                    onMouseEnterDay={handleMouseEnterDay}  // ⬅ 추가
+                    onMouseUp={handleMouseUp}              // ⬅ 추가
+                />
+                <DatePickerGrid
+                    currentYear={nextDate.getFullYear()}
+                    currentMonth={nextDate.getMonth()}
+                    selectedDates={selectedDates}
+                    onSelectDate={onSelectDate}
+                    onMouseDownDay={handleMouseDownDay}
+                    onMouseEnterDay={handleMouseEnterDay}
+                    onMouseUp={handleMouseUp}
+                />
             </div>
         </div>
     );
@@ -598,7 +671,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
             {step === 1 && (
                 <>
                     <div className="step-container">
-                        <button className="back" onClick={onExit}>홈으로 가기</button>
+                        <button className="back" onClick={onExit}>뒤로 가기</button>
                         <h1>Create New Event</h1>
                         <label>
                             Event Title:
@@ -611,18 +684,11 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                         </label>
                         <h2>What dates might work?</h2>
                         <p>Click and drag dates to select in the calendar</p>
-                        <DatePickerGrid
-                            currentYear={2025}
-                            currentMonth={2}
+                        <TwoMonthPicker
                             selectedDates={selectedDates}
                             onSelectDate={handleSelectDate}
                         />
-                        <DatePickerGrid
-                            currentYear={2025}
-                            currentMonth={3}
-                            selectedDates={selectedDates}
-                            onSelectDate={handleSelectDate}
-                        />
+
                         <div className="errors">
                             {errors.eventTitle && <p className="error">{errors.eventTitle}</p>}
                             {errors.selectedDates && <p className="error">{errors.selectedDates}</p>}
@@ -1064,14 +1130,16 @@ const Schedule = () => {
                             <label>안건:</label>
                             <textarea
                                 rows={4}
+                                style={{ resize: 'none', height: '96px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
                                 value={newEvent.agenda}
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
                             />
                             <label>카테고리:</label>
                             <textarea
-                                rows={4}
+                                rows={2}
+                                style={{ resize: 'none', height: '60px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
                                 value={newEvent.category}
-                                onChange={(e) => setNewEvent({ ...newEvent, categoty: e.target.value })}
+                                onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
                             />
                             <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
                                 일정 추가
