@@ -1,49 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams} from "react-router-dom";
 import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
 
+const date = new Date();
 
-function ParticipantSelector({ participants }) {
-  const [selectedParticipants, setSelectedParticipants] = useState([]);
+const year = date.getFullYear();
+const month = String(date.getMonth() + 1).padStart(2, '0');
+const day = String(date.getDate()).padStart(2, '0');
 
-  const handleSelectParticipant = (event) => {
-    const selectedName = event.target.value;
-    if (!selectedParticipants.includes(selectedName)) {
-      setSelectedParticipants([...selectedParticipants, selectedName]);
-    }
-  };
+const formattedDate = `${year}. ${month}. ${day}`;
 
-  const handleRemoveParticipant = (nameToRemove) => {
-    setSelectedParticipants(
-      selectedParticipants.filter((name) => name !== nameToRemove)
-    );
-  };
 
-  return (
-    <div className="participants">
-      <div className="choose">
-        <h4>참여자 선택</h4>
-        <select onChange={handleSelectParticipant} defaultValue="">
-          <option value="" disabled>참여자 선택</option>
-          {participants.map((participant) => (
-            <option key={participant.id} value={participant.name}>{participant.name}</option>
-          ))}
-        </select>
-      </div>
-      <div className="dicided">
-        <h4>선택된 참여자</h4>
-        <ul className="par">
-          {selectedParticipants.map((name) => (
-            <li key={name}>{name}{' '}
-              <button className="delete" onClick={() => handleRemoveParticipant(name)}>삭제</button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
+const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+
 
 function MeetingLog() {
   const [isRecording, setIsRecording] = useState(false);
@@ -51,19 +21,82 @@ function MeetingLog() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [participants, setParticipants] = useState([]);
   const navigate = useNavigate();
-  const audioRef = useRef(null);
+
+
+  const [formData, setFormData] = useState({
+        scheId: '',
+        projId: '',
+        title: '',
+        contents: '',
+        fix: '',
+        participants: ''
+  });
+
+  const { projId } = useParams();
+  console.log("projId:", projId)
+
+
+  const [titlePlaceholder, setTitlePlaceholder] = useState('회의명을 적어주세요');
+  const [detailPlaceholder, setDetailPlaceholder] = useState('회의 내용을 적어주세요');
+
+  const [projectParticipants, setProjectParticipants] = useState([]);
+  const [meetingParticipants, setMeetingParticipants] = useState([]);
+  const handleSelectParticipant = (e) => {
+    const selectedName = e.target.value;
+    if (!meetingParticipants.includes(selectedName)) {
+      setMeetingParticipants([...meetingParticipants, selectedName]);
+      }
+  };
+  const handleRemove = (nameToRemove) => {
+    setMeetingParticipants(meetingParticipants.filter(name => name !== nameToRemove));
+  };
+
+  const textareaRef = useRef(null);
+
   useEffect(() => {
-    fetchMockParticipants();
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const autoResize = () => {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+    };
+
+    textarea.addEventListener("input", autoResize);
+
+    // 초기 높이 맞추기
+    autoResize();
+
+    return () => {
+      textarea.removeEventListener("input", autoResize);
+    };
   }, []);
 
-  const fetchMockParticipants = async () => {
-    const mockData = [
-      { id: 1, name: 'Alice' },
-      { id: 2, name: 'Bob' },
-      { id: 3, name: 'Charlie' },
-    ];
-    setParticipants(mockData);
+  useEffect(() => {
+        if (!projId) return;
+        const fetchProjectMembers = async () => {
+            try {
+                const response = await fetch(`${baseURL}/member/project/${projId}`);
+                if (!response.ok) {
+                    throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
+                }
+                const members = await response.json();
+                setProjectParticipants(members);
+            } catch (error) {
+                console.error("프로젝트 멤버 로딩 오류:", error);
+                setProjectParticipants([]);
+            }
+        };
+        fetchProjectMembers();
+  }, [projId]);
+  
+  const audioRef = useRef(null);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
 
   const RecordingComponent = () => {
 
@@ -71,7 +104,7 @@ function MeetingLog() {
     //const [realTimeData, setRealTimeData] = useState('');
     //const [realTimeText, setRealTimeText] = useState('');
     const [meetingTitle, setMeetingTitle] = useState('');
-    const navigate = useNavigate();
+    const [meetingContents, setMeetingContents] = useState('');
 
     const handleRecordButtonClick = async () => {
       if (!isRecording) {
@@ -136,6 +169,7 @@ function MeetingLog() {
       }
     };
 
+
     /*
         useEffect(() => {
           fetchMockParticipants();
@@ -161,35 +195,51 @@ function MeetingLog() {
 
     return (
       <div className="MeetingLog">
-        <h2>Meeting Log</h2>
+        <h1>회의록</h1>
         <div className="controls">
-          <button onClick={handleRecordButtonClick}>
-            {isRecording ? <IoRecordingOutline size={24} /> : <IoMicSharp size={24} />}
-            {isRecording ? "녹음 중" : "녹음하기"}
+          <button className="record-button" onClick={handleRecordButtonClick}>
+            {isRecording ? <IoRecordingOutline size={20} /> : <IoMicSharp size={20} />}
+            {isRecording ? "기록 중" : "자동기록"}
           </button>
-          <input
-            type="text"
-            value={meetingTitle}
-            onChange={(e) => setMeetingTitle(e.target.value)}
-            placeholder="회의 제목을 입력하세요"
+          <p className="meetDate">{formattedDate}</p>
+          <div className="participants">
+            <h4>참여자</h4>
+            <ul>
+              {meetingParticipants.map((name) => (
+                <li key={name}>
+                  {name}
+                  <button className="x" onClick={() => handleRemove(name)}>x</button>
+                </li>
+              ))}
+            </ul>
+            <select onChange={handleSelectParticipant} defaultValue="">
+              <option value="" disabled>참여자 선택</option>
+              {projectParticipants.map((p) => (
+                <option key={p.id} value={p.name}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          <textarea className='titleinput'
+            name="title"
+            value={formData.title}
+            placeholder={titlePlaceholder}
+            onChange={handleChange}
+            required
           />
-        </div>
-
-        <div className="participants">
-          <h4>참여자 선택</h4>
-          <select defaultValue="">
-            <option value="" disabled>참여자 선택</option>
-            {participants.map((participant) => (
-              <option key={participant.id} value={participant.name}>
-                {participant.name}
-              </option>
-            ))}
-          </select>
+          <textarea id="autoGrow" className='loginput'
+            name="contents"
+            ref={textareaRef}
+            rows={25}
+            value={formData.contents}
+            placeholder={detailPlaceholder}
+            onChange={handleChange}
+            required
+          />
         </div>
 
         {audioBlob && (
           <div className="audio-preview">
-            <h4>녹음 미리 듣기</h4>
+            <h4>기록 미리 듣기</h4>
             <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
           </div>
         )}
