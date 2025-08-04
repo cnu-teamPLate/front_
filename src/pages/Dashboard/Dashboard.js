@@ -157,6 +157,11 @@ function Dashboard() {
     if (!newProject.subject || !newProject.subject.classId) { alert("과목을 선택하거나 등록해주세요."); setSubjectApiMessage("과목을 선택하거나 등록해주세요."); return; }
     if (!newProject.teamName.trim()) { alert("팀 이름을 입력해주세요."); return; }
 
+    // 현재 로그인 유저를 팀원 목록에 자동 포함
+    let teamMembers = [...newProject.teamMembers];
+    if (userIdFromStorage && !teamMembers.some(member => member.id === userIdFromStorage)) {
+      teamMembers.push({ id: userIdFromStorage, name: userIdFromStorage });
+    }
     const projectPayload = {
       date: newProject.date || new Date().toISOString(),
       goal: newProject.goal,
@@ -164,7 +169,7 @@ function Dashboard() {
       github: newProject.githubLink,
       classId: newProject.subject.classId,
       teamName: newProject.teamName,
-      members: newProject.teamMembers.map(member => member.id)
+      members: teamMembers.map(member => member.id)
     };
 
     console.log("Submitting project payload for creation:", projectPayload);
