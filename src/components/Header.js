@@ -1,47 +1,38 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { IoHome, IoLogOutOutline, IoSettings } from "react-icons/io5";
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
 
   const handleLogout = (e) => {
-    e.preventDefault(); // 기본 링크 이동 막기
-    localStorage.clear(); // 모든 저장 정보 제거
-    navigate('/Login'); // 로그인 페이지로 이동
+    e.preventDefault();
+    localStorage.clear();
+    navigate('/Login');
   };
 
   return (
     <header className="header">
-      {/* 사이드바 토글 */}
-      {toggleSidebar && (
-        <button
-          className="menu-btn"
-          onClick={() => {
-            console.log("☰ 버튼 클릭됨! 사이드바 토글 실행");
-            toggleSidebar();
-          }}
-        >
-          ☰
-        </button>
-      )}
+      <Link to="/Dashboard"  
+      style={{
+      position: "absolute", 
+      left: "20px", 
+      top: "20px", 
+  }}><IoHome size={30} color='white'/></Link>
 
-      {/* 홈으로 돌아가기 */}
-      <Link to="/Dashboard">홈으로 돌아가기</Link>
-
-      {/* 로그인된 경우 */}
       {userId && (
         <>
-          <Link to={`/MyPage/${userId}`} style={{ marginLeft: '20px' }}>
-            마이페이지
+          <Link to={`/MyPage/${userId}`} style={{position: "absolute", right: '70px', top:"24px", }}>
+            <IoSettings size={26} color='white'/>
           </Link>
           {/* 로그아웃도 링크처럼 표시 */}
           <Link
             to="#"
             onClick={handleLogout}
-            style={{ marginLeft: '20px', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+            style={{ position: "absolute",right: '20px', top:"22px" }}
           >
-            로그아웃
+            <IoLogOutOutline size={30} color='white' />
           </Link>
         </>
       )}
