@@ -81,7 +81,7 @@
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: var(--border-radius-md);
-    resize: hidden;
+    resize: none;
     box-sizing: border-box;
     font-size: 1rem;
     overflow: auto;
