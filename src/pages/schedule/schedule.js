@@ -1064,14 +1064,16 @@ const Schedule = () => {
                             <label>안건:</label>
                             <textarea
                                 rows={4}
+                                style={{ resize: 'none', height: '96px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
                                 value={newEvent.agenda}
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
                             />
                             <label>카테고리:</label>
                             <textarea
-                                rows={4}
+                                rows={2}
+                                style={{ resize: 'none', height: '60px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
                                 value={newEvent.category}
-                                onChange={(e) => setNewEvent({ ...newEvent, categoty: e.target.value })}
+                                onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
                             />
                             <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
                                 일정 추가
