@@ -420,7 +420,6 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
     useEffect(() => {
         if (!projId) return;
     }, [projId, currentUserId]);
-
     // ────────────────────────────────────────────────────────────────
     // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
     const uploadAvailability = async (when2meetId) => {
@@ -471,6 +470,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
             startDate: r.start.toISOString().slice(0, 19),   // "YYYY‑MM‑DDTHH:MM:SS"
             endDate: r.end.toISOString().slice(0, 19)
         }));
+const currentUsername = "";
 
         const body = {
             when2meetId,
@@ -764,7 +764,7 @@ const generateTimeOptions = (interval = 60) => {
 };
 
 /* 6) Schedule 메인 컴포넌트 */
-const when2meet = () => {
+const When2meet = () => {
     const location = useLocation();
     const urlParams = new URLSearchParams(location.search);
     const currentProject = urlParams.get("projectId");
