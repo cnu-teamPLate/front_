@@ -12,6 +12,7 @@ import ProjectDetail from './pages/project/project';
 import MyPage from './pages/MyPage/MyPage';
 import Schedule from './pages/schedule/schedule';
 import FileUploadPage from './pages/FileUpload/FileUploadPage';
+import When2Meet from './pages/schedule/when2meet';
 import Layout from './components/Layout/Layout';
 import Footer from './components/Footer';//사이드바가 필요없는 페이지에 필요함
 import Header from './components/Header';
@@ -69,6 +70,8 @@ function App() {
         />
         <Route path="/MyPage/:userId" element={<MyPage />} />
         <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
+        <Route path="/when2meet" element={<Layout><When2Meet /></Layout>} />
+
 
         <Route
           path="/Assignment"
