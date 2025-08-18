@@ -237,9 +237,10 @@ function MeetingLog() {
       url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
     });
 
+    const baseUrl = 'https://www.teamplate-api.site/'
 
     try {
-      const response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
+      const response = await fetch(`${baseUrl}/schedule/meeting/upload/log`, {
         method: 'POST',
         body: formDataToSend,
       });
