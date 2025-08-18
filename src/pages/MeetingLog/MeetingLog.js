@@ -203,8 +203,8 @@ function MeetingLog() {
           </button>
           <p className="meetDate">{formattedDate}</p>
           <div className="participants">
-            <h4>참여자</h4>
-            <ul>
+            <h4 className='participants-title'>참여자</h4>
+            <ul className='li-list'>
               {meetingParticipants.map((name) => (
                 <li key={name}>
                   {name}
@@ -212,7 +212,7 @@ function MeetingLog() {
                 </li>
               ))}
             </ul>
-            <select onChange={handleSelectParticipant} defaultValue="">
+            <select className='participants-select' onChange={handleSelectParticipant} defaultValue="">
               <option value="" disabled>참여자 선택</option>
               {projectParticipants.map((p) => (
                 <option key={p.id} value={p.name}>{p.name}</option>

@@ -14,6 +14,7 @@
     box-sizing: border-box;
     width: 100%;
     max-width: 960px;
+    min-width: 600px;
     padding: 2rem;
 }
 
@@ -111,9 +112,32 @@
     overflow: auto;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
+
+.participants-title {
+    display: flex;
+    align-self: center!important;  
+}
+
+.participants-select {
+    display: flex;
+    align-self: center!important;  
+    height: 2rem;
+}
   
 .participants li {
     font-size: 0.9rem;
+    display: flex;
+    justify-content: center; /* 가로 가운데 */
+    align-items: center;  
+}
+.li-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    height: 100%;
+    align-self: center!important;  
 }
 
 .x {
