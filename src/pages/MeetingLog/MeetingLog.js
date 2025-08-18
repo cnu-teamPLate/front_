@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams} from "react-router-dom";
 import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
@@ -8,12 +8,14 @@ const date = new Date();
 const year = date.getFullYear();
 const month = String(date.getMonth() + 1).padStart(2, '0');
 const day = String(date.getDate()).padStart(2, '0');
+const hours = String(date.getHours()).padStart(2, '0');
+const minutes = String(date.getMinutes()).padStart(2, '0');
+const seconds = String(date.getSeconds()).padStart(2, '0');
 
 const formattedDate = `${year}. ${month}. ${day}`;
+const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
-
-const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
-
+const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
 
 function MeetingLog() {
   const [isRecording, setIsRecording] = useState(false);
@@ -21,15 +23,18 @@ function MeetingLog() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [participants, setParticipants] = useState([]);
   const navigate = useNavigate();
+  const [files, setFiles] = useState([]);
+  const [statusMessage, setStatusMessage] = useState('');
 
 
   const [formData, setFormData] = useState({
         scheId: '',
         projId: '',
-        title: '',
         contents: '',
+        title: '',
+        date: '',
         fix: '',
-        participants: ''
+        participants: [],
   });
 
   const { projId } = useParams();
@@ -38,20 +43,65 @@ function MeetingLog() {
 
   const [titlePlaceholder, setTitlePlaceholder] = useState('회의명을 적어주세요');
   const [detailPlaceholder, setDetailPlaceholder] = useState('회의 내용을 적어주세요');
+  const [fixPlaceholder, setFixPlaceholder] = useState('확정된 내용을 정리해주세요');
 
   const [projectParticipants, setProjectParticipants] = useState([]);
   const [meetingParticipants, setMeetingParticipants] = useState([]);
   const handleSelectParticipant = (e) => {
     const selectedName = e.target.value;
     if (!meetingParticipants.includes(selectedName)) {
-      setMeetingParticipants([...meetingParticipants, selectedName]);
-      }
+      const updatedList = [...meetingParticipants, selectedName];
+      setMeetingParticipants(updatedList);
+
+      setFormData((prev) => ({
+        ...prev,
+        projId: projId,
+        participants: updatedList.map(name => {
+          const matched = projectParticipants.find(p => p.name === name);
+          return matched ? { name: matched.name, id: matched.id } : { name, id: '' };
+        }),  date: formattedDateTime, 
+      }));
+    }      
   };
   const handleRemove = (nameToRemove) => {
     setMeetingParticipants(meetingParticipants.filter(name => name !== nameToRemove));
   };
 
   const textareaRef = useRef(null);
+
+  const fetchFiles = useCallback(async (filterParams) => {
+    if (!filterParams) return;
+    let baseUrl = `${API_BASE_URL}/schedul/meeting/view/log`;
+    let queryParams = [];
+    if (filterParams.projId) queryParams.push(`projId=${filterParams.projId}`);
+    if (queryParams.length === 0 && !filterParams.isDefaultLoad) {
+      setFiles([]); return;
+    }
+    const url = queryParams.length > 0 ? `${baseUrl}?${queryParams.join('&')}` : baseUrl;
+    console.log('파일 목록 요청 URL:', url);
+    setStatusMessage('파일 목록 로딩 중...');
+    try {
+      const response = await fetch(url);
+      const responseData = await response.json().catch(() => null);
+      if (response.ok) {
+        const sorted = (responseData || []).sort((a, b) => {
+          const dateA = new Date(a.uploadDate || a.date);
+          const dateB = new Date(b.uploadDate || b.date);
+          return dateB - dateA; // 최신순 정렬 (내림차순)
+        });
+        setFiles(responseData || []);
+        setStatusMessage(responseData && responseData.length > 0 ? '' : '표시할 파일이 없습니다.');
+      } else {
+        const errorMsg = responseData?.message || `오류 발생: ${response.status}`;
+        setStatusMessage(errorMsg); setFiles([]); console.error('파일 목록 가져오기 실패:', errorMsg);
+      }
+    } catch (error) {
+      console.error('파일 목록 fetch 오류:', error);
+      setStatusMessage(`파일 목록 로딩 오류: ${error.message}`); setFiles([]);
+    }
+  }, []);
+
+
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -76,18 +126,26 @@ function MeetingLog() {
         if (!projId) return;
         const fetchProjectMembers = async () => {
             try {
-                const response = await fetch(`${baseURL}/member/project/${projId}`);
+                const response = await fetch(`${API_BASE_URL}/member/project/${projId}`);
                 if (!response.ok) {
                     throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
-                }
+                }                
+                else {console.log("잘됨");}
                 const members = await response.json();
                 setProjectParticipants(members);
+
             } catch (error) {
                 console.error("프로젝트 멤버 로딩 오류:", error);
                 setProjectParticipants([]);
             }
         };
         fetchProjectMembers();
+        if (projId) {
+          setFormData((prev) => ({
+            ...prev,
+            projId: projId,
+          }));
+        }
   }, [projId]);
   
   const audioRef = useRef(null);
@@ -193,6 +251,54 @@ function MeetingLog() {
         };*/
 
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("업로드 버튼 클릭됨. 현재 formData:", formData);
+    setStatusMessage('업로드 중...');
+
+    const formDataToSend = new FormData();
+
+    // 1. 메타데이터를 개별 필드로 FormData에 추가
+    formDataToSend.append('scheId', formData.scheId);
+    formDataToSend.append('projId', formData.projId);
+    formDataToSend.append('contents', formData.contents);
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('date', formData.date);
+    formDataToSend.append('fix', formData.fix);
+    formDataToSend.append('participants', JSON.stringify(formData.participants));
+
+    console.log("첨부할 메타데이터:", {
+      scheId: formData.scheId, projId: formData.projId, contents: formData.contents, title: formData.title,
+      date: formData.date, fix: formData.fix, participants:formData.participants, 
+      url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
+    });
+
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
+        method: 'POST',
+        body: formDataToSend,
+        // headers: { 'accept': 'application/json; charset=utf8' } // cURL에 있었으나, fetch에서는 보통 자동처리
+      });
+
+      const responseData = await response.json().catch(() => {
+        return response.text().then(text => ({ message: text || `서버 응답 파싱 실패 (상태: ${response.status})` }));
+      });
+
+      if (response.ok) {
+        setStatusMessage(responseData.message || '업로드 완료되었습니다!');
+        setFormData(prev => ({
+          ...prev, contents: '', title: '', date: '', fix:'', participants:[]
+        }));
+      }
+    } catch (error) {
+      console.error('업로드 중 네트워크 또는 기타 오류:', error);
+      setStatusMessage(`업로드 실패: ${error.message}`);
+    }
+  };
+
+
+
     return (
       <div className="MeetingLog">
         <h1>회의록</h1>
@@ -235,6 +341,13 @@ function MeetingLog() {
             onChange={handleChange}
             required
           />
+          <textarea id="autoGrow" className='fixed'
+          name='fix'
+          value={formData.fix}
+          placeholder={fixPlaceholder}
+          onChange={handleChange}
+          required
+          />
         </div>
 
         {audioBlob && (
@@ -244,7 +357,7 @@ function MeetingLog() {
           </div>
         )}
 
-        <button className="end-button" onClick={handleEndButtonClick}>작성 완료</button>
+        <button className="end-button" onClick={handleSubmit}>작성 완료</button>
       </div>
     );
   }
