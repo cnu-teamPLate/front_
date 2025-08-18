@@ -1,4 +1,11 @@
+.meeting-log-container {
+    display: flex!important;
+    flex-direction: row!important;  /* 수평 정렬 */
+    gap: 40px!important;
+  }
+
 .MeetingLog {
+    flex: 2;
     margin: auto;
     font-family: Arial, sans-serif;
     display: flex;
@@ -17,6 +24,14 @@
     min-width: 600px;
     padding: 2rem;
 }
+
+.meetinglog-list {
+    flex: 1;
+    max-width: 300px;
+    min-width: 200px;
+    color: #7c7c7c;
+    margin-top: 2rem;
+  }
 
 .controls {
     width: 100%;
