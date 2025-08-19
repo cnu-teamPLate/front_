@@ -1,10 +1,17 @@
+.meeting-log-container {
+    display: flex!important;
+    flex-direction: row!important;  /* 수평 정렬 */
+    gap: 40px!important;
+  }
+
 .MeetingLog {
+    flex: 2;
     margin: auto;
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
     place-items: center;
-    height: 100vh;    
+    height: 100%;    
     grid-template-columns:repeat(1,1fr);
     gap: 0px;
     background-color: var(--card-bg);
@@ -14,8 +21,17 @@
     box-sizing: border-box;
     width: 100%;
     max-width: 960px;
+    min-width: 600px;
     padding: 2rem;
 }
+
+.meetinglog-list {
+    flex: 1;
+    max-width: 300px;
+    min-width: 200px;
+    color: #7c7c7c;
+    margin-top: 2rem;
+  }
 
 .controls {
     width: 100%;
@@ -111,9 +127,45 @@
     overflow: auto;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
+
+.fixed {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius-md);
+    resize: none;
+    box-sizing: border-box;
+    font-size: 1rem;
+    height: 200px;
+    overflow: auto;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.participants-title {
+    display: flex;
+    align-self: center!important;  
+}
+
+.participants-select {
+    display: flex;
+    align-self: center!important;  
+    height: 2rem;
+}
   
 .participants li {
     font-size: 0.9rem;
+    display: flex;
+    justify-content: center; /* 가로 가운데 */
+    align-items: center;  
+}
+.li-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    height: 100%;
+    align-self: center!important;  
 }
 
 .x {
