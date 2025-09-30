@@ -240,7 +240,7 @@ function MeetingLog() {
     const baseUrl = 'https://www.teamplate-api.site/'
 
     try {
-      const response = await fetch(`${baseUrl}/schedule/meeting/upload/log`, {
+      const response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -309,6 +309,13 @@ function MeetingLog() {
                     {projectParticipants.map((p) => (
                       <option key={p.id} value={p.name}>{p.name}</option>
                     ))}
+                  </select>
+                </div>
+                <div>
+                  <h4>일정 선택</h4>
+                  <select>
+                    <option value="">새 회의 생성</option>
+
                   </select>
                 </div>
                 <textarea className='titleinput'
