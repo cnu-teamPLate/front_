@@ -25,7 +25,7 @@ function MeetingLog() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [participants, setParticipants] = useState([]);
   const navigate = useNavigate();
-  const [files, setFiles] = useState([]);
+
   const [statusMessage, setStatusMessage] = useState('');
   const [viewMode, setViewMode] = useState('new'); // 'list' | 'detail' | 'new'
   const [selectedLog, setSelectedLog] = useState(null);
@@ -48,6 +48,8 @@ function MeetingLog() {
   const [titlePlaceholder, setTitlePlaceholder] = useState('회의명을 적어주세요');
   const [detailPlaceholder, setDetailPlaceholder] = useState('회의 내용을 적어주세요');
   const [fixPlaceholder, setFixPlaceholder] = useState('확정된 내용을 정리해주세요');
+
+  const [meetingData, setMeetingData] = useState([]);
 
   const [projectParticipants, setProjectParticipants] = useState([]);
   const [meetingParticipants, setMeetingParticipants] = useState([]);
@@ -77,21 +79,6 @@ function MeetingLog() {
   useEffect(() => {
     localStorage.setItem('tempMeetingDraft', JSON.stringify(formData));
   }, [formData]);
-
-  const fetchFiles = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/schedul/meeting/view/log`);
-      const data = await response.json();
-      setFiles(data || []);
-    } catch (err) {
-      console.error("회의록 불러오기 실패:", err);
-      setFiles([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchFiles();
-  }, []);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -137,6 +124,26 @@ function MeetingLog() {
           }));
         }
   }, [projId]);
+
+  useEffect(()=> {
+    const logList = async() => {
+      const baseUrl = 'https://www.teamplate-api.site/'
+  
+      try {
+        const response = await fetch(`${baseUrl}/schedule/meeting/view/log?projId=${projId}`);
+        if(!response.ok) {
+          throw new Error('회의록을 가져오는 데 실패했습니다.');
+        }
+        const data = await response.json();
+        setMeetingData(data); // 받아온 데이터 저장
+  
+      } catch (error) {
+        console.error('에러 발생:', error);
+      }
+    };
+    logList();
+  }, [projId]);
+
   
   const audioRef = useRef(null);
 
@@ -280,8 +287,6 @@ function MeetingLog() {
     }
   };
 
-
-
   return (
       <div>
         <div className="meeting-log-container" style={{ display: 'flex', gap: '20px' }}>
@@ -372,21 +377,21 @@ function MeetingLog() {
             </div>
           )}
 
-          {files.length > 0 ? (
-            files.map((log) => (
-              <div
-                key={log.id}
-                className="each"
-                onClick={() => handleSelectLog(log)}
-                style={{ cursor: 'pointer', borderBottom: '1px solid #ddd', marginBottom: '10px' }}
-              >
-                <p><strong>{log.title}</strong></p>
-                <p style={{ fontSize: '12px', color: '#555' }}>{log.date}</p>
-              </div>
-            ))
-          ) : (
-            <p>등록된 회의록이 없습니다.</p>
-          )}
+          {meetingData.length > 0 && meetingData.map((log, idx) => (
+            <div
+              key={idx}
+              className="each"
+              onClick={() => handleSelectLog(log)}
+              style={{ cursor: 'pointer', borderBottom: '1px solid #ddd', marginBottom: '10px' }}
+            >
+              <p><strong>{log.title}</strong></p>
+              <p style={{ fontSize: '12px', color: '#555' }}>{log.date}</p>
+            </div>
+          ))}
+          {meetingData.length === 0 &&(
+            <p>회의록이 없습니다.</p>
+            )
+          }
         </div>
       </div>
     </div>

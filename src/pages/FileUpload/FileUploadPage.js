@@ -17,8 +17,10 @@ function FileUploadPage() {
   const [urlList, setUrlList] = useState([]);
   const [newUrl, setNewUrl] = useState('');
 
-  const [editMode, setEditMode] = useState(false);
-  const [deleteMode, setDeleteMode] = useState(false);
+  const [mode, setMode] = useState('default'); 
+  const [deleteMode, setDeleteMode] = useState([]);
+  const [editMode, setEditMode] = useState([]);
+
   const [editedFiles, setEditedFiles] = useState([]);
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState([]);
 
@@ -35,6 +37,8 @@ function FileUploadPage() {
     url: [],      // URL 문자열 배열
     file: [],     // File 객체 배열
   });
+
+  
 
   const fetchTasks = useCallback(async () => {
     if (!currentProjId || !currentUserId) return;
@@ -217,19 +221,6 @@ function FileUploadPage() {
     return '날짜 형식 오류';
   };
 
-  const handleEditToggle = () => {
-    setEditMode(!editMode); setDeleteMode(false);
-    if (!editMode) {
-      setEditedFiles(
-        files.map(file => ({
-          ...file, title: file.title || file.origFilename || file.filename || '',
-          detail: file.detail || '', category: file.category !== undefined ? file.category : -1,
-          urls: Array.isArray(file.url) ? file.url : (file.url ? [file.url] : []),
-        }))
-      );
-    }
-  };
-  const handleDeleteToggle = () => { setDeleteMode(!deleteMode); setEditMode(false); setSelectedFilesToDelete([]); };
   const handleInputChangeForListedFile = (index, field, value) => {
     const updated = [...editedFiles];
     updated[index] = { ...updated[index], [field]: value };
@@ -241,7 +232,7 @@ function FileUploadPage() {
 
   const handleSaveEdits = async () => {
     if (editedFiles.length === 0) { setStatusMessage("수정할 파일이 없습니다."); return; }
-    setStatusMessage("수정 사항 저장 중..."); let allSuccess = true;
+    setStatusMessage("수정 사항 저장 중..."); let allSuccess = true;  setMode('default');
     for (const fileToEdit of editedFiles) {
       const urlsToSend = Array.isArray(fileToEdit.urls) ? fileToEdit.urls : [];
       const payload = {
@@ -256,7 +247,8 @@ function FileUploadPage() {
         if (!response.ok) { allSuccess = false; const errorData = await response.json().catch(() => null); console.error(`파일 ID ${fileToEdit.fileId} 수정 실패:`, errorData?.message || response.status); }
       } catch (error) { allSuccess = false; console.error(`파일 ID ${fileToEdit.fileId} 수정 중 네트워크 오류:`, error); }
     }
-    setEditMode(false);
+    setMode('default');
+    console.log('000');
     setStatusMessage(allSuccess ? "모든 수정 사항이 저장되었습니다." : "일부 파일 수정에 실패했습니다. 콘솔을 확인해주세요.");
     fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
   };
@@ -274,7 +266,7 @@ function FileUploadPage() {
         setStatusMessage(responseData?.message || "선택된 파일이 삭제되었습니다."); setSelectedFilesToDelete([]);
       } else { setStatusMessage(responseData?.message || `파일 삭제 실패: ${response.status}`); }
     } catch (error) { console.error('파일 삭제 중 네트워크 오류:', error); setStatusMessage(`파일 삭제 오류: ${error.message}`); }
-    setDeleteMode(false);
+    setMode('default');
     fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
   };
 
@@ -398,10 +390,29 @@ function FileUploadPage() {
             <span className={selectedFilter === 'myproj' ? 'filter-item selected' : 'filter-item'} onClick={() => handleFilterClick('myproj')}>내 프로젝트 파일</span>
           </div>
           <div className='edit-delete-buttons'>
-            <button className={`button-mode ${editMode ? 'active' : ''}`} onClick={handleEditToggle}>수정</button>
-            <button className={`button-mode ${deleteMode ? 'active' : ''}`} onClick={handleDeleteToggle}>삭제</button>
-            {editMode && <button className='button-mode action-button' onClick={handleSaveEdits}>수정 완료</button>}
-            {deleteMode && <button className='button-mode action-button' onClick={handleDeleteSelectedFiles}>선택 삭제</button>}
+            {mode === 'default' && (
+              <>
+                <button className="button-mode" onClick={() => setMode('edit')}>수정</button>
+                <button className="button-mode" onClick={() => setMode('delete')}>삭제</button>
+              </>
+            )}
+
+            {mode === 'edit' && (
+              <button className="button-mode action-button" onClick={handleSaveEdits}>
+                수정 완료
+              </button>
+            )}
+
+            {mode === 'delete' && (
+              <>
+                <button className="button-mode action-button" onClick={handleDeleteSelectedFiles}>
+                  선택 삭제
+                </button>
+                <button className="button-mode" onClick={() => setMode('default')}>
+                  완료
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -412,24 +423,24 @@ function FileUploadPage() {
           <table>
             <thead>
               <tr>
-                {deleteMode && <th className="checkbox-column">선택</th>}
-                <th>{editMode ? '제목 (수정)' : '제목'}</th>
+                {mode === 'delete' && <th className="checkbox-column">선택</th>}
+                <th>{mode === 'edit' ? '제목 (수정)' : '제목'}</th>
                 <th className='task-title-box'>연관 과제</th>
                 <th className='date-title-box'>업로드 날짜</th>
-                {editMode && <th>설명 (수정)</th>}
-                {editMode && <th>URL (수정)</th>}
+                {mode === 'edit' && <th>설명 (수정)</th>}
+                {mode === 'edit' && <th>URL (수정)</th>}
               </tr>
             </thead>
             <tbody>
               {editedFiles.length > 0 ? editedFiles.map((file, index) => (
                 <tr key={file.fileId || index}>
-                  {deleteMode && (
+                  {mode === 'delete' && (
                     <td className="checkbox-column">
                       <input type="checkbox" checked={selectedFilesToDelete.includes(file.fileId)} onChange={() => handleFileSelectForDeletion(file.fileId)} />
                     </td>
                   )}
                 <td className='file-cell-text'>
-                  {!editMode ? (
+                  {mode != 'edit' ? (
                     <div>
                       <a
                         href={`${API_BASE_URL}/file/download/${file.fileId}`}
