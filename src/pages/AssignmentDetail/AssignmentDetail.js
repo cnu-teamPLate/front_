@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+const URL = 'https://www.teamplate-api.site/';
 
 function AssignmentDetail() {
     const [searchParams] = useSearchParams();
@@ -21,7 +22,7 @@ function AssignmentDetail() {
 
         const fetchAssignmentDetail = async () => {
             try {
-                const response = await axios.get(`${baseURL}/task/view-detail/${taskId}`);
+                const response = await axios.get(`${baseURL}/task/view/${taskId}`);
                 setAssignment(response.data);
             } catch (err) {
                 if (err.response) {
