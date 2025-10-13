@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import './Assignment.css';
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
@@ -19,6 +19,7 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
     const projectId = urlParams.get("projId");
     const id = urlParams.get("id");
     const getAssignment = `${testURL}`;
+    const navigate = useNavigate();
 
 
     fetch(getAssignment, {
