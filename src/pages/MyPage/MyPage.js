@@ -77,7 +77,7 @@ function MyPage() {
 
     try {
       const response = await fetch(
-        "http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/auth/update-my-info",
+        "https://www.teamplate-api.site/auth/update-my-info",
         {
           method: "PUT",
           headers: {

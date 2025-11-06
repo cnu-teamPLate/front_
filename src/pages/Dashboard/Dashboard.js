@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import './Dashboard.css';
 
-const API_BASE_URL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+const API_BASE_URL = 'https://www.teamplate-api.site';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

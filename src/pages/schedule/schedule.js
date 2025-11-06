@@ -8,7 +8,7 @@ import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid, { AvailabilityMatrix, TimeSelectionGrid } from "./when2meet";
 // 파일 맨 위쪽
-const API = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+const API = 'https://www.teamplate-api.site';
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 const ProjectSidebar = ({ projectId }) => {
@@ -360,7 +360,7 @@ const Schedule = () => {
 
         try {
 
-            const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/upload', {
+            const response = await fetch('https://www.teamplate-api.site/schedule/check/upload', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -394,8 +394,8 @@ const Schedule = () => {
         setLoading(true);
         try {
             const apiUrl = view === 'month'
-                ? 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
-                : 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
+                ? 'https://www.teamplate-api.site/schedule/check/monthly'
+                : 'https://www.teamplate-api.site/schedule/check/weekly';
 
             const response = await fetch(apiUrl, {
                 method: 'POST',

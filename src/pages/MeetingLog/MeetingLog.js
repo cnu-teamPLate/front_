@@ -15,7 +15,7 @@ const seconds = String(date.getSeconds()).padStart(2, '0');
 const formattedDate = `${year}. ${month}. ${day}`;
 const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
-const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
+const API_BASE_URL = 'https://www.teamplate-api.site';
 
 
 
@@ -127,7 +127,7 @@ function MeetingLog() {
 
   useEffect(()=> {
     const logList = async() => {
-      const baseUrl = 'https://www.teamplate-api.site/'
+      const baseUrl = 'https://www.teamplate-api.site'
   
       try {
         const response = await fetch(`${baseUrl}/schedule/meeting/view/log?projId=${projId}`);
@@ -244,7 +244,6 @@ function MeetingLog() {
       url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
     });
 
-    const baseUrl = 'https://www.teamplate-api.site/'
 
     try {
       const response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
