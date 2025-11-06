@@ -1,22 +1,48 @@
-import React, { useState } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // 기본 스타일
-import './Calendar.css';
-const MyCalendar = () => {
-    const [value, setValue] = useState(new Date());
+import React from 'react';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
+import 'moment/locale/ko';  // 한국어 로케일 추가
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
+// 한국어 설정
+moment.locale('ko');
+
+// localizer를 컴포넌트 외부에서 정의
+const localizer = momentLocalizer(moment);
+
+const MyCalendar = ({ events = [] }) => {
     return (
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h2 style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', marginBottom: '33px' }}>Calendar</h2>
-            <Calendar
-                onChange={setValue}
-                value={value}
-                minDetail="year"
-                maxDetail="month"
-                showNeighboringMonth={true}
-                formatDay={(locale, date) => date.getDate().toString()}
-            />
-        </div>
+        <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor={(event) => new Date(event.date)}
+            endAccessor={(event) => {
+                const date = new Date(event.date);
+                date.setHours(date.getHours() + 1);
+                return date;
+            }}
+            style={{ height: 500 }}
+            views={['month', 'week', 'day']}
+            defaultView="month"
+            formats={{
+                monthHeaderFormat: 'YYYY년 MM월',
+                dayHeaderFormat: 'MM월 DD일 dddd',
+                dayRangeHeaderFormat: ({ start, end }) =>
+                    `${moment(start).format('YYYY년 MM월 DD일')} - ${moment(end).format('MM월 DD일')}`
+            }}
+            messages={{
+                today: '오늘',
+                previous: '이전',
+                next: '다음',
+                month: '월',
+                week: '주',
+                day: '일',
+                agenda: '일정'
+            }}
+            onSelectEvent={event => {
+                console.log('선택된 이벤트:', event);
+            }}
+        />
     );
 };
 

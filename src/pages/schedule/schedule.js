@@ -406,53 +406,80 @@ const Schedule = () => {
 
 
     const fetchEvents = async () => {
+        if (!currentProject) {
+            console.log('프로젝트 ID가 없습니다');
+            return;
+        }
+
         setLoading(true);
         try {
-            const apiUrl = view === 'month'
-                ? 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
-                : 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
-
-            const response = await fetch(apiUrl, {
+            const response = await fetch(`${API}/schedule/check/monthly`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    projId: "cse00001",
-                    date: "2025-01-01T00:02:27.Z",
-                    cate: "meeting"
-                }),
+                    projId: currentProject,
+                    date: moment().format('YYYY-MM'),  // YYYY-MM 형식으로 변경
+                })
             });
+
             if (!response.ok) {
-                throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
+                throw new Error(`API 호출 실패: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log("Event API 응답 데이터:", data);
+            console.log("서버 응답 데이터:", data);
 
-            if (data.teamSchedules?.cse00001) {
-                setEvents(data.teamSchedules.cse00001);
-            } else {
-                setEvents([]);
-                console.warn("일정을 불러올 수 없습니다.");
-            }
+            const formattedEvents = Array.isArray(data) ? data.map(event => ({
+                id: event.scheId,
+                title: event.scheName,
+                start: moment(event.date).toDate(),
+                end: moment(event.date).add(1, 'hour').toDate(),
+                location: event.place || '',
+                category: event.category,
+                detail: event.detail || '',
+                attendees: event.participants?.join(', ') || ''
+            })) : [];
+
+            setEvents(formattedEvents);
+
         } catch (error) {
-            console.error("API 호출 중 오류:", error.message);
+            console.error("API 호출 중 오류:", error);
             setEvents([]);
         } finally {
             setLoading(false);
         }
     };
-    const fetchAvailability = async (id) => {
+
+
+    useEffect(() => {
+        if (currentProject) {
+            fetchEvents().catch(console.error);
+            fetchAvailability().catch(console.error);
+        }
+    }, [currentProject]);  // currentProject만 의존성으로 설정
+    const fetchAvailability = async () => {
+        if (!currentProject) return; // projId가 없으면 호출하지 않음
+
         try {
-            const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${id}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data && typeof data === 'object') {
-                setAvailability(data.details || data);   // 필요에 따라 수정
-            } else {
-                setAvailability([]);
+            const url = `${API}/schedule/meeting/adjust/availability`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projId: currentProject
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error(`API 호출 실패: ${res.status}`);
             }
+
+            const data = await res.json();
+            setAvailability(data || []);
         } catch (e) {
             console.error('가용 시간 조회 실패', e);
             setAvailability([]);
