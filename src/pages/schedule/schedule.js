@@ -229,15 +229,15 @@ const Schedule = () => {
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
+    // newEvent의 초기 상태 설정 부분
     const [newEvent, setNewEvent] = useState({
-        //scheId: '',//스웨거에 생성할 때 생기는거라서 따로 전달해줄 필요 없음
-        projId: '',
-        date: '',
-        scheName: '',
-        place: '',
-        category: '',
-        detail: '',
-        participants: '',
+        title: '',
+        start: moment().format('YYYY-MM-DDTHH:mm'), // 현재 날짜/시간으로 초기화
+        end: moment().add(1, 'hour').format('YYYY-MM-DDTHH:mm'),
+        location: '',
+        attendees: '',
+        agenda: '',
+        category: 'plan'
     });
     const [whenToMeet, setWhenToMeet] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -344,44 +344,59 @@ const Schedule = () => {
     };
     // 일정 생성 API 연결
     const handleAddEvent = async (eventObject) => {
-        const userId = currentUser.id;
-        const projId = currentProject.id;
+        const userId = currentUser;
+        const projId = currentProject;
 
+        // 날짜가 없으면 경고
+        if (!eventObject.start) {
+            alert('날짜를 선택해주세요.');
+            return;
+        }
+
+        // LocalDateTime 형식으로 날짜 변환 (YYYY-MM-DDTHH:mm:ss)
+        const formattedDate = moment(eventObject.start).format('YYYY-MM-DDTHH:mm:ss');
+
+        // 서버 요구사항에 맞게 데이터 구조화
         const newEvent = {
-            //scheId: scheId,
             projId: projId,
-            date: eventObject.start,
-            scheName: eventObject.title,
-            place: eventObject.location,
-            category: "일정",
-            detail: eventObject.agenda,
-            participants: eventObject.attendees.split(',').map(p => p.trim())
+            date: formattedDate,  // LocalDateTime 형식으로 변경
+            scheName: eventObject.title || '새 일정',
+            place: eventObject.location || '',
+            category: eventObject.category || 'plan',
+            detail: eventObject.agenda || '',
+            participants: eventObject.attendees ?
+                eventObject.attendees.split(',').map(p => p.trim()) :
+                []
         };
 
-        try {
+        console.log('서버로 전송되는 데이터:', newEvent); // 디버깅용
 
-            const response = await fetch('https://port-0-localhost-m1w79fyl6ab28642.sel4.cloudtype.app/schedule/check/upload', {
+        try {
+            const response = await fetch(`${API}/schedule/check/upload`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newEvent),
+                body: JSON.stringify(newEvent)
             });
 
-            if (response.ok) {
-                const savedEvent = await response.json();
-                setEvents([...events, savedEvent]);
-                setShowPopup(false);
-            } else {
-                const error = await response.text();
-                console.error("Failed to create event:", error);
-                alert("일정 생성에 실패했습니다.");
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || '일정 생성에 실패했습니다.');
             }
+
+            console.log('생성된 일정:', data);
+            setEvents(prevEvents => [...prevEvents, data]);
+            setShowPopup(false);
+            alert('일정이 성공적으로 생성되었습니다.');
+
         } catch (error) {
-            console.error("Error creating event:", error);
-            alert("서버와 연결할 수 없습니다.");
+            console.error("일정 생성 실패:", error);
+            alert(`일정 생성에 실패했습니다. (${error.message})`);
         }
     };
+    // 팝업의 카테고리 선택 부분 수정 (textarea 제거하고 select만 사용)
     const [loading, setLoading] = useState(false);
     // 일정 조회 (주간)
     useEffect(() => {
@@ -394,8 +409,8 @@ const Schedule = () => {
         setLoading(true);
         try {
             const apiUrl = view === 'month'
-                ? 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
-                : 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
+                ? 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/monthly'
+                : 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/schedule/check/weekly';
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
@@ -458,6 +473,13 @@ const Schedule = () => {
                     <div className="popup">
                         <div className="popup-inner">
                             <h2>일정 생성</h2>
+                            <label>제목:</label>
+                            <input
+                                type="text"
+                                value={newEvent.title || ''}
+                                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                                required
+                            />
                             <label>시작 시간:</label>
                             <input
                                 type="datetime-local"
@@ -490,13 +512,25 @@ const Schedule = () => {
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
                             />
                             <label>카테고리:</label>
+                            <select
+                                value={newEvent.category || "plan"}
+                                onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
+                                style={{ width: '100%', padding: '8px', marginBottom: '16px' }}
+                            >
+                                <option value="plan">일정</option>
+                                <option value="meeting">회의</option>
+                            </select>
                             <textarea
                                 rows={2}
                                 style={{ resize: 'none', height: '60px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
                                 value={newEvent.category}
                                 onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
                             />
-                            <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
+                            <button
+                                onClick={() => handleAddEvent(newEvent)}
+                                className="add-event-button"
+                                disabled={!newEvent.title || !newEvent.start}
+                            >
                                 일정 추가
                             </button>
                             <button onClick={handleClosePopup} className="cancel-button">
