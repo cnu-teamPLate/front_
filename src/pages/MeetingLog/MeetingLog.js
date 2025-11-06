@@ -15,7 +15,11 @@ const seconds = String(date.getSeconds()).padStart(2, '0');
 const formattedDate = `${year}. ${month}. ${day}`;
 const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
+<<<<<<< Updated upstream
 const API_BASE_URL = 'https://www.teamplate-api.site';
+=======
+const API_BASE_URL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+>>>>>>> Stashed changes
 
 
 
@@ -130,7 +134,7 @@ function MeetingLog() {
       const baseUrl = 'https://www.teamplate-api.site'
   
       try {
-        const response = await fetch(`${baseUrl}/schedule/meeting/view/log?projId=${projId}`);
+        const response = await fetch(`${API_BASE_URL}/schedule/meeting/view/log?projId=${projId}`);
         if(!response.ok) {
           throw new Error('회의록을 가져오는 데 실패했습니다.');
         }
