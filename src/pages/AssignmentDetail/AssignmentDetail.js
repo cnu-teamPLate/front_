@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
-const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+const baseURL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 
 function AssignmentDetail() {
     const [searchParams] = useSearchParams();
@@ -71,7 +71,7 @@ function AssignmentDetail() {
         const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         return new Date(dateString).toLocaleDateString('ko-KR', options);
     };
-    
+
     const getComplexityLabel = (complexity) => {
         switch (complexity) {
             case 1: return '쉬움';

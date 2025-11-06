@@ -29,7 +29,7 @@ function MyPage() {
 
       try {
         const response = await fetch(
-          `http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/read-my-info?userId=${userId}`,
+          `http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/auth/read-my-info?userId=${userId}`,
           {
             method: "GET",
             headers: {
@@ -77,7 +77,7 @@ function MyPage() {
 
     try {
       const response = await fetch(
-        "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/auth/update-my-info",
+        "http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/auth/update-my-info",
         {
           method: "PUT",
           headers: {

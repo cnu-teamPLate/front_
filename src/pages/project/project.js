@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import './project.css';
 
 // API base URL
-const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
+const API_BASE_URL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 
 // --- ProjectSidebar Component ---
 // This could be moved to its own file in /components/ProjectSidebar/ for better organization
