@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { IoHome, IoLogOutOutline, IoSettings } from "react-icons/io5";
+import { IoGrid, IoLogOutOutline, IoSettings } from "react-icons/io5";
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();
@@ -14,15 +14,11 @@ const Header = ({ toggleSidebar }) => {
 
   return (
     <header className="header">
-      <Link to="/Dashboard"  
-      style={{
-      position: "absolute", 
-      left: "20px", 
-      top: "20px", 
-  }}><IoHome size={30} color='white'/></Link>
-
       {userId && (
         <>
+          <Link to="/Dashboard" style={{position: "absolute", left: '20px', top:"22px", }}>
+            <IoGrid size={30} color='white'/>
+          </Link>
           <Link to={`/MyPage/${userId}`} style={{position: "absolute", right: '70px', top:"24px", }}>
             <IoSettings size={26} color='white'/>
           </Link>
