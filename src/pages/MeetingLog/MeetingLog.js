@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
 
@@ -15,8 +15,7 @@ const seconds = String(date.getSeconds()).padStart(2, '0');
 const formattedDate = `${year}. ${month}. ${day}`;
 const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
-const API_BASE_URL = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
-
+const API_BASE_URL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 
 
 function MeetingLog() {
@@ -32,13 +31,13 @@ function MeetingLog() {
 
 
   const [formData, setFormData] = useState({
-        scheId: '',
-        projId: '',
-        contents: '',
-        title: '',
-        date: '',
-        fix: '',
-        participants: [],
+    scheId: '',
+    projId: '',
+    contents: '',
+    title: '',
+    date: '',
+    fix: '',
+    participants: [],
   });
 
   const { projId } = useParams();
@@ -63,9 +62,9 @@ function MeetingLog() {
         participants: updatedList.map(name => {
           const matched = projectParticipants.find(p => p.name === name);
           return matched ? { name: matched.name, id: matched.id } : { name, id: '' };
-        }),  date: formattedDateTime, 
+        }), date: formattedDateTime,
       }));
-    }      
+    }
   };
   const handleRemove = (nameToRemove) => {
     setMeetingParticipants(meetingParticipants.filter(name => name !== nameToRemove));
@@ -113,57 +112,57 @@ function MeetingLog() {
   }, []);
 
   useEffect(() => {
-        if (!projId) return;
-        const fetchProjectMembers = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/member/project/${projId}`);
-                if (!response.ok) {
-                    throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
-                }                
-                else {console.log("잘됨");}
-                const members = await response.json();
-                setProjectParticipants(members);
-
-            } catch (error) {
-                console.error("프로젝트 멤버 로딩 오류:", error);
-                setProjectParticipants([]);
-            }
-        };
-        fetchProjectMembers();
-        if (projId) {
-          setFormData((prev) => ({
-            ...prev,
-            projId: projId,
-          }));
+    if (!projId) return;
+    const fetchProjectMembers = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/member/project/${projId}`);
+        if (!response.ok) {
+          throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
         }
+        else { console.log("잘됨"); }
+        const members = await response.json();
+        setProjectParticipants(members);
+
+      } catch (error) {
+        console.error("프로젝트 멤버 로딩 오류:", error);
+        setProjectParticipants([]);
+      }
+    };
+    fetchProjectMembers();
+    if (projId) {
+      setFormData((prev) => ({
+        ...prev,
+        projId: projId,
+      }));
+    }
   }, [projId]);
-  
+
   const audioRef = useRef(null);
 
   const sendAudioToSpeechToTextAPI = async (blob) => {
     const formData = new FormData();
     formData.append('file', blob, 'recorded_audio.wav');
-  
+
     try {
       const response = await fetch(`${API_BASE_URL}/schedule/meeting/convert-speech`, {
         method: 'POST',
         body: formData,
       });
-  
+
       const data = await response.json();
-  
+
       // 텍스트 응답 예시: { text: "회의를 시작하겠습니다." }
       if (data && data.text) {
         setFormData(prev => ({
           ...prev,
           contents: prev.contents
-          ? `${prev.contents}\n\n[자동 변환된 텍스트]\n${data.text}`
-          : data.text,
+            ? `${prev.contents}\n\n[자동 변환된 텍스트]\n${data.text}`
+            : data.text,
         }));
       } else {
         alert('텍스트 변환 결과가 없습니다.');
       }
-  
+
     } catch (error) {
       console.error('텍스트 변환 실패:', error);
       alert('오디오를 텍스트로 변환하는 데 실패했습니다.');
@@ -177,22 +176,22 @@ function MeetingLog() {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
         const chunks = [];
-  
+
         recorder.ondataavailable = (e) => {
           chunks.push(e.data);
         };
-  
-        recorder.onstop = async() => {
+
+        recorder.onstop = async () => {
           const blob = new Blob(chunks, { type: 'audio/wav' });
           setAudioBlob(blob);
-  
+
           // 예: blob에서 오디오 URL 생성해서 미리듣기
           if (audioRef.current) {
             audioRef.current.src = URL.createObjectURL(blob);
           }
           await sendAudioToSpeechToTextAPI(blob);
         };
-  
+
         recorder.start();
         setMediaRecorder(recorder);
         setIsRecording(true);
@@ -233,7 +232,7 @@ function MeetingLog() {
 
     console.log("첨부할 메타데이터:", {
       scheId: formData.scheId, projId: formData.projId, contents: formData.contents, title: formData.title,
-      date: formData.date, fix: formData.fix, participants:formData.participants, 
+      date: formData.date, fix: formData.fix, participants: formData.participants,
       url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
     });
 
@@ -249,10 +248,10 @@ function MeetingLog() {
       });
 
       if (response.ok) {
-        localStorage.removeItem('tempMeetingDraft'); 
+        localStorage.removeItem('tempMeetingDraft');
         setStatusMessage(responseData.message || '업로드 완료되었습니다!');
         setFormData(prev => ({
-          ...prev, scheId: '', projId: '', contents: '', title: '', date: '', fix:'', participants:[]
+          ...prev, scheId: '', projId: '', contents: '', title: '', date: '', fix: '', participants: []
         }));
       }
     } catch (error) {
@@ -282,77 +281,77 @@ function MeetingLog() {
 
 
   return (
-      <div>
-        <div className="meeting-log-container" style={{ display: 'flex', gap: '20px' }}>
-          {viewMode === 'new' && (
-            <div className="MeetingLog" style={{ flex: 2 }}>
-              <h1>회의록</h1>
-              <div className="controls">
-                <button className="record-button" onClick={handleRecordButtonClick}>
-                  {isRecording ? <IoRecordingOutline size={20} /> : <IoMicSharp size={20} />}
-                  {isRecording ? "기록 중" : "자동기록"}
-                </button>
-                <p className="meetDate">{formattedDate}</p>
-                <div className="participants">
-                  <h4 className='participants-title'>참여자</h4>
-                  <ul className='li-list'>
-                    {meetingParticipants.map((name) => (
-                      <li key={name}>
-                        {name}
-                        <button className="x" onClick={() => handleRemove(name)}>x</button>
-                      </li>
-                    ))}
-                  </ul>
-                  <select className='participants-select' onChange={handleSelectParticipant} defaultValue="">
-                    <option value="" disabled>참여자 선택</option>
-                    {projectParticipants.map((p) => (
-                      <option key={p.id} value={p.name}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <textarea className='titleinput'
-                  name="title"
-                  value={formData.title}
-                  placeholder={titlePlaceholder}
-                  onChange={handleChange}
-                  required
-                />
-                <textarea id="autoGrow" className='loginput'
-                  name="contents"
-                  ref={textareaRef}
-                  rows={25}
-                  value={formData.contents}
-                  placeholder={detailPlaceholder}
-                  onChange={handleChange}
-                  required
-                />
-                <textarea id="autoGrow" className='fixed'
+    <div>
+      <div className="meeting-log-container" style={{ display: 'flex', gap: '20px' }}>
+        {viewMode === 'new' && (
+          <div className="MeetingLog" style={{ flex: 2 }}>
+            <h1>회의록</h1>
+            <div className="controls">
+              <button className="record-button" onClick={handleRecordButtonClick}>
+                {isRecording ? <IoRecordingOutline size={20} /> : <IoMicSharp size={20} />}
+                {isRecording ? "기록 중" : "자동기록"}
+              </button>
+              <p className="meetDate">{formattedDate}</p>
+              <div className="participants">
+                <h4 className='participants-title'>참여자</h4>
+                <ul className='li-list'>
+                  {meetingParticipants.map((name) => (
+                    <li key={name}>
+                      {name}
+                      <button className="x" onClick={() => handleRemove(name)}>x</button>
+                    </li>
+                  ))}
+                </ul>
+                <select className='participants-select' onChange={handleSelectParticipant} defaultValue="">
+                  <option value="" disabled>참여자 선택</option>
+                  {projectParticipants.map((p) => (
+                    <option key={p.id} value={p.name}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <textarea className='titleinput'
+                name="title"
+                value={formData.title}
+                placeholder={titlePlaceholder}
+                onChange={handleChange}
+                required
+              />
+              <textarea id="autoGrow" className='loginput'
+                name="contents"
+                ref={textareaRef}
+                rows={25}
+                value={formData.contents}
+                placeholder={detailPlaceholder}
+                onChange={handleChange}
+                required
+              />
+              <textarea id="autoGrow" className='fixed'
                 name='fix'
                 value={formData.fix}
                 placeholder={fixPlaceholder}
                 onChange={handleChange}
                 required
-                />
-              </div>
+              />
+            </div>
 
-              {audioBlob && (
-                <div className="audio-preview">
-                  <h4>기록 미리 듣기</h4>
-                  <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
-                </div>
-              )}
-              <button className="end-button" onClick={handleSubmit}>작성 완료</button>
-            </div>
-          )}
-          {viewMode === 'detail' && selectedLog && (
-            <div className="meeting-log-viewer">
-              <h2>{selectedLog.title}</h2>
-              <p><strong>날짜:</strong> {selectedLog.date}</p>
-              <p><strong>내용:</strong> {selectedLog.contents}</p>
-              <p><strong>확정사항:</strong> {selectedLog.fix}</p>
-              <button onClick={() => setViewMode('new')}>← 돌아가기</button>
-            </div>
-          )}
+            {audioBlob && (
+              <div className="audio-preview">
+                <h4>기록 미리 듣기</h4>
+                <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
+              </div>
+            )}
+            <button className="end-button" onClick={handleSubmit}>작성 완료</button>
+          </div>
+        )}
+        {viewMode === 'detail' && selectedLog && (
+          <div className="meeting-log-viewer">
+            <h2>{selectedLog.title}</h2>
+            <p><strong>날짜:</strong> {selectedLog.date}</p>
+            <p><strong>내용:</strong> {selectedLog.contents}</p>
+            <p><strong>확정사항:</strong> {selectedLog.fix}</p>
+            <button onClick={() => setViewMode('new')}>← 돌아가기</button>
+          </div>
+        )}
 
         <div className="meetinglog-list" style={{ flex: 1 }}>
           {localStorage.getItem('tempMeetingDraft') && (
@@ -382,8 +381,8 @@ function MeetingLog() {
         </div>
       </div>
     </div>
-      
-);
+
+  );
 }
 
 export default MeetingLog;

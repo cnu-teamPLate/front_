@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import moment from 'moment';
 import './schedule.css';
 // 파일 맨 위쪽
-const API = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
+const API = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 function DatePickerGrid({
@@ -470,7 +470,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
             startDate: r.start.toISOString().slice(0, 19),   // "YYYY‑MM‑DDTHH:MM:SS"
             endDate: r.end.toISOString().slice(0, 19)
         }));
-const currentUsername = "";
+        const currentUsername = "";
 
         const body = {
             when2meetId,
@@ -481,7 +481,7 @@ const currentUsername = "";
             }]
         };
 
-            try {
+        try {
             const res = await fetch(`${API}/schedule/meeting/upload/when2meet/detail`, {
                 method: 'POST',
                 headers: {
@@ -611,26 +611,26 @@ const currentUsername = "";
     };
     const navigate = useNavigate();
 
-// 유틸: "h:mm AM/PM" 문자열 생성
-const generateTimeOptions = (interval = 60) => {
-  const times = [];
-  const start = new Date(2000, 0, 1, 0, 0);   // 00:00
-  const end = new Date(2000, 0, 1, 23, 59);  // 23:59
-  let cur = new Date(start);
+    // 유틸: "h:mm AM/PM" 문자열 생성
+    const generateTimeOptions = (interval = 60) => {
+        const times = [];
+        const start = new Date(2000, 0, 1, 0, 0);   // 00:00
+        const end = new Date(2000, 0, 1, 23, 59);  // 23:59
+        let cur = new Date(start);
 
-  while (cur <= end) {
-    let h = cur.getHours();
-    const m = cur.getMinutes();
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12; 
-    if (h === 0) h = 12;
-    const label = `${h}:${m.toString().padStart(2, "0")} ${ampm}`;
-    times.push(label);
+        while (cur <= end) {
+            let h = cur.getHours();
+            const m = cur.getMinutes();
+            const ampm = h >= 12 ? "PM" : "AM";
+            h = h % 12;
+            if (h === 0) h = 12;
+            const label = `${h}:${m.toString().padStart(2, "0")} ${ampm}`;
+            times.push(label);
 
-    cur = new Date(cur.getTime() + interval * 60000); // interval 분 단위 증가
-  }
-  return times;
-};
+            cur = new Date(cur.getTime() + interval * 60000); // interval 분 단위 증가
+        }
+        return times;
+    };
 
 
     return (
@@ -638,9 +638,9 @@ const generateTimeOptions = (interval = 60) => {
             {step === 1 && (
                 <>
                     <div className="step-container">
-  <button className="back" onClick={onExit}>
-            뒤로 가기
-        </button>                        <h1>Create New Event</h1>
+                        <button className="back" onClick={onExit}>
+                            뒤로 가기
+                        </button>                        <h1>Create New Event</h1>
                         <label>
                             Event Title:
                             <input
@@ -665,23 +665,23 @@ const generateTimeOptions = (interval = 60) => {
                     <div className="step2-container">
                         <h2>What times might work?</h2>
                         <div className="time-options">
-<label>
-  No earlier than:
-  <select value={start} onChange={(e) => setEarliestTime(e.target.value)}>
-    {generateTimeOptions(60).map((time) => (
-      <option key={time} value={time}>{time}</option>
-    ))}
-  </select>
-</label>
+                            <label>
+                                No earlier than:
+                                <select value={start} onChange={(e) => setEarliestTime(e.target.value)}>
+                                    {generateTimeOptions(60).map((time) => (
+                                        <option key={time} value={time}>{time}</option>
+                                    ))}
+                                </select>
+                            </label>
 
-<label>
-  No later than:
-  <select value={end} onChange={(e) => setLatestTime(e.target.value)}>
-    {generateTimeOptions(60).map((time) => (
-      <option key={time} value={time}>{time}</option>
-    ))}
-  </select>
-</label>
+                            <label>
+                                No later than:
+                                <select value={end} onChange={(e) => setLatestTime(e.target.value)}>
+                                    {generateTimeOptions(60).map((time) => (
+                                        <option key={time} value={time}>{time}</option>
+                                    ))}
+                                </select>
+                            </label>
                         </div>
                         <div className="navigation-buttons">
                             <button
@@ -714,9 +714,9 @@ const generateTimeOptions = (interval = 60) => {
             {step === 2 && (
                 <>
                     <div className="step-container">
-  <button className="back" onClick={onExit}>
-            홈으로 가기
-        </button>                           <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
+                        <button className="back" onClick={onExit}>
+                            홈으로 가기
+                        </button>                           <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
                             <TimeSelectionGrid
                                 selectedDates={selectedDates}
                                 start={start}
@@ -782,10 +782,10 @@ const When2meet = () => {
             <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
             </aside>
 
-                    <div className="calender-container">
-                   
-                    <WhenToMeetGrid onExit={exitWhenToMeet} />
-              
+            <div className="calender-container">
+
+                <WhenToMeetGrid onExit={exitWhenToMeet} />
+
             </div>
 
 

@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
-const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+const baseURL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 
 const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange }) => {
 
