@@ -3,12 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
-<<<<<<< Updated upstream
+
 const baseURL = 'https://www.teamplate-api.site/';
-=======
-const baseURL = "http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080";
-const URL = 'https://www.teamplate-api.site/';
->>>>>>> Stashed changes
 
 function AssignmentDetail() {
     const [searchParams] = useSearchParams();
@@ -28,6 +24,7 @@ function AssignmentDetail() {
             try {
                 const response = await axios.get(`${baseURL}/task/view/${taskId}`);
                 setAssignment(response.data);
+                console.log('여기까진 완료');
             } catch (err) {
                 if (err.response) {
                     if (err.response.status === 404) {

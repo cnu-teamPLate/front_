@@ -15,11 +15,7 @@ const seconds = String(date.getSeconds()).padStart(2, '0');
 const formattedDate = `${year}. ${month}. ${day}`;
 const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
-<<<<<<< Updated upstream
 const API_BASE_URL = 'https://www.teamplate-api.site';
-=======
-const API_BASE_URL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
->>>>>>> Stashed changes
 
 
 
