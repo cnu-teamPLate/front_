@@ -229,15 +229,15 @@ const Schedule = () => {
     const [events, setEvents] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
+    // newEvent의 초기 상태 설정 부분
     const [newEvent, setNewEvent] = useState({
-        //scheId: '',//스웨거에 생성할 때 생기는거라서 따로 전달해줄 필요 없음
-        projId: '',
-        date: '',
-        scheName: '',
-        place: '',
-        category: '',
-        detail: '',
-        participants: '',
+        title: '',
+        start: moment().format('YYYY-MM-DDTHH:mm'), // 현재 날짜/시간으로 초기화
+        end: moment().add(1, 'hour').format('YYYY-MM-DDTHH:mm'),
+        location: '',
+        attendees: '',
+        agenda: '',
+        category: 'plan'
     });
     const [whenToMeet, setWhenToMeet] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -344,44 +344,59 @@ const Schedule = () => {
     };
     // 일정 생성 API 연결
     const handleAddEvent = async (eventObject) => {
-        const userId = currentUser.id;
-        const projId = currentProject.id;
+        const userId = currentUser;
+        const projId = currentProject;
 
+        // 날짜가 없으면 경고
+        if (!eventObject.start) {
+            alert('날짜를 선택해주세요.');
+            return;
+        }
+
+        // LocalDateTime 형식으로 날짜 변환 (YYYY-MM-DDTHH:mm:ss)
+        const formattedDate = moment(eventObject.start).format('YYYY-MM-DDTHH:mm:ss');
+
+        // 서버 요구사항에 맞게 데이터 구조화
         const newEvent = {
-            //scheId: scheId,
             projId: projId,
-            date: eventObject.start,
-            scheName: eventObject.title,
-            place: eventObject.location,
-            category: "일정",
-            detail: eventObject.agenda,
-            participants: eventObject.attendees.split(',').map(p => p.trim())
+            date: formattedDate,  // LocalDateTime 형식으로 변경
+            scheName: eventObject.title || '새 일정',
+            place: eventObject.location || '',
+            category: eventObject.category || 'plan',
+            detail: eventObject.agenda || '',
+            participants: eventObject.attendees ?
+                eventObject.attendees.split(',').map(p => p.trim()) :
+                []
         };
 
-        try {
+        console.log('서버로 전송되는 데이터:', newEvent); // 디버깅용
 
-            const response = await fetch('https://www.teamplate-api.site/schedule/check/upload', {
+        try {
+            const response = await fetch(`${API}/schedule/check/upload`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newEvent),
+                body: JSON.stringify(newEvent)
             });
 
-            if (response.ok) {
-                const savedEvent = await response.json();
-                setEvents([...events, savedEvent]);
-                setShowPopup(false);
-            } else {
-                const error = await response.text();
-                console.error("Failed to create event:", error);
-                alert("일정 생성에 실패했습니다.");
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || '일정 생성에 실패했습니다.');
             }
+
+            console.log('생성된 일정:', data);
+            setEvents(prevEvents => [...prevEvents, data]);
+            setShowPopup(false);
+            alert('일정이 성공적으로 생성되었습니다.');
+
         } catch (error) {
-            console.error("Error creating event:", error);
-            alert("서버와 연결할 수 없습니다.");
+            console.error("일정 생성 실패:", error);
+            alert(`일정 생성에 실패했습니다. (${error.message})`);
         }
     };
+    // 팝업의 카테고리 선택 부분 수정 (textarea 제거하고 select만 사용)
     const [loading, setLoading] = useState(false);
     // 일정 조회 (주간)
     useEffect(() => {
@@ -391,53 +406,80 @@ const Schedule = () => {
 
 
     const fetchEvents = async () => {
+        if (!currentProject) {
+            console.log('프로젝트 ID가 없습니다');
+            return;
+        }
+
         setLoading(true);
         try {
-            const apiUrl = view === 'month'
-                ? 'https://www.teamplate-api.site/schedule/check/monthly'
-                : 'https://www.teamplate-api.site/schedule/check/weekly';
-
-            const response = await fetch(apiUrl, {
+            const response = await fetch(`${API}/schedule/check/monthly`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    projId: "cse00001",
-                    date: "2025-01-01T00:02:27.Z",
-                    cate: "meeting"
-                }),
+                    projId: currentProject,
+                    date: moment().format('YYYY-MM'),  // YYYY-MM 형식으로 변경
+                })
             });
+
             if (!response.ok) {
-                throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
+                throw new Error(`API 호출 실패: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log("Event API 응답 데이터:", data);
+            console.log("서버 응답 데이터:", data);
 
-            if (data.teamSchedules?.cse00001) {
-                setEvents(data.teamSchedules.cse00001);
-            } else {
-                setEvents([]);
-                console.warn("일정을 불러올 수 없습니다.");
-            }
+            const formattedEvents = Array.isArray(data) ? data.map(event => ({
+                id: event.scheId,
+                title: event.scheName,
+                start: moment(event.date).toDate(),
+                end: moment(event.date).add(1, 'hour').toDate(),
+                location: event.place || '',
+                category: event.category,
+                detail: event.detail || '',
+                attendees: event.participants?.join(', ') || ''
+            })) : [];
+
+            setEvents(formattedEvents);
+
         } catch (error) {
-            console.error("API 호출 중 오류:", error.message);
+            console.error("API 호출 중 오류:", error);
             setEvents([]);
         } finally {
             setLoading(false);
         }
     };
-    const fetchAvailability = async (id) => {
+
+
+    useEffect(() => {
+        if (currentProject) {
+            fetchEvents().catch(console.error);
+            fetchAvailability().catch(console.error);
+        }
+    }, [currentProject]);  // currentProject만 의존성으로 설정
+    const fetchAvailability = async () => {
+        if (!currentProject) return; // projId가 없으면 호출하지 않음
+
         try {
-            const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${id}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data && typeof data === 'object') {
-                setAvailability(data.details || data);   // 필요에 따라 수정
-            } else {
-                setAvailability([]);
+            const url = `${API}/schedule/meeting/adjust/availability`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projId: currentProject
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error(`API 호출 실패: ${res.status}`);
             }
+
+            const data = await res.json();
+            setAvailability(data || []);
         } catch (e) {
             console.error('가용 시간 조회 실패', e);
             setAvailability([]);
@@ -458,6 +500,13 @@ const Schedule = () => {
                     <div className="popup">
                         <div className="popup-inner">
                             <h2>일정 생성</h2>
+                            <label>제목:</label>
+                            <input
+                                type="text"
+                                value={newEvent.title || ''}
+                                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                                required
+                            />
                             <label>시작 시간:</label>
                             <input
                                 type="datetime-local"
@@ -490,13 +539,25 @@ const Schedule = () => {
                                 onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
                             />
                             <label>카테고리:</label>
+                            <select
+                                value={newEvent.category || "plan"}
+                                onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
+                                style={{ width: '100%', padding: '8px', marginBottom: '16px' }}
+                            >
+                                <option value="plan">일정</option>
+                                <option value="meeting">회의</option>
+                            </select>
                             <textarea
                                 rows={2}
                                 style={{ resize: 'none', height: '60px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
                                 value={newEvent.category}
                                 onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
                             />
-                            <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
+                            <button
+                                onClick={() => handleAddEvent(newEvent)}
+                                className="add-event-button"
+                                disabled={!newEvent.title || !newEvent.start}
+                            >
                                 일정 추가
                             </button>
                             <button onClick={handleClosePopup} className="cancel-button">
