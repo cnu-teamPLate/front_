@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import './Assignment.css';
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
-const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+const baseURL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 
 const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange }) => {
 
@@ -19,6 +19,7 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
     const projectId = urlParams.get("projId");
     const id = urlParams.get("id");
     const getAssignment = `${testURL}`;
+    const navigate = useNavigate();
 
 
     fetch(getAssignment, {

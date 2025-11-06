@@ -287,8 +287,20 @@ td {
 
 .button-group {
   margin-left: auto !important;
+  display: flex;
+  justify-content: space-between; /* 좌우 정렬 핵심 속성 */
+  align-items: center;  
 }
 
 .button-mode {
   margin-top: 0 !important;
+  margin-left: 0.5em;
+}
+
+.filter {
+  gap: 1em;
+}
+
+.edit-delete-buttons {
+  gap: 1em!important;
 }

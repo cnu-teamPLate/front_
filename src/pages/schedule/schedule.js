@@ -8,7 +8,7 @@ import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid, { AvailabilityMatrix, TimeSelectionGrid } from "./when2meet";
 // 파일 맨 위쪽
-const API = 'http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080';
+const API = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 const ProjectSidebar = ({ projectId }) => {
