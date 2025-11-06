@@ -1,6 +1,4 @@
 # Team Project Managing Web Service
-// ...existing code...
-# Team Project Managing Web Service
 
 간단한 팀 프로젝트 관리용 웹 애플리케이션(React 기반)입니다. 일정·과제·회의록·파일 업로드·알림 등 협업에 필요한 기본 기능을 제공하며, 이 저장소는 프론트엔드 코드입니다.
 
