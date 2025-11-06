@@ -51,7 +51,7 @@ function SignUp() {
         if (validateStep()) {
             setIsSubmitting(true); // 요청 시작
             try {
-                const response = await fetch('http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/auth/register', {
+                const response = await fetch('https://www.teamplate-api.site/auth/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
-const baseURL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+const baseURL = 'https://www.teamplate-api.site';
 
 const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange }) => {
 
@@ -14,7 +14,7 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
     const cardClasses = `assignment-card ${isPast ? 'past-due' : ''} ${item.checkBox === 1 ? 'completed' : ''}`;
     const assigneeName = getAssigneeName(item.userName);
 
-    const testURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
+    const testURL = "https://www.teamplate-api.site/task/view?projId=CSE00001&id=20241099";
     const urlParams = new URLSearchParams(new URL(testURL).search);
     const projectId = urlParams.get("projId");
     const id = urlParams.get("id");

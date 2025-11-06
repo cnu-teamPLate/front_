@@ -34,7 +34,7 @@ function Login() {
       });
 
 
-      const url = new URL('http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/auth/login');
+      const url = new URL('https://www.teamplate-api.site/auth/login');
 
       const response = await fetch(url, {
         method: 'POST',

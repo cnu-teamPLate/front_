@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom'; // 파일 상단에 추가
 
-const API_BASE_URL = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+const API_BASE_URL = 'https://www.teamplate-api.site';
 
 function FileUploadPage() {
   const [files, setFiles] = useState([]);
@@ -17,7 +17,7 @@ function FileUploadPage() {
   const [urlList, setUrlList] = useState([]);
   const [newUrl, setNewUrl] = useState('');
 
-  const [mode, setMode] = useState('default'); 
+  const [mode, setMode] = useState('default');
   const [deleteMode, setDeleteMode] = useState([]);
   const [editMode, setEditMode] = useState([]);
 
@@ -38,7 +38,7 @@ function FileUploadPage() {
     file: [],     // File 객체 배열
   });
 
-  
+
 
   const fetchTasks = useCallback(async () => {
     if (!currentProjId || !currentUserId) return;
@@ -232,7 +232,7 @@ function FileUploadPage() {
 
   const handleSaveEdits = async () => {
     if (editedFiles.length === 0) { setStatusMessage("수정할 파일이 없습니다."); return; }
-    setStatusMessage("수정 사항 저장 중..."); let allSuccess = true;  setMode('default');
+    setStatusMessage("수정 사항 저장 중..."); let allSuccess = true; setMode('default');
     for (const fileToEdit of editedFiles) {
       const urlsToSend = Array.isArray(fileToEdit.urls) ? fileToEdit.urls : [];
       const payload = {
@@ -439,47 +439,47 @@ function FileUploadPage() {
                       <input type="checkbox" checked={selectedFilesToDelete.includes(file.fileId)} onChange={() => handleFileSelectForDeletion(file.fileId)} />
                     </td>
                   )}
-                <td className='file-cell-text'>
-                  {mode != 'edit' ? (
-                    <div>
-                      <a
-                        href={`${API_BASE_URL}/file/download/${file.fileId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="file-title-container"
+                  <td className='file-cell-text'>
+                    {mode != 'edit' ? (
+                      <div>
+                        <a
+                          href={`${API_BASE_URL}/file/download/${file.fileId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="file-title-container"
+                        >
+                          {file.title || file.origFilename || file.filename || '제목 없음'}
+                        </a>
+                        {file.detail && (
+                          <div className="file-detail-subtext">
+                            {file.detail}
+                          </div>
+                        )}
+                      </div>
+
+                    ) : (
+                      <input
+                        className="edit-input"
+                        type="text"
+                        value={file.title}
+                        onChange={(e) =>
+                          handleInputChangeForListedFile(index, 'title', e.target.value)
+                        }
+                      />
+                    )}
+                  </td>
+                  <td className='category-text'>
+                    {file.taskName?.trim() && file.category !== -1 && file.category != null ? (
+                      <Link
+                        to={`/task/${file.category}`} // ← 나중에 링크 구조 바꾸셔도 됩니다
+                        className="task-link"
                       >
-                        {file.title || file.origFilename || file.filename || '제목 없음'}
-                      </a>
-                      {file.detail && (
-                        <div className="file-detail-subtext">
-                          {file.detail}
-                        </div>
-                      )}
-                    </div>
-                    
-                  ) : (
-                    <input
-                      className="edit-input"
-                      type="text"
-                      value={file.title}
-                      onChange={(e) =>
-                        handleInputChangeForListedFile(index, 'title', e.target.value)
-                      }
-                    />
-                  )}
-                </td>
-                <td className='category-text'>
-                  {file.taskName?.trim() && file.category !== -1 && file.category != null ? (
-                    <Link
-                      to={`/task/${file.category}`} // ← 나중에 링크 구조 바꾸셔도 됩니다
-                      className="task-link"
-                    >
-                      {file.taskName}
-                    </Link>
-                  ) : (
-                    '없음'
-                  )}
-                </td>
+                        {file.taskName}
+                      </Link>
+                    ) : (
+                      '없음'
+                    )}
+                  </td>
 
 
 
