@@ -24,7 +24,6 @@ function AssignmentDetail() {
             try {
                 const response = await axios.get(`${baseURL}/task/view/${taskId}`);
                 setAssignment(response.data);
-                console.log('여기까진 완료');
             } catch (err) {
                 if (err.response) {
                     if (err.response.status === 404) {
