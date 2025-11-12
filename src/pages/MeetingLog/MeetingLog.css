@@ -4,7 +4,7 @@
     gap: 40px!important;
   }
 
-.MeetingLog {
+.MeetingLog,.meeting-log-viewer {
     flex: 2;
     margin: auto;
     font-family: Arial, sans-serif;
