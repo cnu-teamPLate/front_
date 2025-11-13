@@ -4,6 +4,10 @@ import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
 
 const API_BASE_URL = 'https://www.teamplate-api.site';
+//회의록 수정 api 없음
+//최종 수정 시각도 넘겨줘야할 것 같음
+//임시 저장이 작동을 안함
+//텍스트 변환은 변환할 텍스트가 없다고 떠서 그부분 확인을 못하는 중
 
 function MeetingLog() {
   //음성 녹음 관련
@@ -20,12 +24,13 @@ function MeetingLog() {
   const [scheduleList, setScheduleList] = useState([]);
   const [meetingData, setMeetingData] = useState([]);
   const [viewMode, setViewMode] = useState('new'); // 'list' | 'detail' | 'new'
+  
 
   //회의록 작성 관련
   const [titlePlaceholder, setTitlePlaceholder] = useState('회의명을 적어주세요');
   const [detailPlaceholder, setDetailPlaceholder] = useState('회의 내용을 적어주세요');
   const [fixPlaceholder, setFixPlaceholder] = useState('확정된 내용을 정리해주세요');
-
+  const [editMode, setEditMode] = useState(false);
 
   const [selectedLog, setSelectedLog] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
@@ -41,13 +46,23 @@ function MeetingLog() {
   const formattedDate = `${now.getFullYear()}. ${String(now.getMonth() + 1).padStart(2, '0')}. ${String(now.getDate()).padStart(2, '0')}`;
   const formattedDateTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
+  const formatDateTime = (dateStr) => {
+    const d = new Date(dateStr);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}. ${mm}. ${dd} ${hh}:${min}`;
+  };
+
   //폼 데이터
   const [formData, setFormData] = useState({
         scheId: '',
-        projId: '',
+        projId: projId || '',
         contents: '',
         title: '',
-        date: '',
+        date: formattedDateTime,
         fix: '',
         participants: [],
   });
@@ -96,9 +111,7 @@ function MeetingLog() {
     const recorder = new MediaRecorder(stream);
     const chunks = [];
     
-    
     recorder.ondataavailable = (e) => chunks.push(e.data);
-    
     
     recorder.onstop = async () => {
     const blob = new Blob(chunks, { type: 'audio/wav' });
@@ -108,7 +121,6 @@ function MeetingLog() {
     }
     await sendAudioToSpeechToTextAPI(blob);
     };
-    
     
     recorder.start();
     setMediaRecorder(recorder);
@@ -121,7 +133,6 @@ function MeetingLog() {
     setIsRecording(false);
     }
   };
-    
     
   const sendAudioToSpeechToTextAPI = async (blob) => {
     const fd = new FormData();
@@ -141,8 +152,8 @@ function MeetingLog() {
     alert('STT 변환 실패');
     }
   };
-    
-    
+  
+  //회의록 저장
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -160,9 +171,16 @@ function MeetingLog() {
       fix: formData.fix,
       participants: formData.participants,
     };
+  
     if (formData.scheId && formData.scheId !== '') {
       param.scheId = formData.scheId;
     }
+  
+    // 🔁 수정 시 meetingId 포함
+    if (editMode && selectedLog?.meetingId) {
+      param.meetingId = selectedLog.meetingId;
+    }
+  
     fd.append('param', JSON.stringify(param));
   
     if (audioBlob) {
@@ -170,7 +188,11 @@ function MeetingLog() {
     }
   
     try {
-      const response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
+      const url = editMode
+        ? `${API_BASE_URL}/schedule/meeting/update/log`
+        : `${API_BASE_URL}/schedule/meeting/upload/log`;
+  
+      const response = await fetch(url, {
         method: 'POST',
         body: fd,
       });
@@ -178,7 +200,9 @@ function MeetingLog() {
       const result = await response.json().catch(() => ({ message: '응답 파싱 실패' }));
   
       if (response.ok) {
-        alert(result.message || '업로드 완료!');
+        alert(result.message || (editMode ? '수정 완료!' : '업로드 완료!'));
+  
+        // 상태 초기화
         setFormData({
           scheId: '',
           projId: projId,
@@ -190,6 +214,7 @@ function MeetingLog() {
         });
         setMeetingParticipants([]);
         setAudioBlob(null);
+        setEditMode(false);
         localStorage.removeItem('tempMeetingDraft');
         await fetchMeetingLogs();
       } else {
@@ -201,6 +226,8 @@ function MeetingLog() {
     }
   };
   
+  
+  //회의록 입력 칸 세팅
   useEffect(() => {
     setFormData(prev => {
       if (!prev.projId) {
@@ -213,13 +240,15 @@ function MeetingLog() {
       const [membersRes, meetingsRes, scheduleRes] = await Promise.all([
         fetch(`${API_BASE_URL}/member/project/${projId}`),
         fetch(`${API_BASE_URL}/schedule/meeting/view/log?projId=${projId}`),
-        fetch(`${API_BASE_URL}/schedule/check/monthly?projId=${projId}&userId=${userId}&standardDate=${formattedDateTime}&cate=plan`)
+        fetch(`${API_BASE_URL}/schedule/check/monthly?projId=${projId}&userId=${userId}&standardDate=${formattedDateTime}&cate=meeting`)
       ]);
       
       if (!membersRes.ok || !meetingsRes.ok || !scheduleRes.ok) throw new Error('데이터 로딩 실패');
         setProjectParticipants(await membersRes.json());
         setMeetingData(await meetingsRes.json());
-        setScheduleList(await scheduleRes.json());
+        const res = await scheduleRes.json();
+        const flattenedList = Object.values(res.teamSchedules).flat();
+        setScheduleList(flattenedList);
       } catch (error) {
         console.error('초기 데이터 로딩 오류:', error);
       }
@@ -228,8 +257,8 @@ function MeetingLog() {
     fetchData();
   }, [projId]);
     
-    
-    useEffect(() => {
+  //회의록 불러옴
+  useEffect(() => {
     localStorage.setItem('tempMeetingDraft', JSON.stringify(formData));
     }, [formData]);
 
@@ -245,31 +274,53 @@ function MeetingLog() {
     const loadTempDraft = () => {
       const saved = localStorage.getItem('tempMeetingDraft');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        setFormData(parsed);
+        try {
+          const parsed = JSON.parse(saved);
+          console.log("🔍 복구된 임시 데이터:", parsed); // 디버깅 로그
     
-        // ✅ 참가자 리스트도 별도로 반영
-        const participantNames = parsed.participants?.map(p => p.name) || [];
-        setMeetingParticipants(participantNames);
+          setFormData(parsed);
     
-        // ✅ 보기 모드도 작성 모드로
-        setViewMode('new');
-        setSelectedLog(null);
+          const participantNames = parsed.participants?.map(p => p.name) || [];
+          setMeetingParticipants(participantNames);
+    
+          setViewMode('new');
+          setSelectedLog(null);
+        } catch (err) {
+          console.error("❌ JSON 파싱 실패:", err);
+          alert("임시 저장된 데이터를 불러올 수 없습니다.");
+        }
       } else {
         alert("저장된 임시 회의록이 없습니다.");
       }
     };
 
     useEffect(() => {
+      console.log("formData 저장됨:", formData);
       localStorage.setItem('tempMeetingDraft', JSON.stringify(formData));
-    }, [formData.title, formData.contents, formData.fix, formData.scheId, formData.participants]);
+    }, [formData]);
     
     
-    
-  const handleSelectLog = (log) => {
-    setSelectedLog(log);
-    setViewMode('detail');
+  const handleSelectLog = async (log) => {
+    if (log.scheId) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/schedule/meeting/view/log?scheId=${log.scheId}`);
+        if (res.ok) {
+          const fullLog = await res.json();
+          setSelectedLog(fullLog);
+          setViewMode('detail');
+        } else {
+          alert('회의록 상세 조회 실패');
+        }
+      } catch (err) {
+        console.error('상세 조회 오류:', err);
+      }
+    } else {
+      // scheId 없을 때는 이미 받아온 log로 그대로 사용
+      setSelectedLog(log);
+      setViewMode('detail');
+    }
   };
+  
 
   return (
       <div>
@@ -300,10 +351,13 @@ function MeetingLog() {
                     ))}
                   </select>
                 </div>
-                <div>
+                <div className='meeting-schedule'>
                   <h4>일정 선택</h4>
-                  <select>
+                  <select onChange={handleScheduleSelect}>
                     <option value="">새 회의 생성</option>
+                    {scheduleList.map((p) => (
+                      <option key={p.scheduleId} value={p.scheduleId}>{p.scheduleName}</option>
+                    ))}
 
                   </select>
                 </div>
@@ -343,12 +397,37 @@ function MeetingLog() {
           )}
           {viewMode === 'detail' && selectedLog && (
             <div className="meeting-log-viewer">
-              <h2>{selectedLog.title}</h2>
-              <p><strong>날짜:</strong> {selectedLog.date}</p>
-              <p><strong>내용:</strong> {selectedLog.contents}</p>
-              <p><strong>확정사항:</strong> {selectedLog.fix}</p>
-              <button onClick={() => setViewMode('new')}>← 돌아가기</button>
-              <button>수정하기</button>
+              <div className='top'>
+                <h2>{selectedLog.title}</h2>
+                <p>{formatDateTime(selectedLog.date)}</p>
+                <p>{selectedLog.participants?.map(p => p.name).join(', ')}</p>
+              </div>
+              <div><p><strong>내용</strong></p><p>{selectedLog.contents}</p></div>
+              <div><p><strong>확정사항</strong></p><p> {selectedLog.fix}</p></div>
+              <div className='button-row'>
+                <button onClick={() => setViewMode('new')}>← 돌아가기</button>
+                <button
+                  onClick={() => {
+                    setFormData({
+                      scheId: selectedLog.scheId || '',
+                      projId: selectedLog.projId || projId,
+                      contents: selectedLog.contents || '',
+                      title: selectedLog.title || '',
+                      date: selectedLog.date || formattedDateTime,
+                      fix: selectedLog.fix || '',
+                      participants: selectedLog.participants || [],
+                    });
+
+                    const names = selectedLog.participants?.map(p => p.name) || [];
+                    setMeetingParticipants(names);
+
+                    setEditMode(true);
+                    setViewMode('new');
+                  }}
+                >
+                  수정하기
+                </button>
+              </div>
             </div>
           )}
 
@@ -358,7 +437,7 @@ function MeetingLog() {
               style={{ background: '#f0f0f0', padding: '8px', marginBottom: '10px', cursor: 'pointer' }}
               onClick={loadTempDraft}
             >
-              📝 임시 저장된 회의록 불러오기
+              임시 저장 불러오기
             </div>
           )}
 
@@ -370,7 +449,7 @@ function MeetingLog() {
               style={{ cursor: 'pointer', borderBottom: '1px solid #ddd', marginBottom: '10px' }}
             >
               <p><strong>{log.title}</strong></p>
-              <p style={{ fontSize: '12px', color: '#555' }}>{log.date}</p>
+              <p style={{ fontSize: '12px', color: '#555' }}>{formatDateTime(log.date)}</p>
             </div>
           ))}
           {meetingData.length === 0 &&(
