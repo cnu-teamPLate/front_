@@ -42,6 +42,13 @@
     --warning-color: #ffc107;
     --error-color: #dc3545;
     --info-color: #17a2b8;
+
+    --select-bg: #f9f9f9;
+    --select-border: #ccc;
+    --select-border-radius: 6px;
+    --select-text-color: #333;
+    --select-focus-border: #a71e1e;
+    --select-width: 200px;
 }
 
 .text-on-light {
