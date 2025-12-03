@@ -9,7 +9,7 @@ import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid, { AvailabilityMatrix, TimeSelectionGrid, fetchEventsApi, fetchAvailabilityApi } from "./when2meet";
 
 // 파일 맨 위쪽 - API URL을 새 URL로 업데이트
-const API = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+const API = 'https://www.teamplate-api.site';
 
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
@@ -536,11 +536,11 @@ const Schedule = () => {
                             </button>
                             <button className="when-to-meet-button" onClick={handleWhenToMeet}>
                                 시간 맞추기
-            _             </button>
+                          </button>
                         </div>
 
                         <Calendar
-                      _     localizer={localizer}
+                            localizer={localizer}
                             events={events}
                             startAccessor="start"
                             endAccessor="end"
@@ -549,7 +549,7 @@ const Schedule = () => {
                             view={view}
                             onView={(view) => setView(view)}
                             onNavigate={(date) => setCurrentDate(date)}
-                _         components={{ toolbar: CustomToolbar }}
+                          components={{ toolbar: CustomToolbar }}
                             onSelectEvent={(event, e) => handleEventMouseOver(event, e)}
                             // onMouseOut={handleEventMouseOut} // 이 핸들러는 캘린더 자체보다 툴팁에 붙이는 것이 더 나을 수 있습니다.
                         />
