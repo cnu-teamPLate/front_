@@ -144,7 +144,7 @@ function TwoMonthPicker({ selectedDates, onSelectDate }) {
     );
 }
 
-function AvailabilityMatrix({ form, details, allData,selectedDates }) {
+function AvailabilityMatrix({ form, details, allData, selectedDates }) {
     /* ───────────────────── 기본 파싱 값 ───────────────────── */
     const backendDates = useMemo(() => {
         if (!form?.dates) return [];
@@ -241,29 +241,28 @@ function AvailabilityMatrix({ form, details, allData,selectedDates }) {
             {/* 바디 */}
             {timeSlots.map(slot => (
                 <div key={slot} style={{ display: 'flex' }}>
-                    <div style={{ width: 100, border: '1px solid #ccc', padding: 6, textAlign: 'center', fontWeight: 600 }}>
+                    <div style={{ width: 100, border: '1px solid #ccc', padding: 6, textAlign: 'center', fontWeight: '600' }}>
                         {slot}
                     </div>
                     {selectedDates.map(date => {
                         const users = getUsersForCell(date, slot);
-                        const normalizedDate = normalizeDateFormat(date);
-                        const count = allData?.[normalizedDate]?.length || 0;
+                        const count = users.length;
 
-                        return (
-                            <div
-                                key={`${date}-${slot}`}
-                                style={{ flex: 1, border: '1px solid #ccc', minHeight: 40, background: bgColor(users.length) }}
-                                onMouseEnter={() => setHovered(users)}
-                                onMouseLeave={() => setHovered([])}
-                            >
-                                {count > 0 && <span>{count}명 가능</span>}
-                            </div>
-                        );
-                    })}
-                </div>
-            ))}
+                         return (
+                             <div
+                                 key={`${date}-${slot}`}
+                                 style={{ flex: 1, border: '1px solid #ccc', minHeight: 40, background: bgColor(users.length) }}
+                                 onMouseEnter={() => setHovered(users)}
+                                 onMouseLeave={() => setHovered([])}
+                             >
+                                 {count > 0 && <span>{count}명 가능</span>}
+                             </div>
+                         );
+                     })}
+                 </div>
+             ))}
 
-            {hovered.length > 0 && (
+             {hovered.length > 0 && (
                 <div style={{
                     position: 'absolute',
                     top: 10,
@@ -380,10 +379,19 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
     );
 }
 
-
-
 /* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit, notifications = [] }) {
+    const hhmmssToAmPm = (timeStr) => {
+    if (!timeStr) return '9:00 AM'; // fallback
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+    };
+
     const location = useLocation();
     const urlParams = new URLSearchParams(location.search);
     const projId = urlParams.get("projectId");
@@ -404,6 +412,11 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
     const [start, setEarliestTime] = useState('9:00 AM');
     const [end, setLatestTime] = useState('5:00 PM');
     const [timeZone, setTimeZone] = useState('Asia/Seoul');
+
+    const sortedSelectedDates = useMemo(
+        () => [...selectedDates].sort((a, b) => new Date(a) - new Date(b)),
+        [selectedDates]
+    );
 
     const convertToISO = (dateString, timeString, timeZone) => {
         const [hourMinute, ampm] = timeString.split(' ');
@@ -429,6 +442,15 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
     useEffect(() => {
         if (!projId) return;
     }, [projId, currentUserId]);
+    useEffect(() => {
+  if (!remoteForm) return;
+  // 백엔드 폼 시간 → 프론트 select 시간으로 동기화
+  const s = hhmmssToAmPm(remoteForm.startTime); // 예: "09:00:00" → "9:00 AM"
+  const e = hhmmssToAmPm(remoteForm.endTime);   // 예: "22:00:00" → "10:00 PM"
+  setEarliestTime(s);
+  setLatestTime(e);
+}, [remoteForm]);
+
     // ────────────────────────────────────────────────────────────────
     // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
     const uploadAvailability = async (when2meetId) => {
@@ -714,10 +736,9 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                         <h2>What dates might work?</h2>
                         <p>Click and drag dates to select in the calendar</p>
                         <TwoMonthPicker
-                            selectedDates={selectedDates}
-                            onSelectDate={handleSelectDate}
+                        selectedDates={sortedSelectedDates}
+                        onSelectDate={handleSelectDate}
                         />
-
                         <div className="errors">
                             {errors.eventTitle && <p className="error">{errors.eventTitle}</p>}
                             {errors.selectedDates && <p className="error">{errors.selectedDates}</p>}
@@ -778,16 +799,17 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                         <button className="back" onClick={onExit}>
                             홈으로 가기
                         </button>                           <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
-                            <TimeSelectionGrid
-                                selectedDates={selectedDates.map(normalizeDateFormat)}
-                                start={start}
-                                end={end}
-                                selectedTimes={selectedTimes}
-                                onSelectTimes={handleSelectTimes}
-                                allData={remoteDetails}
-                            />
+                        <TimeSelectionGrid
+                        selectedDates={sortedSelectedDates}
+                        start={start}
+                        end={end}
+                        selectedTimes={selectedTimes}
+                        onSelectTimes={handleSelectTimes}
+                        allData={remoteDetails}
+                        />
+
                             {remoteForm && remoteDetails ? (
-                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails}  selectedDates={selectedDates} />
+                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails}  selectedDates={sortedSelectedDates} />
                             ) : (
                                 <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
                             )}
@@ -796,13 +818,6 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
                             <button onClick={() => navigate('/schedule')}>Next</button>
-
-                            {/* <button
-                                disabled={!formId || isLoading}
-                                onClick={() => uploadAvailability(formId)}
-                            >
-                                확정(가용 시간 업로드)
-                            </button> */}
                             <button
                                 disabled={isLoading}
                                 onClick={async () => {
