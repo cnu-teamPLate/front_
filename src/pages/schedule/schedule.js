@@ -6,7 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-import WhenToMeetGrid, { AvailabilityMatrix, TimeSelectionGrid } from "./when2meet";
+import WhenToMeetGrid, { AvailabilityMatrix, TimeSelectionGrid, fetchEventsApi, fetchAvailabilityApi } from "./when2meet";
 
 // 파일 맨 위쪽 - API URL을 새 URL로 업데이트
 const API = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
@@ -416,73 +416,17 @@ const Schedule = () => {
             console.warn("Project ID 또는 User ID가 없습니다. API를 호출할 수 없습니다.");
             return;
         }
-
         setLoading(true);
-
-        // .md 파일에서 명시된 파라미터들
-        const projId = currentProject;
-        const userId = currentUser;
-        const standardDate = moment(currentDate).format('YYYY-MM-DDTHH:mm:ss');
-        const cate = "meeting,task"; // .md에서 요청한 카테고리
-
-        // 'month' 뷰일 때는 'monthly', 그 외('week', 'day')는 'weekly'
-        const viewType = (view === 'month') ? 'monthly' : 'weekly';
-
-        const q = `projId=${encodeURIComponent(projId)}&userId=${encodeURIComponent(userId)}&standardDate=${encodeURIComponent(standardDate)}&cate=${encodeURIComponent(cate)}`;
-        const url = `${API}/schedule/check/${viewType}?${q}`;
-
         try {
-            const res = await fetch(url); // GET 요청 (POST가 아님)
-            if (!res.ok) {
-                throw new Error(`API 호출 실패: ${res.status} ${res.statusText}`);
-            }
-            const body = await res.json();
-            console.log("Event API 응답 데이터:", body);
-
-            const newEvents = [];
-
-            // 1. teamSchedules 매핑 (.md 예시 참조)
-            const team = body.teamSchedules?.[projId] || [];
-            for (const s of team) {
-                newEvents.push({
-                    id: s.scheduleId,
-                    title: s.scheduleName || '일정',
-                    start: new Date(s.date),
-                    // API가 종료 시간을 주지 않으면 1시간으로 가정
-                    end: moment(s.date).add(1, 'hour').toDate(),
-                    allDay: false,
-                    category: s.category,
-                    place: s.place,
-                    // 툴팁을 위한 추가 정보 (agenda 등)
-                    // agenda: s.detail, (API 응답에 detail이 있다면)
-                    // attendees: s.participants?.join(', '), (API 응답에 따라)
-                    raw: s
-                });
-            }
-
-            // 2. taskSchedules 매핑 (.md 예시 참조)
-            const tasks = body.taskSchedules?.[projId] || [];
-            for (const t of tasks) {
-                newEvents.push({
-                    id: `task_${t.taskId}`,
-                    title: t.role ? `[마감] ${t.role}` : '[마감] 과제',
-                    start: new Date(t.deadLine),
-                    end: new Date(t.deadLine),
-                    allDay: true, // 마감일은 allDay로 처리
-                    isTask: true,
-                    raw: t
-                });
-            }
-
-            setEvents(newEvents);
-
-        } catch (error) {
-            console.error("API 호출 중 오류:", error.message);
-            setEvents([]); // 오류 발생 시 캘린더 비우기
+            const result = await fetchEventsApi({ projId: currentProject, userId: currentUser, currentDate, view });
+            setEvents(result || []);
+        } catch (e) {
+            console.error("API 호출 중 오류:", e.message || e);
+            setEvents([]);
         } finally {
             setLoading(false);
         }
-    }, [view, currentDate, currentProject, currentUser, setEvents, setLoading]); // 의존성 배열 업데이트
+    }, [view, currentDate, currentProject, currentUser]);
 
 
     // 일정 조회 (주간/월간)
@@ -494,18 +438,10 @@ const Schedule = () => {
 
 
     const fetchAvailability = async (id) => {
-        if (!id) return; // ID가 없으면 호출 방지
-        try {
-            const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${id}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data && typeof data === 'object') {
-                setAvailability(data.details || data);   // 필요에 따라 수정
-            } else {
-                setAvailability([]);
-            }
-        } catch (e) {
-            console.error('가용 시간 조회 실패', e);
+        const data = await fetchAvailabilityApi(id);
+        if (data && typeof data === 'object') {
+            setAvailability(data.details || data);
+        } else {
             setAvailability([]);
         }
     };
