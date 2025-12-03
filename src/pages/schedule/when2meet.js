@@ -4,6 +4,15 @@ import moment from 'moment';
 import './schedule.css';
 // 파일 맨 위쪽
 const API = 'https://www.teamplate-api.site';
+
+// 날짜 포맷 정규화: "2025-5-27" → "2025-05-27"
+const normalizeDateFormat = (dateStr) => {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${y}-${pad(m)}-${pad(d)}`;
+};
+
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 function DatePickerGrid({
@@ -135,40 +144,27 @@ function TwoMonthPicker({ selectedDates, onSelectDate }) {
     );
 }
 
-function AvailabilityMatrix({ form, details, allData }) {
+function AvailabilityMatrix({ form, details, allData,selectedDates }) {
     /* ───────────────────── 기본 파싱 값 ───────────────────── */
-    const selectedDates = form.dates.map(d => d.startDate);  // ["2025-05-27", …]
+    const backendDates = useMemo(() => {
+        if (!form?.dates) return [];
+        return form.dates.map(d => normalizeDateFormat(d.startDate));
+    }, [form]);    
     const start = form.startTime;   // "09:00:00"
     const end = form.endTime;     // "22:00:00"
-    const padDate = (dateStr) => {
-        // "2025-3-4" → "2025-03-04"
-        const [y, m, d] = dateStr.split('-').map(Number);
-        const pad = (n) => String(n).padStart(2, '0');
-        return `${y}-${pad(m)}-${pad(d)}`;
-    };
+
     const availabilityMap = useMemo(() => {
         const map = new Map(); // key = `${date}-${slot}`
         Object.entries(details).forEach(([dateFull, arr]) => {
-            const dateUnpadded = `${+dateFull.slice(0, 4)}-${+dateFull.slice(5, 7)}-${+dateFull.slice(8)}`;
-            // ex) "2025-03-04" → "2025-3-4"
-
             arr.forEach(({ startTime, endTime, username }) => {
-
-
                 const fmt = 'YYYY-MM-DDTH:mm:ss';
-                let cur = moment(`${dateFull}T${startTime}`, fmt, true); const end = moment(`${dateFull}T${endTime}`, fmt, true);
+                let cur = moment(`${dateFull}T${startTime}`, fmt, true);
+                const end = moment(`${dateFull}T${endTime}`, fmt, true);
                 while (cur < end) {
-                    const slot = cur.format('h:mm A');           // "2:15 PM"
-                    // ① 패딩 있는 key
+                    const slot = cur.format('h:mm A');
                     const key1 = `${dateFull}-${slot}`;
                     if (!map.has(key1)) map.set(key1, new Set());
                     map.get(key1).add(username);
-
-                    // ② 패딩 없는 key
-                    const key2 = `${dateUnpadded}-${slot}`;
-                    if (!map.has(key2)) map.set(key2, new Set());
-                    map.get(key2).add(username);
-
                     cur.add(15, 'minutes');
                 }
             });
@@ -203,14 +199,11 @@ function AvailabilityMatrix({ form, details, allData }) {
     const timeSlots = useMemo(() => getTimeSlots(start, end), [start, end]);
 
     const getUsersForCell = (date, slot) => {
-        // date 는 달력에서 온 값. 패딩이 없을 수 있음
-        const padded = padDate(date);          // "2025-3-4" → "2025-03-04"
+        const normalizedDate = normalizeDateFormat(date); // "2025-3-1" → "2025-03-01" 등
         return [
-            ...(availabilityMap.get(`${date}-${slot}`) || []), // un‑padded
-            ...(availabilityMap.get(`${padded}-${slot}`) || [])  // padded
+            ...(availabilityMap.get(`${normalizedDate}-${slot}`) || [])
         ];
     };
-
 
     /* ───────────── 5) 셀 배경 색상 계산 ────────────── */
     const maxCount = useMemo(() => {
@@ -224,13 +217,22 @@ function AvailabilityMatrix({ form, details, allData }) {
     /* ───────────── 6) 렌더링 ────────────── */
     const [hovered, setHovered] = useState([]);
 
-    return (
+  return (
         <div className="availability-matrix" style={{ position: 'relative' }}>
             {/* 헤더 */}
             <div style={{ display: 'flex' }}>
                 <div style={{ width: 100 }} />
                 {selectedDates.map(d => (
-                    <div key={d} style={{ flex: 1, border: '1px solid #ccc', padding: 6, fontWeight: 'bold', textAlign: 'center' }}>
+                    <div
+                        key={d}
+                        style={{
+                            flex: 1,
+                            border: '1px solid #ccc',
+                            padding: 6,
+                            fontWeight: 'bold',
+                            textAlign: 'center'
+                        }}
+                    >
                         {d}
                     </div>
                 ))}
@@ -244,6 +246,9 @@ function AvailabilityMatrix({ form, details, allData }) {
                     </div>
                     {selectedDates.map(date => {
                         const users = getUsersForCell(date, slot);
+                        const normalizedDate = normalizeDateFormat(date);
+                        const count = allData?.[normalizedDate]?.length || 0;
+
                         return (
                             <div
                                 key={`${date}-${slot}`}
@@ -251,24 +256,28 @@ function AvailabilityMatrix({ form, details, allData }) {
                                 onMouseEnter={() => setHovered(users)}
                                 onMouseLeave={() => setHovered([])}
                             >
-                                {/* {users.length > 0 && <span>{users.length}명 가능</span>} */}
-                                {users.length > 0 && <span>{allData[date] === undefined ? "" : allData[date].length}명 가능</span>}
-                                {/* {<span>{date}</span>} */}
+                                {count > 0 && <span>{count}명 가능</span>}
                             </div>
                         );
                     })}
                 </div>
             ))}
 
-            {/* Hover 팝업 */}
             {hovered.length > 0 && (
                 <div style={{
-                    position: 'absolute', top: 10, right: 10, background: '#fff',
-                    border: '1px solid #ddd', padding: 10
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    background: '#fff',
+                    border: '1px solid #ddd',
+                    padding: 10
                 }}>
                     <strong>가능한 사용자</strong>
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {hovered.map((u, idx) => <li key={`${u}-${idx}`}>{u}</li>)}                    </ul>
+                        {hovered.map((u, idx) => (
+                            <li key={`${u}-${idx}`}>{u}</li>
+                        ))}
+                    </ul>
                 </div>
             )}
         </div>
@@ -743,7 +752,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
 
                                     /* ② 폼 생성 → id */
 
-                                    const id = await handleCreatewhen2meet();
+                                    const id = 1;
 
 
                                     if (!id) return;                // 실패 시 중단
@@ -770,7 +779,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                             홈으로 가기
                         </button>                           <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
                             <TimeSelectionGrid
-                                selectedDates={selectedDates}
+                                selectedDates={selectedDates.map(normalizeDateFormat)}
                                 start={start}
                                 end={end}
                                 selectedTimes={selectedTimes}
@@ -778,7 +787,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                 allData={remoteDetails}
                             />
                             {remoteForm && remoteDetails ? (
-                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails} />
+                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails}  selectedDates={selectedDates} />
                             ) : (
                                 <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
                             )}
