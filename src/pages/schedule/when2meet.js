@@ -490,11 +490,16 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                 },
                 body: JSON.stringify(body)
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || '업로드 실패');
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data.message || `HTTP ${res.status}`);
+            }
             alert(data.message || '가용 시간이 업로드되었습니다.');
+            return true;
         } catch (e) {
-            setError(e.message);
+            console.error('uploadAvailability 실패', e);
+            setError(e.message || '업로드 실패');
+            return false;
         }
     };
     // ────────────────────────────────────────────────────────────────
@@ -585,16 +590,63 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
         );
     };
     const [formId, setFormId] = useState(null);
+    const [lastLoadFailedId, setLastLoadFailedId] = useState(null); // remember failed loads to avoid retries
+
     const loadWhen2Meet = async (id) => {
+        if (!id) return;
+        // Avoid hammering the backend if we've already failed for this id
+        if (lastLoadFailedId === id) {
+            // ensure there is at least a minimal fallback so UI can render
+            if (!remoteForm) {
+                const fallbackForm = {
+                    title: eventTitle || 'Untitled',
+                    startTime: toHHMMSS(start),
+                    endTime: toHHMMSS(end),
+                    dates: selectedDates.map(d => ({ startDate: d, endDate: d }))
+                };
+                setRemoteForm(fallbackForm);
+            }
+            if (!remoteDetails) {
+                const fd = {};
+                selectedDates.forEach(d => { fd[d] = []; });
+                setRemoteDetails(fd);
+            }
+            return;
+        }
+
+        setIsLoading(true);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
         try {
-            const res = await fetch(`${API}/schedule/meeting/view/when2meet?when2meetId=${id}`);
+            const res = await fetch(`${API}/schedule/meeting/view/when2meet?when2meetId=${id}`, { signal: controller.signal });
+            clearTimeout(timeout);
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`HTTP ${res.status} ${text}`);
+            }
             const json = await res.json();
-            setRemoteForm(json.form);        // form 객체 그대로
-            setRemoteDetails(json.details);  // { "YYYY‑MM‑DD": [ … ] } 형태
+            setRemoteForm(json.form || null);
+            setRemoteDetails(json.details || null);
             console.log("웬투밋 호출 결과", json.details);
+            setLastLoadFailedId(null);
         } catch (e) {
             console.error('view API 실패', e);
-            setError('폼 정보를 가져오지 못했습니다.');
+            setError('서버에 연결할 수 없습니다. 오프라인 모드로 표시합니다.');
+            setLastLoadFailedId(id);
+            // minimal fallback so UI can function
+            const fallbackForm = {
+                title: eventTitle || 'Untitled',
+                startTime: toHHMMSS(start),
+                endTime: toHHMMSS(end),
+                dates: selectedDates.map(d => ({ startDate: d, endDate: d }))
+            };
+            const fd = {};
+            selectedDates.forEach(d => { fd[d] = []; });
+            setRemoteForm(fallbackForm);
+            setRemoteDetails(fd);
+        } finally {
+            clearTimeout(timeout);
+            setIsLoading(false);
         }
     };
     const handleSelectTimes = (cellKey, shouldSelect) => {
@@ -743,10 +795,13 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                 확정(가용 시간 업로드)
                             </button> */}
                             <button
-                                disabled={isLoading}            // formId 체크 제거
-                                onClick={() => {
-                                    uploadAvailability(1);        // 🔹
-                                    loadWhen2Meet(1);             // 다시 불러오기
+                                disabled={isLoading}
+                                onClick={async () => {
+                                    const id = formId || 1; // placeholder id if formId not set
+                                    const ok = await uploadAvailability(id);
+                                    if (ok) {
+                                        await loadWhen2Meet(id);
+                                    }
                                 }}
                             >
                                 확정(가용 시간 업로드)
@@ -794,3 +849,69 @@ const When2meet = () => {
 };
 export default WhenToMeetGrid;
 export { AvailabilityMatrix, TimeSelectionGrid };
+
+// --------------------------------------------------------------------
+// API helpers exported for reuse in schedule.js
+// --------------------------------------------------------------------
+export async function fetchEventsApi({ projId, userId, currentDate, view }) {
+    if (!projId || !userId) {
+        throw new Error('projId or userId missing');
+    }
+
+    const standardDate = moment(currentDate).format('YYYY-MM-DDTHH:mm:ss');
+    const cate = "meeting,task";
+    const viewType = (view === 'month') ? 'monthly' : 'weekly';
+    const q = `projId=${encodeURIComponent(projId)}&userId=${encodeURIComponent(userId)}&standardDate=${encodeURIComponent(standardDate)}&cate=${encodeURIComponent(cate)}`;
+    const url = `${API}/schedule/check/${viewType}?${q}`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`API 호출 실패: ${res.status} ${res.statusText}`);
+    }
+    const body = await res.json();
+
+    const newEvents = [];
+
+    const team = body.teamSchedules?.[projId] || [];
+    for (const s of team) {
+        newEvents.push({
+            id: s.scheduleId,
+            title: s.scheduleName || '일정',
+            start: new Date(s.date),
+            end: moment(s.date).add(1, 'hour').toDate(),
+            allDay: false,
+            category: s.category,
+            place: s.place,
+            raw: s
+        });
+    }
+
+    const tasks = body.taskSchedules?.[projId] || [];
+    for (const t of tasks) {
+        newEvents.push({
+            id: `task_${t.taskId}`,
+            title: t.role ? `[마감] ${t.role}` : '[마감] 과제',
+            start: new Date(t.deadLine),
+            end: new Date(t.deadLine),
+            allDay: true,
+            isTask: true,
+            raw: t
+        });
+    }
+
+    return newEvents;
+}
+
+export async function fetchAvailabilityApi(when2meetId) {
+    if (!when2meetId) return null;
+    try {
+        const url = `${API}/schedule/meeting/adjust/availability?when2meetId=${when2meetId}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return data;
+    } catch (e) {
+        console.error('fetchAvailabilityApi 실패', e);
+        return null;
+    }
+}
