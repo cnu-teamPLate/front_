@@ -743,8 +743,8 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
 
                                     /* ② 폼 생성 → id */
 
-                                    //const id = await handleCreatewhen2meet();
-                                    const id = 1;//⭐//Todo //API들어오면 바꾸기
+                                    const id = await handleCreatewhen2meet();
+
 
                                     if (!id) return;                // 실패 시 중단
 
