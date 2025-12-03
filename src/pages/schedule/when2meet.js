@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import moment from 'moment';
 import './schedule.css';
 // 파일 맨 위쪽
-const API = 'http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080';
+const API = 'https://www.teamplate-api.site';
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 function DatePickerGrid({
