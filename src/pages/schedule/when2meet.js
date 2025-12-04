@@ -560,6 +560,12 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                 throw new Error(data.message || `HTTP ${res.status}`);
             }
             alert(data.message || '가용 시간이 업로드되었습니다.');
+
+            // ✅ 업로드 완료 후 일정 목록 새로고침
+            setTimeout(() => {
+                onExit();
+            }, 500);
+
             return true;
         } catch (e) {
             console.error('uploadAvailability 실패', e);
