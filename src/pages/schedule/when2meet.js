@@ -144,12 +144,12 @@ function TwoMonthPicker({ selectedDates, onSelectDate }) {
     );
 }
 
-function AvailabilityMatrix({ form, details, allData, selectedDates }) {
+function AvailabilityMatrix({ form, details, allData, selectedDates, selectedTimes = [] }) {
     /* ───────────────────── 기본 파싱 값 ───────────────────── */
     const backendDates = useMemo(() => {
         if (!form?.dates) return [];
         return form.dates.map(d => normalizeDateFormat(d.startDate));
-    }, [form]);    
+    }, [form]);
     const start = form.startTime;   // "09:00:00"
     const end = form.endTime;     // "22:00:00"
 
@@ -217,7 +217,7 @@ function AvailabilityMatrix({ form, details, allData, selectedDates }) {
     /* ───────────── 6) 렌더링 ────────────── */
     const [hovered, setHovered] = useState([]);
 
-  return (
+    return (
         <div className="availability-matrix" style={{ position: 'relative' }}>
             {/* 헤더 */}
             <div style={{ display: 'flex' }}>
@@ -247,29 +247,54 @@ function AvailabilityMatrix({ form, details, allData, selectedDates }) {
                     {selectedDates.map(date => {
                         const users = getUsersForCell(date, slot);
                         const count = users.length;
+                        const cellKey = `${date}-${slot}`;
+                        const isUserSelected = selectedTimes.includes(cellKey);
 
-                         return (
-                             <div
-                                 key={`${date}-${slot}`}
-                                 style={{ flex: 1, border: '1px solid #ccc', minHeight: 40, background: bgColor(users.length) }}
-                                 onMouseEnter={() => setHovered(users)}
-                                 onMouseLeave={() => setHovered([])}
-                             >
-                                 {count > 0 && <span>{count}명 가능</span>}
-                             </div>
-                         );
-                     })}
-                 </div>
-             ))}
+                        return (
+                            <div
+                                key={`${date}-${slot}`}
+                                style={{
+                                    flex: 1,
+                                    border: '1px solid #ccc',
+                                    minHeight: 40,
+                                    background: isUserSelected
+                                        ? 'rgba(100, 150, 255, 0.5)'
+                                        : bgColor(users.length),
+                                    position: 'relative',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                                onMouseEnter={() => setHovered(users)}
+                                onMouseLeave={() => setHovered([])}
+                            >
+                                {count > 0 && <span>{count}명 가능</span>}
+                                {isUserSelected && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 4,
+                                        right: 4,
+                                        width: 10,
+                                        height: 10,
+                                        background: '#4169E1',
+                                        borderRadius: '50%'
+                                    }} />
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            ))}
 
-             {hovered.length > 0 && (
+            {hovered.length > 0 && (
                 <div style={{
                     position: 'absolute',
                     top: 10,
                     right: 10,
                     background: '#fff',
                     border: '1px solid #ddd',
-                    padding: 10
+                    padding: 10,
+                    zIndex: 1000
                 }}>
                     <strong>가능한 사용자</strong>
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
@@ -367,7 +392,16 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
                             <div
                                 key={cellKey}
                                 className={`time-slot ${isSelected ? 'selected' : ''}`} // 선택된 셀 클래스
-                                style={{ flex: 1, border: '1px solid #ccc', padding: '6px', minHeight: '40px', textAlign: 'center' }}
+                                style={{
+                                    flex: 1,
+                                    border: '1px solid #ccc',
+                                    padding: '6px',
+                                    minHeight: '40px',
+                                    textAlign: 'center',
+                                    background: isSelected ? 'rgba(100, 150, 255, 0.5)' : 'transparent',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.15s ease'
+                                }}
                                 onMouseDown={() => handleMouseDown(date, slot)} // 마우스 다운
                                 onMouseEnter={() => handleMouseEnter(date, slot)} // 드래그 시 엔터
                             />
@@ -382,14 +416,14 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
 /* 전체 흐름 관리 */
 function WhenToMeetGrid({ onExit, notifications = [] }) {
     const hhmmssToAmPm = (timeStr) => {
-    if (!timeStr) return '9:00 AM'; // fallback
-    const [hStr, mStr] = timeStr.split(':');
-    let h = parseInt(hStr, 10);
-    const m = parseInt(mStr, 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    if (h === 0) h = 12;
-    return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+        if (!timeStr) return '9:00 AM'; // fallback
+        const [hStr, mStr] = timeStr.split(':');
+        let h = parseInt(hStr, 10);
+        const m = parseInt(mStr, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
     };
 
     const location = useLocation();
@@ -443,13 +477,13 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
         if (!projId) return;
     }, [projId, currentUserId]);
     useEffect(() => {
-  if (!remoteForm) return;
-  // 백엔드 폼 시간 → 프론트 select 시간으로 동기화
-  const s = hhmmssToAmPm(remoteForm.startTime); // 예: "09:00:00" → "9:00 AM"
-  const e = hhmmssToAmPm(remoteForm.endTime);   // 예: "22:00:00" → "10:00 PM"
-  setEarliestTime(s);
-  setLatestTime(e);
-}, [remoteForm]);
+        if (!remoteForm) return;
+        // 백엔드 폼 시간 → 프론트 select 시간으로 동기화
+        const s = hhmmssToAmPm(remoteForm.startTime); // 예: "09:00:00" → "9:00 AM"
+        const e = hhmmssToAmPm(remoteForm.endTime);   // 예: "22:00:00" → "10:00 PM"
+        setEarliestTime(s);
+        setLatestTime(e);
+    }, [remoteForm]);
 
     // ────────────────────────────────────────────────────────────────
     // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
@@ -736,8 +770,8 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                         <h2>What dates might work?</h2>
                         <p>Click and drag dates to select in the calendar</p>
                         <TwoMonthPicker
-                        selectedDates={sortedSelectedDates}
-                        onSelectDate={handleSelectDate}
+                            selectedDates={sortedSelectedDates}
+                            onSelectDate={handleSelectDate}
                         />
                         <div className="errors">
                             {errors.eventTitle && <p className="error">{errors.eventTitle}</p>}
@@ -798,30 +832,37 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                     <div className="step-container">
                         <button className="back" onClick={onExit}>
                             홈으로 가기
-                        </button>                           <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
-                        <TimeSelectionGrid
-                        selectedDates={sortedSelectedDates}
-                        start={start}
-                        end={end}
-                        selectedTimes={selectedTimes}
-                        onSelectTimes={handleSelectTimes}
-                        allData={remoteDetails}
-                        />
+                        </button>
+                        <h2>What times are you available?</h2>
+                        <div className="when-to-meet-container" style={{ display: 'flex', gap: '20px' }}>
+                            <TimeSelectionGrid
+                                selectedDates={sortedSelectedDates}
+                                start={start}
+                                end={end}
+                                selectedTimes={selectedTimes}
+                                onSelectTimes={handleSelectTimes}
+                                allData={remoteDetails}
+                            />
 
                             {remoteForm && remoteDetails ? (
-                                <AvailabilityMatrix form={remoteForm} details={remoteDetails} allData={remoteDetails}  selectedDates={sortedSelectedDates} />
+                                <AvailabilityMatrix
+                                    form={remoteForm}
+                                    details={remoteDetails}
+                                    allData={remoteDetails}
+                                    selectedDates={sortedSelectedDates}
+                                    selectedTimes={selectedTimes}
+                                />
                             ) : (
                                 <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
                             )}
                         </div>
-                        {/* ───────── navigation-buttons 영역 ───────── */}
+
                         <div className="navigation-buttons">
                             <button onClick={prevStep}>Back</button>
-                            <button onClick={() => navigate('/schedule')}>Next</button>
                             <button
                                 disabled={isLoading}
                                 onClick={async () => {
-                                    const id = formId || 1; // placeholder id if formId not set
+                                    const id = formId || 1;
                                     const ok = await uploadAvailability(id);
                                     if (ok) {
                                         await loadWhen2Meet(id);
@@ -830,7 +871,6 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                             >
                                 확정(가용 시간 업로드)
                             </button>
-
 
                             {isLoading && <div className="loading">로딩 중…</div>}
                             {error && <div className="error-message">{error}</div>}
