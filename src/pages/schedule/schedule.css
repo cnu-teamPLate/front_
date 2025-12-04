@@ -275,35 +275,35 @@ body {
     background-color: #B10015;
 }
 
-/* 시간 선택 그리드 & 가용성 매트릭스 통일 스타일 */
 .time-selection-grid,
 .availability-matrix {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    overflow: hidden;
+    display: inline-block;
+    border: 1px solid #777;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    font-size: 11px;
+    color: #000;
 }
 
-/* 헤더 행 공통 스타일 */
+/* 헤더 행 (상단 날짜 라벨) */
 .time-grid-header {
     display: flex;
-    background-color: #f5f5f5;
-    border-bottom: 2px solid #ccc;
+    border-bottom: 1px solid #777;
+    background-color: #ffffff;
 }
 
 .time-header-cell,
 .date-header-cell {
     flex: 1;
-    border-right: 1px solid #ccc;
-    padding: 10px 6px;
+    padding: 2px 4px;
+    border-right: 1px solid #777;
     text-align: center;
     font-weight: bold;
-    font-size: 14px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    white-space: nowrap;
+}
+
+.time-header-cell.time-header-empty {
+    flex: 0 0 60px;
 }
 
 .time-header-cell:first-child {
@@ -318,44 +318,34 @@ body {
 /* 각 시간 슬롯 행 */
 .time-grid-row {
     display: flex;
-    border-bottom: 1px solid #eee;
 }
 
 .time-row-label {
-    flex: 0 0 100px;
-    border-right: 1px solid #ccc;
-    padding: 10px 6px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 13px;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fafafa;
+    flex: 0 0 60px;
+    padding: 2px 4px;
+    text-align: right;
+    border-right: 1px solid #777;
+    border-bottom: 1px solid #eee;
+    font-weight: normal;
 }
 
-/* 실제 시간/가용성 셀 */
+
 .time-slot {
     flex: 1;
+    min-width: 28px;
+    height: 18px;
     border-right: 1px solid #eee;
-    padding: 8px 6px;
-    min-height: 50px;
+    border-bottom: 1px solid #eee;
     cursor: pointer;
-    transition: background-color 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
     user-select: none;
 }
 
 .time-slot:last-child {
-    border-right: none;
+    border-right: 1px solid #eee;
 }
 
 .time-slot:hover {
-    background-color: #f0f0f0;
+    outline: 1px solid #444;
 }
 
 /* 선택된 셀 */
@@ -363,4 +353,23 @@ body {
     background: rgba(100, 150, 255, 0.5) !important;
     font-weight: 600;
     border: 2px solid #4169E1;
+}
+
+.time-selection-grid.personal-grid .time-slot {
+    background-color: #ffe5e5;
+    /* when2meet의 Unavailable 핑크 */
+}
+
+.time-selection-grid.personal-grid .time-slot.selected {
+    background-color: #00cc66;
+    /* when2meet의 Available 초록 */
+}
+
+.availability-matrix .time-slot {
+    background-color: #f0f0f0;
+}
+
+/* 내가 선택한 칸 표시 (살짝 테두리 강조) */
+.availability-matrix .time-slot.selected {
+    box-shadow: 0 0 0 2px #ff9900 inset;
 }
