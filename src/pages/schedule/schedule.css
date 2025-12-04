@@ -242,7 +242,9 @@ body {
 }
 
 .time-slot.selected {
-    background-color: #90ee90;
+    background: rgba(100, 150, 255, 0.5) !important;
+    font-weight: 600;
+    border: 2px solid #4169E1;
 }
 
 .slot-label {
@@ -343,5 +345,7 @@ body {
 
 /* 선택된 셀에 배경색 표시 */
 .time-slot.selected {
-    background-color: #90ee90;
+    background: rgba(100, 150, 255, 0.5) !important;
+    font-weight: 600;
+    border: 2px solid #4169E1;
 }
