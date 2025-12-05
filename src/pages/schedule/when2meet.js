@@ -45,6 +45,16 @@ const normalizeDateFormat = (dateStr) => {
     return `${y}-${pad(m)}-${pad(d)}`;
 };
 
+// "9:00 AM" → "09:00:00"
+const toHHMMSS = (timeStr) => {
+    if (!timeStr) return '00:00:00';
+    const [hourMinute, ampm] = timeStr.split(' ');
+    let [h, m] = hourMinute.split(':').map(Number);
+    if (ampm?.toLowerCase() === 'pm' && h < 12) h += 12;
+    if (ampm?.toLowerCase() === 'am' && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+};
+
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 function DatePickerGrid({
@@ -176,14 +186,22 @@ function TwoMonthPicker({ selectedDates, onSelectDate }) {
     );
 }
 
-function AvailabilityMatrix({ form, details, allData, selectedDates, selectedTimes = [] }) {
+function AvailabilityMatrix({
+    form,
+    details,
+    allData,
+    selectedDates,
+    selectedTimes = [],
+    startOverride,
+    endOverride
+}) {
     /* ───────────────────── 기본 파싱 값 ───────────────────── */
     const backendDates = useMemo(() => {
         if (!form?.dates) return [];
         return form.dates.map(d => normalizeDateFormat(d.startDate));
     }, [form]);
-    const start = form.startTime;   // "09:00:00"
-    const end = form.endTime;     // "22:00:00"
+    const start = startOverride || form?.startTime || '09:00:00';   // "09:00:00"
+    const end = endOverride || form?.endTime || '22:00:00';       // "22:00:00"
 
     const availabilityMap = useMemo(() => {
         const map = new Map(); // key = `${date}-${slot}`
@@ -354,7 +372,7 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
         const mm = tempDate.getMinutes();
         const ampm = hh >= 12 ? 'PM' : 'AM';
         const hour12 = hh % 12 === 0 ? 12 : hh % 12;
-        const minuteStr = mm === 0 ? '00' : mm;
+        const minuteStr = mm.toString().padStart(2, '0');
         const label = `${hour12}:${minuteStr} ${ampm}`;
         timeSlots.push(label);                             // "h:mm AM/PM" 추가
         tempDate.setMinutes(tempDate.getMinutes() + 15);
@@ -460,6 +478,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
     // 시간 범위 & 타임존
     const [start, setEarliestTime] = useState('9:00 AM');
     const [end, setLatestTime] = useState('5:00 PM');
+    const [isCustomTime, setIsCustomTime] = useState(false);
     const [timeZone, setTimeZone] = useState('Asia/Seoul');
 
     const sortedSelectedDates = useMemo(
@@ -492,13 +511,13 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
         if (!projId) return;
     }, [projId, currentUserId]);
     useEffect(() => {
-        if (!remoteForm) return;
-        // 백엔드 폼 시간 → 프론트 select 시간으로 동기화
+        if (!remoteForm || isCustomTime) return;
+        // 백엔드 폼 시간 → 프론트 select 시간으로 동기화 (사용자가 직접 바꾼 뒤에는 덮어쓰지 않음)
         const s = hhmmssToAmPm(remoteForm.startTime); // 예: "09:00:00" → "9:00 AM"
         const e = hhmmssToAmPm(remoteForm.endTime);   // 예: "22:00:00" → "10:00 PM"
         setEarliestTime(s);
         setLatestTime(e);
-    }, [remoteForm]);
+    }, [remoteForm, isCustomTime]);
 
     // ────────────────────────────────────────────────────────────────
     // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
@@ -591,13 +610,6 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
     // ────────────────────────────────────────────────────────────────
 
     /** "9:00 AM" → "09:00:00" */
-    const toHHMMSS = (timeStr) => {
-        const [hourMinute, ampm] = timeStr.split(' ');
-        let [h, m] = hourMinute.split(':').map(Number);
-        if (ampm?.toLowerCase() === 'pm' && h < 12) h += 12;
-        if (ampm?.toLowerCase() === 'am' && h === 12) h = 0;
-        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
-    };
     const handleCreatewhen2meet = async () => {
         if (!validateStep()) return null;
         setIsLoading(true);
@@ -804,7 +816,12 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                         <div className="time-options">
                             <label>
                                 No earlier than:
-                                <select value={start} onChange={(e) => setEarliestTime(e.target.value)}>
+                                <select
+                                    value={start}
+                                    onChange={(e) => {
+                                        setEarliestTime(e.target.value);
+                                        setIsCustomTime(true);
+                                    }}>
                                     {generateTimeOptions(60).map((time) => (
                                         <option key={time} value={time}>{time}</option>
                                     ))}
@@ -813,7 +830,12 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
 
                             <label>
                                 No later than:
-                                <select value={end} onChange={(e) => setLatestTime(e.target.value)}>
+                                <select
+                                    value={end}
+                                    onChange={(e) => {
+                                        setLatestTime(e.target.value);
+                                        setIsCustomTime(true);
+                                    }}>
                                     {generateTimeOptions(60).map((time) => (
                                         <option key={time} value={time}>{time}</option>
                                     ))}
@@ -826,6 +848,11 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                     /* ① 입력 검증 */
                                     if (!validateStep()) return;
 
+                                    // 사용자가 선택한 시간 값을 고정해 다음 단계에서 덮어쓰기 되지 않도록 유지
+                                    const userStart = start;
+                                    const userEnd = end;
+                                    setIsCustomTime(true);
+
                                     /* ② 폼 생성 → id */
 
                                     const id = 1;
@@ -836,6 +863,9 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                     /* ③ state 에 저장 + 서버에서 최신 form/details 가져오기 */
                                     setFormId(id);
                                     await loadWhen2Meet(id);
+                                    // 만약 원격 폼 동기화가 있었다면, 사용자 선택값으로 다시 고정
+                                    setEarliestTime(userStart);
+                                    setLatestTime(userEnd);
 
                                     /* ④ 다음 단계로 이동 */
                                     nextStep();
@@ -872,6 +902,8 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                     allData={remoteDetails}
                                     selectedDates={sortedSelectedDates}
                                     selectedTimes={selectedTimes}
+                                    startOverride={toHHMMSS(start)}
+                                    endOverride={toHHMMSS(end)}
                                 />
                             ) : (
                                 <div style={{ padding: 20 }}>가용 시간 불러오는 중…</div>
