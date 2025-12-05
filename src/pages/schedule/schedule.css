@@ -277,6 +277,9 @@ body {
 
 .time-selection-grid,
 .availability-matrix {
+    --when2meet-col-width: 120px;
+    --when2meet-cell-height: 44px;
+    --when2meet-cell-padding: 8px;
     display: inline-block;
     border: 1px solid #777;
     border-collapse: collapse;
@@ -294,8 +297,11 @@ body {
 
 .time-header-cell,
 .date-header-cell {
-    flex: 1;
-    padding: 2px 4px;
+    flex: 0 0 var(--when2meet-col-width);
+    min-width: var(--when2meet-col-width);
+    min-height: var(--when2meet-cell-height);
+    padding: var(--when2meet-cell-padding);
+    box-sizing: border-box;
     border-right: 1px solid #777;
     text-align: center;
     font-weight: bold;
@@ -303,11 +309,11 @@ body {
 }
 
 .time-header-cell.time-header-empty {
-    flex: 0 0 60px;
+    flex: 0 0 var(--when2meet-col-width);
 }
 
 .time-header-cell:first-child {
-    flex: 0 0 100px;
+    flex: 0 0 var(--when2meet-col-width);
 }
 
 .time-header-cell:last-child,
@@ -321,23 +327,34 @@ body {
 }
 
 .time-row-label {
-    flex: 0 0 60px;
-    padding: 2px 4px;
-    text-align: right;
+    flex: 0 0 var(--when2meet-col-width);
+    min-width: var(--when2meet-col-width);
+    min-height: var(--when2meet-cell-height);
+    padding: var(--when2meet-cell-padding);
+    box-sizing: border-box;
+    text-align: center;
     border-right: 1px solid #777;
     border-bottom: 1px solid #eee;
-    font-weight: normal;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 
 .time-slot {
-    flex: 1;
-    min-width: 28px;
-    height: 18px;
+    flex: 0 0 var(--when2meet-col-width);
+    min-width: var(--when2meet-col-width);
+    min-height: var(--when2meet-cell-height);
+    padding: var(--when2meet-cell-padding);
+    box-sizing: border-box;
     border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
     cursor: pointer;
     user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .time-slot:last-child {

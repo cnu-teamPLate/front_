@@ -5,6 +5,38 @@ import './schedule.css';
 // 파일 맨 위쪽
 const API = 'https://www.teamplate-api.site';
 
+// 공유 셀 크기 (CSS 변수에 맞춰 AvailabilityMatrix와 TimeSelectionGrid를 동일하게 유지)
+const CELL_WIDTH = 'var(--when2meet-col-width)';
+const CELL_HEIGHT = 'var(--when2meet-cell-height)';
+const CELL_PADDING = 'var(--when2meet-cell-padding)';
+const baseCellStyle = {
+    flex: `0 0 ${CELL_WIDTH}`,
+    minWidth: CELL_WIDTH,
+    minHeight: CELL_HEIGHT,
+    boxSizing: 'border-box',
+    padding: CELL_PADDING,
+    border: '1px solid #ccc',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    background: '#fff'
+};
+const headerCellStyle = {
+    ...baseCellStyle,
+    fontWeight: 'bold'
+};
+const labelCellStyle = {
+    ...baseCellStyle,
+    fontWeight: 600
+};
+const selectionCellStyle = {
+    ...baseCellStyle,
+    cursor: 'pointer',
+    transition: 'background 0.15s ease',
+    userSelect: 'none'
+};
+
 // 날짜 포맷 정규화: "2025-5-27" → "2025-05-27"
 const normalizeDateFormat = (dateStr) => {
     if (!dateStr) return '';
@@ -221,17 +253,11 @@ function AvailabilityMatrix({ form, details, allData, selectedDates, selectedTim
         <div className="availability-matrix" style={{ position: 'relative' }}>
             {/* 헤더 */}
             <div style={{ display: 'flex' }}>
-                <div style={{ width: 100 }} />
+                <div style={labelCellStyle}>Time</div>
                 {selectedDates.map(d => (
                     <div
                         key={d}
-                        style={{
-                            flex: 1,
-                            border: '1px solid #ccc',
-                            padding: 6,
-                            fontWeight: 'bold',
-                            textAlign: 'center'
-                        }}
+                        style={headerCellStyle}
                     >
                         {d}
                     </div>
@@ -241,7 +267,7 @@ function AvailabilityMatrix({ form, details, allData, selectedDates, selectedTim
             {/* 바디 */}
             {timeSlots.map(slot => (
                 <div key={slot} style={{ display: 'flex' }}>
-                    <div style={{ width: 100, border: '1px solid #ccc', padding: 6, textAlign: 'center', fontWeight: '600' }}>
+                    <div style={labelCellStyle}>
                         {slot}
                     </div>
                     {selectedDates.map(date => {
@@ -254,16 +280,11 @@ function AvailabilityMatrix({ form, details, allData, selectedDates, selectedTim
                             <div
                                 key={`${date}-${slot}`}
                                 style={{
-                                    flex: 1,
-                                    border: '1px solid #ccc',
-                                    minHeight: 40,
+                                    ...baseCellStyle,
                                     background: isUserSelected
                                         ? 'rgba(100, 150, 255, 0.5)'
                                         : bgColor(users.length),
-                                    position: 'relative',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
+                                    position: 'relative'
                                 }}
                                 onMouseEnter={() => setHovered(users)}
                                 onMouseLeave={() => setHovered([])}
@@ -367,11 +388,11 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
         <div className="time-selection-grid" onMouseUp={handleMouseUp}> {/* 마우스 업 이벤트로 드래그 종료 */}
             {/* 헤더 행: Time 라벨 + 날짜들 */}
             <div className="time-grid-header" style={{ display: 'flex', alignItems: 'center' }}>
-                <div className="time-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                <div className="time-header-cell" style={headerCellStyle}>
                     Time
                 </div>
                 {selectedDates.map((date) => (
-                    <div key={date} className="date-header-cell" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                    <div key={date} className="date-header-cell" style={headerCellStyle}>
                         {date}
                     </div>
                 ))}
@@ -381,7 +402,7 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
             {timeSlots.map((slot) => (
                 <div key={slot} className="time-grid-row" style={{ display: 'flex' }}>
                     {/* 시간 레이블 */}
-                    <div className="time-row-label" style={{ flex: 1, border: '1px solid #ccc', padding: '6px', textAlign: 'center', fontWeight: '600' }}>
+                    <div className="time-row-label" style={labelCellStyle}>
                         {slot}
                     </div>
                     {/* 날짜별 슬롯 */}
@@ -393,14 +414,8 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
                                 key={cellKey}
                                 className={`time-slot ${isSelected ? 'selected' : ''}`} // 선택된 셀 클래스
                                 style={{
-                                    flex: 1,
-                                    border: '1px solid #ccc',
-                                    padding: '6px',
-                                    minHeight: '40px',
-                                    textAlign: 'center',
-                                    background: isSelected ? 'rgba(100, 150, 255, 0.5)' : 'transparent',
-                                    cursor: 'pointer',
-                                    transition: 'background 0.15s ease'
+                                    ...selectionCellStyle,
+                                    background: isSelected ? 'rgba(100, 150, 255, 0.5)' : 'transparent'
                                 }}
                                 onMouseDown={() => handleMouseDown(date, slot)} // 마우스 다운
                                 onMouseEnter={() => handleMouseEnter(date, slot)} // 드래그 시 엔터
