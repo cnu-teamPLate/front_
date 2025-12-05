@@ -919,6 +919,9 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                     const ok = await uploadAvailability(id);
                                     if (ok) {
                                         await loadWhen2Meet(id);
+                                        if (typeof onExit === 'function') {
+                                            onExit(); // 캘린더 새로고침(상위에서 fetchEvents 등 처리) 및 창 닫기
+                                        }
                                     }
                                 }}
                             >
