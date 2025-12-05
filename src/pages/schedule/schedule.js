@@ -369,6 +369,27 @@ const Schedule = () => {
         fetchEvents();
     };
 
+    // when2meet 확정 시 캘린더에 가용 시간 범위를 즉시 표시
+    const handleAvailabilityConfirm = (ranges = [], meta = {}) => {
+        const projId = currentProject;
+        const userId = currentUser;
+        const title = meta.title || 'Availability';
+        setEvents(prev => {
+            const keep = prev.filter(ev => !ev.isWhen2MeetLocal);
+            const newEvents = ranges.map((r, idx) => ({
+                id: `when2meet-local-${r.start.getTime()}-${idx}`,
+                title,
+                start: r.start,
+                end: r.end,
+                projId,
+                userId,
+                category: 'availability',
+                isWhen2MeetLocal: true
+            }));
+            return [...keep, ...newEvents];
+        });
+    };
+
     // 일정 생성 API 연결
     const handleAddEvent = async (eventObject) => {
         // BUG FIX: currentUser와 currentProject는 .id가 없는 문자열입니다.
@@ -557,7 +578,10 @@ const Schedule = () => {
                         />
                     </>
                 ) : (
-                    <WhenToMeetGrid onExit={exitWhenToMeet} />
+                    <WhenToMeetGrid
+                        onExit={exitWhenToMeet}
+                        onAvailabilityConfirm={handleAvailabilityConfirm}
+                    />
                 )}
             </div>
 

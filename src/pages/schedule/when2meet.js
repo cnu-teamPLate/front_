@@ -55,6 +55,46 @@ const toHHMMSS = (timeStr) => {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
 };
 
+// 셀 키 배열을 연속 구간(Date 범위)으로 묶기
+const buildRangesFromSelectedTimes = (selectedTimes = []) => {
+    if (!selectedTimes.length) return [];
+
+    const parseCellKey = (key) => {
+        // 예: "2025-05-27-2:30 PM"
+        const lastDash = key.lastIndexOf('-');      // 날짜·시간 구분 위치
+        const datePart = key.slice(0, lastDash);    // "2025-05-27"
+        const timePart = key.slice(lastDash + 1);   // "2:30 PM"
+
+        const [time, ampm] = timePart.split(' ');   // ["2:30", "PM"]
+        let [h, m] = time.split(':').map(Number);   // [2, 30]
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+
+        const [y, mo, d] = datePart.split('-').map(Number); // [2025, 05, 27]
+        return new Date(y, mo - 1, d, h, m, 0, 0);          // 정상 Date 객체
+    };
+
+    const sorted = [...selectedTimes].sort(
+        (a, b) => parseCellKey(a) - parseCellKey(b)
+    );
+    const ranges = [];
+    let rangeStart = parseCellKey(sorted[0]);
+    let prev = rangeStart;
+
+    for (let i = 1; i < sorted.length; i++) {
+        const cur = parseCellKey(sorted[i]);
+        const diff = (cur - prev) / 60000;           // 분 단위 차이
+        if (diff !== 15) {                           // 끊김 발생
+            ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
+            rangeStart = cur;
+        }
+        prev = cur;
+    }
+    // 마지막 구간 push
+    ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
+    return ranges;
+};
+
 // --- state 선언들 바로 아래 ---
 // 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
 function DatePickerGrid({
@@ -447,7 +487,7 @@ function TimeSelectionGrid({ selectedDates, start, end, onSelectTimes, selectedT
 }
 
 /* 전체 흐름 관리 */
-function WhenToMeetGrid({ onExit, notifications = [] }) {
+function WhenToMeetGrid({ onExit, notifications = [], onAvailabilityConfirm }) {
     const hhmmssToAmPm = (timeStr) => {
         if (!timeStr) return '9:00 AM'; // fallback
         const [hStr, mStr] = timeStr.split(':');
@@ -521,52 +561,18 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
 
     // ────────────────────────────────────────────────────────────────
     // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
+        // ────────────────────────────────────────────────────────────────
+    // ② 개별 사용자의 가용 시간 업로드 (선택 완료 후 호출)
     const uploadAvailability = async (when2meetId) => {
         if (selectedTimes.length === 0) {
             alert('한 칸 이상 선택해 주세요.');
             return;
         }
 
-        // ─── uploadAvailability 안의 helper 함수만 교체 ───
-        const parseCellKey = (key) => {
-            // 예: "2025-05-27-2:30 PM"
-            const lastDash = key.lastIndexOf('-');      // 날짜·시간 구분 위치
-            const datePart = key.slice(0, lastDash);    // "2025-05-27"
-            const timePart = key.slice(lastDash + 1);   // "2:30 PM"
+        const ranges = buildRangesFromSelectedTimes(selectedTimes);
 
-            const [time, ampm] = timePart.split(' ');   // ["2:30", "PM"]
-            let [h, m] = time.split(':').map(Number);   // [2, 30]
-            if (ampm === 'PM' && h < 12) h += 12;
-            if (ampm === 'AM' && h === 12) h = 0;
-
-            const [y, mo, d] = datePart.split('-').map(Number); // [2025, 05, 27]
-            return new Date(y, mo - 1, d, h, m, 0, 0);          // 정상 Date 객체
-        };
-
-
-        // ① 셀 목록 → 연속 구간 묶기 (15분 간격)
-        const sorted = [...selectedTimes].sort(
-            (a, b) => parseCellKey(a) - parseCellKey(b)
-        );
-        const ranges = [];
-        let rangeStart = parseCellKey(sorted[0]);
-        let prev = rangeStart;
-
-        for (let i = 1; i < sorted.length; i++) {
-            const cur = parseCellKey(sorted[i]);
-            const diff = (cur - prev) / 60000;           // 분 단위 차이
-            if (diff !== 15) {                           // 끊김 발생
-                ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
-                rangeStart = cur;
-            }
-            prev = cur;
-        }
-        // 마지막 구간 push
-        ranges.push({ start: rangeStart, end: new Date(prev.getTime() + 15 * 60000) });
-
-        // ② 구간 → Swagger 스키마 형식
         const userRanges = ranges.map(r => ({
-            startDate: r.start.toISOString().slice(0, 19),   // "YYYY‑MM‑DDTHH:MM:SS"
+            startDate: r.start.toISOString().slice(0, 19),
             endDate: r.end.toISOString().slice(0, 19)
         }));
         const currentUsername = "";
@@ -595,7 +601,6 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
             }
             alert(data.message || '가용 시간이 업로드되었습니다.');
 
-            // ✅ 업로드 완료 후 일정 목록 새로고침
             setTimeout(() => {
                 onExit();
             }, 500);
@@ -607,9 +612,7 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
             return false;
         }
     };
-    // ────────────────────────────────────────────────────────────────
-
-    /** "9:00 AM" → "09:00:00" */
+/** "9:00 AM" → "09:00:00" */
     const handleCreatewhen2meet = async () => {
         if (!validateStep()) return null;
         setIsLoading(true);
@@ -919,6 +922,14 @@ function WhenToMeetGrid({ onExit, notifications = [] }) {
                                     const ok = await uploadAvailability(id);
                                     if (ok) {
                                         await loadWhen2Meet(id);
+                                        const ranges = buildRangesFromSelectedTimes(selectedTimes);
+                                        if (onAvailabilityConfirm) {
+                                            onAvailabilityConfirm(ranges, {
+                                                title: eventTitle || 'Availability',
+                                                projId,
+                                                when2meetId: id
+                                            });
+                                        }
                                         if (typeof onExit === 'function') {
                                             onExit(); // 캘린더 새로고침(상위에서 fetchEvents 등 처리) 및 창 닫기
                                         }
@@ -1035,3 +1046,7 @@ export async function fetchAvailabilityApi(when2meetId) {
         return null;
     }
 }
+
+
+
+
