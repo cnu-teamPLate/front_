@@ -4,16 +4,32 @@ import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
 
 const API_BASE_URL = 'https://www.teamplate-api.site';
-//회의록 수정 api 없음
-//최종 수정 시각도 넘겨줘야할 것 같음
-//임시 저장이 작동을 안함
-//텍스트 변환은 변환할 텍스트가 없다고 떠서 그부분 확인을 못하는 중
+
+// Debounce 유틸리티 함수
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 function MeetingLog() {
-  //음성 녹음 관련
+  //음성 녹음 관련 - ref로 관리하여 cleanup 안정화
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
 
   const userId = localStorage.getItem("userId");
   //참여자 정보 불러오기
@@ -33,7 +49,6 @@ function MeetingLog() {
   const [editMode, setEditMode] = useState(false);
 
   const [selectedLog, setSelectedLog] = useState(null);
-  const [statusMessage, setStatusMessage] = useState('');
   const navigate = useNavigate();
 
   const { projId } = useParams();
@@ -66,6 +81,10 @@ function MeetingLog() {
         fix: '',
         participants: [],
   });
+
+  // Debounce된 formData (500ms 지연)
+  const debouncedFormData = useDebounce(formData, 500);
+
   //참여자 정보
   const handleSelectParticipant = (e) => {
     const selectedName = e.target.value;
@@ -84,7 +103,15 @@ function MeetingLog() {
   };
 
   const handleRemove = (nameToRemove) => {
-    setMeetingParticipants(meetingParticipants.filter(name => name !== nameToRemove));
+    const updatedList = meetingParticipants.filter(name => name !== nameToRemove);
+    setMeetingParticipants(updatedList);
+    setFormData(prev => ({
+      ...prev,
+      participants: updatedList.map(name => {
+        const matched = projectParticipants.find(p => p.name === name);
+        return matched ? { name: matched.name, id: matched.id } : { name, id: '' };
+      })
+    }));
   };
 
   //일정 불러오기
@@ -101,59 +128,195 @@ function MeetingLog() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    };
-    
-  //음성 인식 관련
-  const handleRecordButtonClick = async () => {
-    if (!isRecording) {
-    try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream);
-    const chunks = [];
-    
-    recorder.ondataavailable = (e) => chunks.push(e.data);
-    
-    recorder.onstop = async () => {
-    const blob = new Blob(chunks, { type: 'audio/wav' });
-    setAudioBlob(blob);
-    if (audioRef.current) {
-    audioRef.current.src = URL.createObjectURL(blob);
-    }
-    await sendAudioToSpeechToTextAPI(blob);
-    };
-    
-    recorder.start();
-    setMediaRecorder(recorder);
-    setIsRecording(true);
-    } catch (err) {
-    alert("마이크 접근 권한을 허용해주세요.");
-    }
-    } else {
-    mediaRecorder?.stop();
-    setIsRecording(false);
-    }
   };
     
-  const sendAudioToSpeechToTextAPI = async (blob) => {
-    const fd = new FormData();
-    fd.append('file', blob, 'recorded_audio.wav');
-    try {
-    const res = await fetch(`${API_BASE_URL}/schedule/meeting/convert-speech`, { method: 'POST', body: fd });
-    const data = await res.json();
-    if (data?.text) {
-    setFormData(prev => ({
-    ...prev,
-    contents: prev.contents ? `${prev.contents}\n\n[자동 변환된 텍스트]\n${data.text}` : data.text
-    }));
+  //음성 인식 관련 - 리소스 정리 개선
+  const handleRecordButtonClick = async () => {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream; // ref에 저장
+        
+        // 브라우저가 지원하는 MIME 타입 확인
+        let mimeType = 'audio/webm';
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+          mimeType = 'audio/ogg;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        }
+        
+        console.log('사용할 MIME 타입:', mimeType);
+        
+        const recorder = new MediaRecorder(stream, { mimeType });
+        const chunks = [];
+        
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+        
+        recorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: mimeType });
+          
+          // Blob 크기 검증
+          if (blob.size === 0) {
+            console.error('생성된 오디오 Blob이 비어있습니다.');
+            alert('녹음된 오디오가 비어있습니다. 다시 녹음해주세요.');
+            return;
+          }
+          
+          console.log('오디오 Blob 생성 완료:', { size: blob.size, type: blob.type });
+          setAudioBlob(blob);
+          
+          if (audioRef.current) {
+            const oldUrl = audioRef.current.src;
+            audioRef.current.src = URL.createObjectURL(blob);
+            // 이전 URL 정리
+            if (oldUrl && oldUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(oldUrl);
+            }
+          }
+          
+          // 스트림 정리
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+          }
+          
+          await sendAudioToSpeechToTextAPI(blob);
+        };
+        
+        recorder.start();
+        mediaRecorderRef.current = recorder; // ref에 저장
+        setIsRecording(true);
+      } catch (err) {
+        console.error('마이크 접근 오류:', err);
+        alert("마이크 접근 권한을 허용해주세요.");
+      }
     } else {
-    alert('텍스트 변환 결과가 없습니다.');
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      setIsRecording(false);
     }
-    } catch {
-    alert('STT 변환 실패');
+  };
+
+  // 컴포넌트 언마운트 시 리소스 정리
+  useEffect(() => {
+    return () => {
+      // MediaRecorder 정리
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      }
+      
+      // 스트림 정리
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      
+      // 오디오 URL 정리
+      if (audioRef.current && audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+    };
+  }, []);
+    
+  // 텍스트 변환 기능 개선
+  const sendAudioToSpeechToTextAPI = async (blob) => {
+    // audioBlob 검증
+    if (!blob || blob.size === 0) {
+      console.error('변환할 오디오 Blob이 없거나 비어있습니다.');
+      alert('변환할 오디오가 없습니다. 다시 녹음해주세요.');
+      return;
+    }
+
+    // 파일 크기 검증 (예: 최소 1KB, 최대 10MB)
+    const minSize = 1024; // 1KB
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    if (blob.size < minSize) {
+      console.error('오디오 파일이 너무 작습니다:', blob.size);
+      alert('녹음 시간이 너무 짧습니다. 최소 1초 이상 녹음해주세요.');
+      return;
+    }
+    
+    if (blob.size > maxSize) {
+      console.error('오디오 파일이 너무 큽니다:', blob.size);
+      alert('오디오 파일이 너무 큽니다. 파일 크기를 줄여주세요.');
+      return;
+    }
+
+    setIsConverting(true);
+    
+    const fd = new FormData();
+    // 파일 확장자를 MIME 타입에 맞게 설정
+    const fileExtension = blob.type.includes('webm') ? 'webm' : 
+                         blob.type.includes('ogg') ? 'ogg' : 
+                         blob.type.includes('mp4') ? 'mp4' : 'wav';
+    fd.append('file', blob, `recorded_audio.${fileExtension}`);
+    
+    console.log('STT API 호출:', {
+      url: `${API_BASE_URL}/schedule/meeting/convert-speech`,
+      fileSize: blob.size,
+      fileType: blob.type,
+      formDataKeys: Array.from(fd.keys())
+    });
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/schedule/meeting/convert-speech`, { 
+        method: 'POST', 
+        body: fd 
+      });
+      
+      console.log('STT API 응답:', {
+        status: res.status,
+        statusText: res.statusText,
+        ok: res.ok
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '알 수 없는 오류');
+        console.error('STT API 오류 응답:', errorText);
+        throw new Error(`서버 오류 (${res.status}): ${errorText}`);
+      }
+      
+      const data = await res.json().catch(async () => {
+        const text = await res.text();
+        console.error('JSON 파싱 실패, 응답 텍스트:', text);
+        throw new Error('서버 응답을 파싱할 수 없습니다.');
+      });
+      
+      console.log('STT 변환 결과:', data);
+      
+      // 응답 형식 검증 - 여러 가능한 필드명 확인
+      const convertedText = data?.text || data?.transcript || data?.result || data?.content;
+      
+      if (convertedText && typeof convertedText === 'string' && convertedText.trim()) {
+        setFormData(prev => ({
+          ...prev,
+          contents: prev.contents ? `${prev.contents}\n\n[자동 변환된 텍스트]\n${convertedText}` : convertedText
+        }));
+        console.log('텍스트 변환 완료');
+      } else {
+        console.warn('변환된 텍스트가 없거나 비어있습니다:', data);
+        alert('텍스트 변환 결과가 없습니다. 다시 시도해주세요.');
+      }
+    } catch (err) {
+      console.error('STT 변환 실패:', err);
+      alert('STT 변환 실패: ' + (err.message || '네트워크 오류가 발생했습니다.'));
+    } finally {
+      setIsConverting(false);
     }
   };
   
-  //회의록 저장
+  //회의록 저장 - API 에러 핸들링 개선
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -161,45 +324,123 @@ function MeetingLog() {
       alert("제목과 내용을 입력해주세요.");
       return;
     }
-  
-    const fd = new FormData();
-    const param = {
-      projId: formData.projId,
-      contents: formData.contents,
-      title: formData.title,
-      date: formData.date,
-      fix: formData.fix,
-      participants: formData.participants,
-    };
-  
-    if (formData.scheId && formData.scheId !== '') {
-      param.scheId = formData.scheId;
+
+    // 수정 모드일 때 scheId 필수 검증
+    if (editMode && (!formData.scheId || formData.scheId === '')) {
+      alert("일정 ID(scheId)는 필수입니다. 일정을 선택해주세요.");
+      return;
     }
-  
-    // 🔁 수정 시 meetingId 포함
-    if (editMode && selectedLog?.meetingId) {
-      param.meetingId = selectedLog.meetingId;
-    }
-  
-    fd.append('param', JSON.stringify(param));
-  
-    if (audioBlob) {
-      fd.append('file', audioBlob, 'recorded_audio.wav');
-    }
+
+    setIsUploading(true);
   
     try {
-      const url = editMode
-        ? `${API_BASE_URL}/schedule/meeting/update/log`
-        : `${API_BASE_URL}/schedule/meeting/upload/log`;
+      let response;
+      
+      if (editMode) {
+        // 수정 API: PUT /schedule/meeting/update/log
+        // Content-Type: application/json
+        const requestBody = {
+          scheId: formData.scheId, // 필수
+          contents: formData.contents,
+          title: formData.title,
+          date: formData.date,
+          fix: formData.fix,
+          participants: formData.participants,
+          sttContents: formData.contents // STT 변환된 내용 (현재는 contents와 동일하게 설정)
+        };
+        
+        // 수정할 필드에 대해서만 값을 넣어 보내면 됨 (scheId는 필수)
+        // 빈 값이 아닌 필드만 포함
+        const cleanedBody = {};
+        if (requestBody.scheId) cleanedBody.scheId = requestBody.scheId;
+        if (requestBody.contents) cleanedBody.contents = requestBody.contents;
+        if (requestBody.title) cleanedBody.title = requestBody.title;
+        if (requestBody.date) cleanedBody.date = requestBody.date;
+        if (requestBody.fix) cleanedBody.fix = requestBody.fix;
+        if (requestBody.participants && requestBody.participants.length > 0) cleanedBody.participants = requestBody.participants;
+        if (requestBody.sttContents) cleanedBody.sttContents = requestBody.sttContents;
+        
+        console.log('수정 API 호출:', {
+          url: `${API_BASE_URL}/schedule/meeting/update/log`,
+          method: 'PUT',
+          body: cleanedBody
+        });
+        
+        response = await fetch(`${API_BASE_URL}/schedule/meeting/update/log`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(cleanedBody),
+        });
+      } else {
+        // 업로드 API: POST /schedule/meeting/upload/log
+        // FormData 사용
+        const fd = new FormData();
+        const param = {
+          projId: formData.projId,
+          contents: formData.contents,
+          title: formData.title,
+          date: formData.date,
+          fix: formData.fix,
+          participants: formData.participants,
+        };
+        
+        if (formData.scheId && formData.scheId !== '') {
+          param.scheId = formData.scheId;
+        }
+        
+        fd.append('param', JSON.stringify(param));
+        
+        // 파일 업로드 검증
+        if (audioBlob) {
+          // 파일 크기 검증
+          const maxFileSize = 10 * 1024 * 1024; // 10MB
+          if (audioBlob.size > maxFileSize) {
+            alert('오디오 파일이 너무 큽니다. (최대 10MB)');
+            setIsUploading(false);
+            return;
+          }
+          
+          // 파일 타입 검증
+          if (!audioBlob.type.startsWith('audio/')) {
+            console.warn('오디오 파일 타입이 아닙니다:', audioBlob.type);
+          }
+          
+          fd.append('file', audioBlob, 'recorded_audio.wav');
+          console.log('파일 첨부:', { size: audioBlob.size, type: audioBlob.type });
+        }
+        
+        console.log('업로드 API 호출:', {
+          url: `${API_BASE_URL}/schedule/meeting/upload/log`,
+          method: 'POST',
+          paramKeys: Object.keys(param),
+          hasFile: !!audioBlob
+        });
+        
+        response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
+          method: 'POST',
+          body: fd,
+        });
+      }
   
-      const response = await fetch(url, {
-        method: 'POST',
-        body: fd,
+      console.log('API 응답:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
       });
   
-      const result = await response.json().catch(() => ({ message: '응답 파싱 실패' }));
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        const text = await response.text();
+        console.error('JSON 파싱 실패:', text);
+        throw new Error(`서버 응답을 파싱할 수 없습니다. (${response.status})`);
+      }
   
       if (response.ok) {
+        console.log('저장 성공:', result);
         alert(result.message || (editMode ? '수정 완료!' : '업로드 완료!'));
   
         // 상태 초기화
@@ -208,7 +449,7 @@ function MeetingLog() {
           projId: projId,
           contents: '',
           title: '',
-          date: '',
+          date: formattedDateTime,
           fix: '',
           participants: [],
         });
@@ -218,11 +459,25 @@ function MeetingLog() {
         localStorage.removeItem('tempMeetingDraft');
         await fetchMeetingLogs();
       } else {
-        alert(result.message || '업로드 실패');
+        // 상세한 에러 메시지
+        let errorMsg = result?.message || result?.error || `업로드 실패 (${response.status})`;
+        
+        // API 문서에 따른 에러 메시지 처리
+        if (response.status === 400) {
+          errorMsg = result?.message || '등록되지 않은 회의록입니다.';
+        } else if (response.status === 404) {
+          errorMsg = result?.message || '존재하지 않는 사용자, 프로젝트 또는 스케줄 ID입니다.';
+        }
+        
+        console.error('저장 실패:', result);
+        alert(errorMsg);
       }
     } catch (err) {
       console.error('업로드 중 오류:', err);
-      alert('서버 오류: ' + err.message);
+      const errorMsg = err.message || '네트워크 오류가 발생했습니다.';
+      alert('서버 오류: ' + errorMsg);
+    } finally {
+      setIsUploading(false);
     }
   };
   
@@ -243,7 +498,14 @@ function MeetingLog() {
         fetch(`${API_BASE_URL}/schedule/check/monthly?projId=${projId}&userId=${userId}&standardDate=${formattedDateTime}&cate=meeting`)
       ]);
       
-      if (!membersRes.ok || !meetingsRes.ok || !scheduleRes.ok) throw new Error('데이터 로딩 실패');
+      if (!membersRes.ok || !meetingsRes.ok || !scheduleRes.ok) {
+        const errors = [];
+        if (!membersRes.ok) errors.push(`멤버 조회 실패 (${membersRes.status})`);
+        if (!meetingsRes.ok) errors.push(`회의록 조회 실패 (${meetingsRes.status})`);
+        if (!scheduleRes.ok) errors.push(`일정 조회 실패 (${scheduleRes.status})`);
+        throw new Error(errors.join(', '));
+      }
+      
         setProjectParticipants(await membersRes.json());
         setMeetingData(await meetingsRes.json());
         const res = await scheduleRes.json();
@@ -251,54 +513,81 @@ function MeetingLog() {
         setScheduleList(flattenedList);
       } catch (error) {
         console.error('초기 데이터 로딩 오류:', error);
+        alert('데이터 로딩 실패: ' + error.message);
       }
     };
     
     fetchData();
   }, [projId]);
     
-  //회의록 불러옴
+  // 로컬 스토리지 임시 저장 - debounce 적용 및 로그 추가
   useEffect(() => {
-    localStorage.setItem('tempMeetingDraft', JSON.stringify(formData));
-    }, [formData]);
+    // 초기 로드 시에는 저장하지 않음 (빈 formData일 때)
+    if (!debouncedFormData || (!debouncedFormData.title && !debouncedFormData.contents)) {
+      return;
+    }
+    
+    const dataToSave = {
+      ...debouncedFormData,
+      // audioBlob는 저장하지 않음 (너무 큼)
+    };
+    
+    console.log('임시 저장:', {
+      timestamp: new Date().toISOString(),
+      title: dataToSave.title,
+      contentsLength: dataToSave.contents?.length || 0,
+      participantsCount: dataToSave.participants?.length || 0
+    });
+    
+    try {
+      localStorage.setItem('tempMeetingDraft', JSON.stringify(dataToSave));
+      console.log('임시 저장 완료');
+    } catch (err) {
+      console.error('임시 저장 실패:', err);
+      // localStorage 용량 초과 등의 경우
+      if (err.name === 'QuotaExceededError') {
+        console.warn('localStorage 용량 초과');
+      }
+    }
+  }, [debouncedFormData]);
 
-    const fetchMeetingLogs = async () => {
+  // 초기 로드 시 임시 저장된 데이터 복원
+  useEffect(() => {
+    const saved = localStorage.getItem('tempMeetingDraft');
+    if (saved && !editMode) {
+      try {
+        const parsed = JSON.parse(saved);
+        // 빈 데이터가 아닌 경우에만 복원
+        if (parsed.title || parsed.contents) {
+          console.log('초기 로드 시 임시 저장 데이터 복원:', parsed);
+          setFormData(prev => ({
+            ...prev,
+            ...parsed,
+            projId: parsed.projId || projId, // projId는 현재 프로젝트로 유지
+          }));
+          
+          const participantNames = parsed.participants?.map(p => p.name) || [];
+          setMeetingParticipants(participantNames);
+        }
+      } catch (err) {
+        console.error('초기 로드 시 임시 저장 데이터 파싱 실패:', err);
+      }
+    }
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
+
+  const fetchMeetingLogs = async () => {
+    try {
       const res = await fetch(`${API_BASE_URL}/schedule/meeting/view/log?projId=${projId}`);
       if (res.ok) {
         const logs = await res.json();
         setMeetingData(logs);
-      }
-    };
-    
-    
-    const loadTempDraft = () => {
-      const saved = localStorage.getItem('tempMeetingDraft');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          console.log("🔍 복구된 임시 데이터:", parsed); // 디버깅 로그
-    
-          setFormData(parsed);
-    
-          const participantNames = parsed.participants?.map(p => p.name) || [];
-          setMeetingParticipants(participantNames);
-    
-          setViewMode('new');
-          setSelectedLog(null);
-        } catch (err) {
-          console.error("❌ JSON 파싱 실패:", err);
-          alert("임시 저장된 데이터를 불러올 수 없습니다.");
-        }
       } else {
-        alert("저장된 임시 회의록이 없습니다.");
+        console.error('회의록 조회 실패:', res.status);
       }
-    };
-
-    useEffect(() => {
-      console.log("formData 저장됨:", formData);
-      localStorage.setItem('tempMeetingDraft', JSON.stringify(formData));
-    }, [formData]);
-    
+    } catch (err) {
+      console.error('회의록 조회 오류:', err);
+    }
+  };
     
   const handleSelectLog = async (log) => {
     if (log.scheId) {
@@ -309,10 +598,13 @@ function MeetingLog() {
           setSelectedLog(fullLog);
           setViewMode('detail');
         } else {
-          alert('회의록 상세 조회 실패');
+          const errorText = await res.text().catch(() => '알 수 없는 오류');
+          console.error('회의록 상세 조회 실패:', res.status, errorText);
+          alert('회의록 상세 조회 실패: ' + errorText);
         }
       } catch (err) {
         console.error('상세 조회 오류:', err);
+        alert('회의록을 불러오는 중 오류가 발생했습니다.');
       }
     } else {
       // scheId 없을 때는 이미 받아온 log로 그대로 사용
@@ -329,7 +621,11 @@ function MeetingLog() {
             <div className="MeetingLog" style={{ flex: 2 }}>
               <h1>회의록</h1>
               <div className="controls">
-                <button className="record-button" onClick={handleRecordButtonClick}>
+                <button 
+                  className="record-button" 
+                  onClick={handleRecordButtonClick}
+                  disabled={isConverting || isUploading}
+                >
                   {isRecording ? <IoRecordingOutline size={20} /> : <IoMicSharp size={20} />}
                   {isRecording ? "기록 중" : "자동기록"}
                 </button>
@@ -392,7 +688,13 @@ function MeetingLog() {
                   <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
                 </div>
               )}
-              <button className="end-button" onClick={handleSubmit}>작성 완료</button>
+              <button 
+                className="end-button" 
+                onClick={handleSubmit}
+                disabled={isUploading || isConverting}
+              >
+                {isUploading ? '저장 중...' : '작성 완료'}
+              </button>
             </div>
           )}
           {viewMode === 'detail' && selectedLog && (
@@ -432,15 +734,6 @@ function MeetingLog() {
           )}
 
         <div className="meetinglog-list" style={{ flex: 1 }}>
-          {localStorage.getItem('tempMeetingDraft') && (
-            <div
-              style={{ background: '#f0f0f0', padding: '8px', marginBottom: '10px', cursor: 'pointer' }}
-              onClick={loadTempDraft}
-            >
-              임시 저장 불러오기
-            </div>
-          )}
-
           {meetingData.length > 0 && meetingData.map((log, idx) => (
             <div
               key={idx}
