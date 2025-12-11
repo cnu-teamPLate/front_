@@ -318,9 +318,6 @@ function AssignmentDetail() {
             }
         } catch (err) {
             console.error('첨부 파일 불러오기 오류:', err);
-            if (err.response?.status === 404) {
-                console.warn('파일 목록을 찾을 수 없습니다. 프로젝트 ID를 확인해주세요.');
-            }
             setAttachedFiles([]);
         } finally {
             setFilesLoading(false);

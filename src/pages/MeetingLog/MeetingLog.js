@@ -1,363 +1,770 @@
-/* eslint-disable no-unused-vars */
-import './Assignment.css';
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate, useParams} from "react-router-dom";
+import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
+import './MeetingLog.css';
 
+const API_BASE_URL = 'https://www.teamplate-api.site';
 
-const baseURL = 'https://www.teamplate-api.site';
+// Debounce 유틸리티 함수
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
-const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange, projId }) => {
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-    const isPast = new Date(item.date * 1000) < new Date();
-
-    const cardClasses = `assignment-card ${isPast ? 'past-due' : ''} ${item.checkBox === 1 ? 'completed' : ''}`;
-    const assigneeName = getAssigneeName(item.userName);
-
-    const onCheckboxClick = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        handleCheckboxChange(item.taskId);
+    return () => {
+      clearTimeout(handler);
     };
+  }, [value, delay]);
 
-    // item.projId를 우선 사용하고, 없으면 props로 전달된 projId 사용
-    const finalProjId = item.projId || projId;
-    
-    // 디버깅: projId 확인
-    if (!finalProjId) {
-        console.warn("AssignmentCard: projId가 없습니다.", { item, projId });
-    }
-    
-    return (
-        <Link to={`/AssignmentDetail?taskId=${item.taskId}${finalProjId ? `&projId=${finalProjId}` : ''}`} className={cardClasses}>
-            <div className="card-status-bar"></div>
-            <div className="card-content">
-                <div className="card-header">
-                    <span className="tag category-tag">{item.cate}</span>
-                    <div className="card-checkbox-wrapper" onClick={onCheckboxClick}>
-                        <input
-                            type="checkbox"
-                            checked={item.checkBox === 1}
-                            readOnly
-                        />
-                        <span className="custom-checkbox"></span>
-                    </div>
-                </div>
-
-                <h4 className="card-title">{item.taskName}</h4>
-                <p className="card-description">{item.detail}</p>
-
-                <div className="card-footer">
-                    <div className="card-tags">
-                        <span className="tag assignee-tag">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            {assigneeName}
-                        </span>
-                        <span className={`tag complexity-tag level-${item.level}`}>{getComplexityLabel(item.level)}</span>
-                    </div>
-                    <div className="card-deadline">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <span>{formatDate(item.date)}</span>
-                    </div>
-                </div>
-            </div>
-        </Link>
-    );
-};
-
-
-function Assignment({ notifications = [] }) {
-    const location = useLocation();
-    const urlParams = new URLSearchParams(location.search);
-    const projId = urlParams.get("projectId");
-    const currentUserId = localStorage.getItem('userId');
-    const [titlePlaceholder, setTitlePlaceholder] = useState('과제명을 적어주세요');
-    const [detailPlaceholder, setDetailPlaceholder] = useState('과제의 상세 설명을 적어주세요');
-    const [formData, setFormData] = useState({
-        taskName: '',
-        category: '',
-        complexity: 1,
-        deadline: '',
-        description: '',
-        assignee: ''
-    });
-
-    const [projectMembers, setProjectMembers] = useState([]);
-    const [allAssignments, setAllAssignments] = useState([]);
-    const [myAssignments, setMyAssignments] = useState([]);
-
-    const categoryOptions = [
-        { value: "", label: "과제분류" },
-        { value: "발표", label: "발표" },
-        { value: "자료조사", label: "자료조사" },
-        { value: "피피티", label: "피피티" }
-    ];
-
-    const levelOptions = [
-        { value: "", label: "난이도" },
-        { value: 1, label: "쉬움" },
-        { value: 2, label: "보통" },
-        { value: 3, label: "어려움" }
-    ];
-
-    useEffect(() => {
-        if (!projId) return;
-        const fetchProjectMembers = async () => {
-            try {
-                const response = await fetch(`${baseURL}/member/project/${projId}`);
-                if (!response.ok) {
-                    throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
-                }
-                const members = await response.json();
-                setProjectMembers(members);
-            } catch (error) {
-                console.error("프로젝트 멤버 로딩 오류:", error);
-                setProjectMembers([]);
-            }
-        };
-        fetchProjectMembers();
-    }, [projId]);
-    useEffect(() => {
-        if (!projId) return;
-        const fetchAssignments = async () => {
-            try {
-                const response = await fetch(`${baseURL}/task/view?projId=${projId}`);
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        setAllAssignments([]);
-                        setMyAssignments([]);
-                        return;
-                    }
-                    throw new Error(`과제 데이터를 불러오지 못했습니다. 상태 코드: ${response.status}`);
-                }
-                const data = await response.json();
-                const fetchedData = Array.isArray(data) ? data : [];
-                
-                // 디버깅: 첫 번째 항목의 구조 확인
-                if (fetchedData.length > 0) {
-                    console.log("과제 데이터 샘플:", fetchedData[0]);
-                    console.log("첫 번째 과제의 projId:", fetchedData[0].projId);
-                }
-
-                const sortedData = sortData(fetchedData);
-                setAllAssignments(sortedData);
-
-                if (currentUserId) {
-
-                    const myData = sortedData.filter(item => item.userName === currentUserId);
-                    setMyAssignments(myData);
-                }
-
-            } catch (error) {
-                console.error('과제 불러오기 오류:', error);
-                setAllAssignments([]);
-                setMyAssignments([]);
-            }
-        };
-        fetchAssignments();
-    }, [projId, currentUserId]);
-
-    const handleChange = (event) => {
-        const { name, value } = event.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        const payload = {
-            id: currentUserId,
-            projId: projId,
-            role: null,
-            cate: formData.category,
-            level: Number(formData.complexity),
-            date: new Date(formData.deadline).toISOString(),
-            detail: formData.description,
-            checkBox: 0,
-            taskName: formData.taskName,
-            userName: formData.assignee,
-            files: [],
-        };
-
-        console.log("Submitting Payload:", JSON.stringify(payload, null, 2));
-
-        try {
-            const response = await fetch(`${baseURL}/task/post`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                alert('과제가 성공적으로 생성되었습니다.');
-                window.location.reload();
-            } else {
-                const errorText = await response.text();
-                console.error("과제 생성 실패 원인:", errorText);
-                alert(`과제 생성 실패: ${errorText}`);
-            }
-        } catch (error) {
-            console.error('네트워크 오류:', error);
-            alert('서버와 연결할 수 없습니다.');
-        }
-    };
-
-    const sortData = (data) => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-
-        return [...data].sort((a, b) => {
-
-            if (a.checkBox === 0 && b.checkBox === 1) return -1;
-            if (a.checkBox === 1 && b.checkBox === 0) return 1;
-
-            const dateA = new Date(a.date * 1000);
-            const dateB = new Date(b.date * 1000);
-
-            return dateA - dateB;
-        });
-    };
-
-
-    const handleCheckboxChange = (taskId) => {
-
-        const updatedAssignments = allAssignments.map((item) =>
-            item.taskId === taskId ? { ...item, checkBox: item.checkBox === 1 ? 0 : 1 } : item
-        );
-        const sorted = sortData(updatedAssignments);
-        setAllAssignments(sorted);
-
-        if (currentUserId) {
-            const myData = sorted.filter(item => item.userName === currentUserId);
-            setMyAssignments(myData);
-        }
-    };
-
-
-    const formatDate = (timestamp) => {
-        const date = new Date(timestamp * 1000);
-        return date.toLocaleString("ko-KR", {
-            year: "numeric", month: "2-digit", day: "2-digit",
-            hour: "2-digit", minute: "2-digit", hour12: false,
-        }).replace(/\. /g, '.').slice(0, -1);
-    };
-
-
-    const getAssigneeName = (assigneeId) => {
-        const member = projectMembers.find(m => String(m.id) === String(assigneeId));
-        return member ? member.name : 'Unknown';
-    };
-
-
-    const getComplexityLabel = (complexity) => {
-        return levelOptions.find(opt => opt.value === complexity)?.label || "알 수 없음";
-    };
-
-    return (
-        <div className="Assignment">
-            <main>
-                <div className="center-content">
-                    <form className="As-create-form" onSubmit={handleSubmit}>
-                        <div className="form-header">
-                            <h2>새 과제 생성</h2>
-                        </div>
-                        <div className="setting-list">
-                            <select name="assignee" value={formData.assignee} onChange={handleChange} required>
-                                <option value="" disabled>담당자</option>
-                                {projectMembers.map((member) => (
-                                    <option key={member.id} value={member.id}>
-                                        {member.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <select name="category" value={formData.category} onChange={handleChange} required>
-                                {categoryOptions.map((option) => (
-                                    <option key={option.value} value={option.value} disabled={option.value === ""}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <select name="complexity" value={formData.complexity} onChange={handleChange} required>
-                                {levelOptions.map((option) => (
-                                    <option key={option.value} value={option.value} disabled={option.value === ""}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <input type="datetime-local" name="deadline" value={formData.deadline} onChange={handleChange} required />
-                        </div>
-                        <div className="containerarea">
-                            <div className="As-title">
-                                <textarea
-                                    name="taskName"
-                                    value={formData.taskName}
-                                    placeholder={titlePlaceholder}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div className="As-detail">
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    placeholder={detailPlaceholder}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <button type="submit" className="submit-button">생성</button>
-                    </form>
-
-                    <div className="Assignment-look">
-                        <div className="my-assignment">
-                            <h3>내 과제 보기</h3>
-                            <div className="assignments-list">
-                                {myAssignments.length > 0 ? (
-                                    myAssignments.map((item) => (
-
-                                        <AssignmentCard
-                                            key={item.taskId}
-                                            item={item}
-                                            getAssigneeName={getAssigneeName}
-                                            getComplexityLabel={getComplexityLabel}
-                                            formatDate={formatDate}
-                                            handleCheckboxChange={handleCheckboxChange}
-                                            projId={projId}
-                                        />
-                                    ))
-                                ) : (
-                                    <p className="no-assignments-msg">내 과제가 없습니다.</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="all-assignment">
-                            <h3>전체 과제 보기</h3>
-                            <div className="assignments-list">
-                                {allAssignments.length > 0 ? (
-                                    allAssignments.map((item) => (
-
-                                        <AssignmentCard
-                                            key={item.taskId}
-                                            item={item}
-                                            getAssigneeName={getAssigneeName}
-                                            getComplexityLabel={getComplexityLabel}
-                                            formatDate={formatDate}
-                                            handleCheckboxChange={handleCheckboxChange}
-                                            projId={projId}
-                                        />
-                                    ))
-                                ) : (
-                                    <p className="no-assignments-msg">등록된 과제가 없습니다.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    <NotificationPopup notifications={notifications} />
-                </div>
-            </main>
-        </div>
-    );
+  return debouncedValue;
 }
 
-export default Assignment;
+function MeetingLog() {
+  //음성 녹음 관련 - ref로 관리하여 cleanup 안정화
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
+
+  const userId = localStorage.getItem("userId");
+  //참여자 정보 불러오기
+  const [projectParticipants, setProjectParticipants] = useState([]);
+  const [meetingParticipants, setMeetingParticipants] = useState([]);
+  const [participants, setParticipants] = useState([]);
+  //일정 불러오기
+  const [scheduleList, setScheduleList] = useState([]);
+  const [meetingData, setMeetingData] = useState([]);
+  const [viewMode, setViewMode] = useState('new'); // 'list' | 'detail' | 'new'
+  
+
+  //회의록 작성 관련
+  const [titlePlaceholder, setTitlePlaceholder] = useState('회의명을 적어주세요');
+  const [detailPlaceholder, setDetailPlaceholder] = useState('회의 내용을 적어주세요');
+  const [fixPlaceholder, setFixPlaceholder] = useState('확정된 내용을 정리해주세요');
+  const [editMode, setEditMode] = useState(false);
+
+  const [selectedLog, setSelectedLog] = useState(null);
+  const navigate = useNavigate();
+
+  const { projId } = useParams();
+  console.log("projId:", projId)
+  const textareaRef = useRef(null);
+  const audioRef = useRef(null);
+
+  //오늘 날짜
+  const now = new Date();
+  const formattedDate = `${now.getFullYear()}. ${String(now.getMonth() + 1).padStart(2, '0')}. ${String(now.getDate()).padStart(2, '0')}`;
+  const formattedDateTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+  const formatDateTime = (dateStr) => {
+    const d = new Date(dateStr);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}. ${mm}. ${dd} ${hh}:${min}`;
+  };
+
+  //폼 데이터
+  const [formData, setFormData] = useState({
+        scheId: '',
+        projId: projId || '',
+        contents: '',
+        title: '',
+        date: formattedDateTime,
+        fix: '',
+        participants: [],
+  });
+
+  // Debounce된 formData (500ms 지연)
+  const debouncedFormData = useDebounce(formData, 500);
+
+  //참여자 정보
+  const handleSelectParticipant = (e) => {
+    const selectedName = e.target.value;
+    if (!meetingParticipants.includes(selectedName)) {
+      const updatedList = [...meetingParticipants, selectedName];
+      setMeetingParticipants(updatedList);
+      setFormData((prev) => ({
+        ...prev,
+        projId: projId,
+        participants: updatedList.map(name => {
+          const matched = projectParticipants.find(p => p.name === name);
+          return matched ? { name: matched.name, id: matched.id } : { name, id: '' };
+        }),  date: formattedDateTime, 
+      }));
+    }      
+  };
+
+  const handleRemove = (nameToRemove) => {
+    const updatedList = meetingParticipants.filter(name => name !== nameToRemove);
+    setMeetingParticipants(updatedList);
+    setFormData(prev => ({
+      ...prev,
+      participants: updatedList.map(name => {
+        const matched = projectParticipants.find(p => p.name === name);
+        return matched ? { name: matched.name, id: matched.id } : { name, id: '' };
+      })
+    }));
+  };
+
+  //일정 불러오기
+  const handleScheduleSelect = (e) => {
+    const selectedId = e.target.value;
+    const selectedSchedule = scheduleList.find(s => s.scheId === selectedId);
+    setFormData(prev => ({
+    ...prev,
+    scheId: selectedId,
+    date: selectedSchedule ? selectedSchedule.date : formattedDateTime,
+    }));
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+    
+  //음성 인식 관련 - 리소스 정리 개선
+  const handleRecordButtonClick = async () => {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream; // ref에 저장
+        
+        // 브라우저가 지원하는 MIME 타입 확인
+        let mimeType = 'audio/webm';
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+          mimeType = 'audio/ogg;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        }
+        
+        console.log('사용할 MIME 타입:', mimeType);
+        
+        const recorder = new MediaRecorder(stream, { mimeType });
+        const chunks = [];
+        
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+        
+        recorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: mimeType });
+          
+          // Blob 크기 검증
+          if (blob.size === 0) {
+            console.error('생성된 오디오 Blob이 비어있습니다.');
+            alert('녹음된 오디오가 비어있습니다. 다시 녹음해주세요.');
+            return;
+          }
+          
+          console.log('오디오 Blob 생성 완료:', { size: blob.size, type: blob.type });
+          setAudioBlob(blob);
+          
+          if (audioRef.current) {
+            const oldUrl = audioRef.current.src;
+            audioRef.current.src = URL.createObjectURL(blob);
+            // 이전 URL 정리
+            if (oldUrl && oldUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(oldUrl);
+            }
+          }
+          
+          // 스트림 정리
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+          }
+          
+          await sendAudioToSpeechToTextAPI(blob);
+        };
+        
+        recorder.start();
+        mediaRecorderRef.current = recorder; // ref에 저장
+        setIsRecording(true);
+      } catch (err) {
+        console.error('마이크 접근 오류:', err);
+        alert("마이크 접근 권한을 허용해주세요.");
+      }
+    } else {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      setIsRecording(false);
+    }
+  };
+
+  // 컴포넌트 언마운트 시 리소스 정리
+  useEffect(() => {
+    return () => {
+      // MediaRecorder 정리
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      }
+      
+      // 스트림 정리
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      
+      // 오디오 URL 정리
+      if (audioRef.current && audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+    };
+  }, []);
+    
+  // 텍스트 변환 기능 개선
+  const sendAudioToSpeechToTextAPI = async (blob) => {
+    // audioBlob 검증
+    if (!blob || blob.size === 0) {
+      console.error('변환할 오디오 Blob이 없거나 비어있습니다.');
+      alert('변환할 오디오가 없습니다. 다시 녹음해주세요.');
+      return;
+    }
+
+    // 파일 크기 검증 (예: 최소 1KB, 최대 10MB)
+    const minSize = 1024; // 1KB
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    if (blob.size < minSize) {
+      console.error('오디오 파일이 너무 작습니다:', blob.size);
+      alert('녹음 시간이 너무 짧습니다. 최소 1초 이상 녹음해주세요.');
+      return;
+    }
+    
+    if (blob.size > maxSize) {
+      console.error('오디오 파일이 너무 큽니다:', blob.size);
+      alert('오디오 파일이 너무 큽니다. 파일 크기를 줄여주세요.');
+      return;
+    }
+
+    setIsConverting(true);
+    
+    const fd = new FormData();
+    // 파일 확장자를 MIME 타입에 맞게 설정
+    const fileExtension = blob.type.includes('webm') ? 'webm' : 
+                         blob.type.includes('ogg') ? 'ogg' : 
+                         blob.type.includes('mp4') ? 'mp4' : 'wav';
+    fd.append('file', blob, `recorded_audio.${fileExtension}`);
+    
+    console.log('STT API 호출:', {
+      url: `${API_BASE_URL}/schedule/meeting/convert-speech`,
+      fileSize: blob.size,
+      fileType: blob.type,
+      formDataKeys: Array.from(fd.keys())
+    });
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/schedule/meeting/convert-speech`, { 
+        method: 'POST', 
+        body: fd 
+      });
+      
+      console.log('STT API 응답:', {
+        status: res.status,
+        statusText: res.statusText,
+        ok: res.ok
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '알 수 없는 오류');
+        console.error('STT API 오류 응답:', errorText);
+        throw new Error(`서버 오류 (${res.status}): ${errorText}`);
+      }
+      
+      const data = await res.json().catch(async () => {
+        const text = await res.text();
+        console.error('JSON 파싱 실패, 응답 텍스트:', text);
+        throw new Error('서버 응답을 파싱할 수 없습니다.');
+      });
+      
+      console.log('STT 변환 결과:', data);
+      
+      // 응답 형식 검증 - 여러 가능한 필드명 확인
+      const convertedText = data?.text || data?.transcript || data?.result || data?.content;
+      
+      if (convertedText && typeof convertedText === 'string' && convertedText.trim()) {
+        setFormData(prev => ({
+          ...prev,
+          contents: prev.contents ? `${prev.contents}\n\n[자동 변환된 텍스트]\n${convertedText}` : convertedText
+        }));
+        console.log('텍스트 변환 완료');
+      } else {
+        console.warn('변환된 텍스트가 없거나 비어있습니다:', data);
+        alert('텍스트 변환 결과가 없습니다. 다시 시도해주세요.');
+      }
+    } catch (err) {
+      console.error('STT 변환 실패:', err);
+      alert('STT 변환 실패: ' + (err.message || '네트워크 오류가 발생했습니다.'));
+    } finally {
+      setIsConverting(false);
+    }
+  };
+  
+  //회의록 저장 - API 에러 핸들링 개선
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (!formData.title || !formData.contents) {
+      alert("제목과 내용을 입력해주세요.");
+      return;
+    }
+
+    // 수정 모드일 때 scheId 필수 검증
+    if (editMode && (!formData.scheId || formData.scheId === '')) {
+      alert("일정 ID(scheId)는 필수입니다. 일정을 선택해주세요.");
+      return;
+    }
+
+    setIsUploading(true);
+  
+    try {
+      let response;
+      
+      if (editMode) {
+        // 수정 API: PUT /schedule/meeting/update/log
+        // Content-Type: application/json
+        const requestBody = {
+          scheId: formData.scheId, // 필수
+          contents: formData.contents,
+          title: formData.title,
+          date: formData.date,
+          fix: formData.fix,
+          participants: formData.participants,
+          sttContents: formData.contents // STT 변환된 내용 (현재는 contents와 동일하게 설정)
+        };
+        
+        // 수정할 필드에 대해서만 값을 넣어 보내면 됨 (scheId는 필수)
+        // 빈 값이 아닌 필드만 포함
+        const cleanedBody = {};
+        if (requestBody.scheId) cleanedBody.scheId = requestBody.scheId;
+        if (requestBody.contents) cleanedBody.contents = requestBody.contents;
+        if (requestBody.title) cleanedBody.title = requestBody.title;
+        if (requestBody.date) cleanedBody.date = requestBody.date;
+        if (requestBody.fix) cleanedBody.fix = requestBody.fix;
+        if (requestBody.participants && requestBody.participants.length > 0) cleanedBody.participants = requestBody.participants;
+        if (requestBody.sttContents) cleanedBody.sttContents = requestBody.sttContents;
+        
+        console.log('수정 API 호출:', {
+          url: `${API_BASE_URL}/schedule/meeting/update/log`,
+          method: 'PUT',
+          body: cleanedBody
+        });
+        
+        response = await fetch(`${API_BASE_URL}/schedule/meeting/update/log`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(cleanedBody),
+        });
+      } else {
+        // 업로드 API: POST /schedule/meeting/upload/log
+        // FormData 사용
+        const fd = new FormData();
+        const param = {
+          projId: formData.projId,
+          contents: formData.contents,
+          title: formData.title,
+          date: formData.date,
+          fix: formData.fix,
+          participants: formData.participants,
+        };
+        
+        if (formData.scheId && formData.scheId !== '') {
+          param.scheId = formData.scheId;
+        }
+        
+        fd.append('param', JSON.stringify(param));
+        
+        // 파일 업로드 검증
+        if (audioBlob) {
+          // 파일 크기 검증
+          const maxFileSize = 10 * 1024 * 1024; // 10MB
+          if (audioBlob.size > maxFileSize) {
+            alert('오디오 파일이 너무 큽니다. (최대 10MB)');
+            setIsUploading(false);
+            return;
+          }
+          
+          // 파일 타입 검증
+          if (!audioBlob.type.startsWith('audio/')) {
+            console.warn('오디오 파일 타입이 아닙니다:', audioBlob.type);
+          }
+          
+          fd.append('file', audioBlob, 'recorded_audio.wav');
+          console.log('파일 첨부:', { size: audioBlob.size, type: audioBlob.type });
+        }
+        
+        console.log('업로드 API 호출:', {
+          url: `${API_BASE_URL}/schedule/meeting/upload/log`,
+          method: 'POST',
+          paramKeys: Object.keys(param),
+          hasFile: !!audioBlob
+        });
+        
+        response = await fetch(`${API_BASE_URL}/schedule/meeting/upload/log`, {
+          method: 'POST',
+          body: fd,
+        });
+      }
+  
+      console.log('API 응답:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+  
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        const text = await response.text();
+        console.error('JSON 파싱 실패:', text);
+        throw new Error(`서버 응답을 파싱할 수 없습니다. (${response.status})`);
+      }
+  
+      if (response.ok) {
+        console.log('저장 성공:', result);
+        alert(result.message || (editMode ? '수정 완료!' : '업로드 완료!'));
+  
+        // 상태 초기화
+        setFormData({
+          scheId: '',
+          projId: projId,
+          contents: '',
+          title: '',
+          date: formattedDateTime,
+          fix: '',
+          participants: [],
+        });
+        setMeetingParticipants([]);
+        setAudioBlob(null);
+        setEditMode(false);
+        localStorage.removeItem('tempMeetingDraft');
+        await fetchMeetingLogs();
+      } else {
+        // 상세한 에러 메시지
+        let errorMsg = result?.message || result?.error || `업로드 실패 (${response.status})`;
+        
+        // API 문서에 따른 에러 메시지 처리
+        if (response.status === 400) {
+          errorMsg = result?.message || '등록되지 않은 회의록입니다.';
+        } else if (response.status === 404) {
+          errorMsg = result?.message || '존재하지 않는 사용자, 프로젝트 또는 스케줄 ID입니다.';
+        }
+        
+        console.error('저장 실패:', result);
+        alert(errorMsg);
+      }
+    } catch (err) {
+      console.error('업로드 중 오류:', err);
+      const errorMsg = err.message || '네트워크 오류가 발생했습니다.';
+      alert('서버 오류: ' + errorMsg);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  
+  //회의록 입력 칸 세팅
+  useEffect(() => {
+    setFormData(prev => {
+      if (!prev.projId) {
+        return { ...prev, projId };
+      }
+      return prev;
+    });
+      const fetchData = async () => {
+      try {
+      const [membersRes, meetingsRes, scheduleRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/member/project/${projId}`),
+        fetch(`${API_BASE_URL}/schedule/meeting/view/log?projId=${projId}`),
+        fetch(`${API_BASE_URL}/schedule/check/monthly?projId=${projId}&userId=${userId}&standardDate=${formattedDateTime}&cate=meeting`)
+      ]);
+      
+      if (!membersRes.ok || !meetingsRes.ok || !scheduleRes.ok) {
+        const errors = [];
+        if (!membersRes.ok) errors.push(`멤버 조회 실패 (${membersRes.status})`);
+        if (!meetingsRes.ok) errors.push(`회의록 조회 실패 (${meetingsRes.status})`);
+        if (!scheduleRes.ok) errors.push(`일정 조회 실패 (${scheduleRes.status})`);
+        throw new Error(errors.join(', '));
+      }
+      
+        setProjectParticipants(await membersRes.json());
+        setMeetingData(await meetingsRes.json());
+        const res = await scheduleRes.json();
+        const flattenedList = Object.values(res.teamSchedules).flat();
+        setScheduleList(flattenedList);
+      } catch (error) {
+        console.error('초기 데이터 로딩 오류:', error);
+        alert('데이터 로딩 실패: ' + error.message);
+      }
+    };
+    
+    fetchData();
+  }, [projId]);
+    
+  // 로컬 스토리지 임시 저장 - debounce 적용 및 로그 추가
+  useEffect(() => {
+    if (!projId) return;
+    if (!debouncedFormData || (!debouncedFormData.title && !debouncedFormData.contents)) {
+      return;
+    }
+    
+    const dataToSave = {
+      ...debouncedFormData,
+      // audioBlob는 저장하지 않음 (너무 큼)
+    };
+
+    const storageKey = `tempMeetingDraft_${projId}`;
+    console.log('임시 저장:', {
+      timestamp: new Date().toISOString(),
+      projId: projId,
+      title: dataToSave.title,
+      contentsLength: dataToSave.contents?.length || 0,
+      participantsCount: dataToSave.participants?.length || 0
+    });
+    
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+        console.log('임시 저장 완료 (프로젝트:', projId, ')');
+    } catch (err) {
+      console.error('임시 저장 실패:', err);
+      // localStorage 용량 초과 등의 경우
+      if (err.name === 'QuotaExceededError') {
+        console.warn('localStorage 용량 초과');
+      }
+    }
+}, [debouncedFormData, projId]);
+
+  // 초기 로드 시 임시 저장된 데이터 복원
+  useEffect(() => {
+    if (!projId) return;
+    
+    // 프로젝트별로 분리된 키 사용
+    const storageKey = `tempMeetingDraft_${projId}`;
+    const saved = localStorage.getItem(storageKey);
+
+    if (saved && !editMode) {
+      try {
+        const parsed = JSON.parse(saved);
+        // 빈 데이터가 아닌 경우에만 복원
+        if (parsed.title || parsed.contents) {
+          console.log('초기 로드 시 임시 저장 데이터 복원 (프로젝트:', projId, '):', parsed);
+          setFormData(prev => ({
+            ...prev,
+            ...parsed,
+            projId: projId,
+          }));
+          
+          const participantNames = parsed.participants?.map(p => p.name) || [];
+          setMeetingParticipants(participantNames);
+        }
+      } catch (err) {
+        console.error('초기 로드 시 임시 저장 데이터 파싱 실패:', err);
+      }
+    }
+}, [projId]); 
+
+  const fetchMeetingLogs = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/schedule/meeting/view/log?projId=${projId}`);
+      if (res.ok) {
+        const logs = await res.json();
+        setMeetingData(logs);
+      } else {
+        const errorData = await res.json().catch(() => null);
+        const errorMsg = errorData?.message || `회의록 조회 실패 (${res.status})`;
+        console.error('회의록 조회 실패:', res.status, errorMsg);
+      }
+    } catch (err) {
+      console.error('회의록 조회 오류:', err);
+    }
+  };
+    
+  const handleSelectLog = async (log) => {
+    if (log.scheId) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/schedule/meeting/view/log?scheId=${log.scheId}`);
+        if (res.ok) {
+          const fullLog = await res.json();
+          setSelectedLog(fullLog);
+          setViewMode('detail');
+        } else {
+          const errorText = await res.text().catch(() => '알 수 없는 오류');
+          console.error('회의록 상세 조회 실패:', res.status, errorText);
+          alert('회의록 상세 조회 실패: ' + errorText);
+        }
+      } catch (err) {
+        console.error('상세 조회 오류:', err);
+        alert('회의록을 불러오는 중 오류가 발생했습니다.');
+      }
+    } else {
+      // scheId 없을 때는 이미 받아온 log로 그대로 사용
+      setSelectedLog(log);
+      setViewMode('detail');
+    }
+  };
+  
+
+  return (
+      <div>
+        <div className="meeting-log-container" style={{ display: 'flex', gap: '20px' }}>
+          {viewMode === 'new' && (
+            <div className="MeetingLog" style={{ flex: 2 }}>
+              <h1>회의록</h1>
+              <div className="controls">
+                <button 
+                  className="record-button" 
+                  onClick={handleRecordButtonClick}
+                  disabled={isConverting || isUploading}
+                >
+                  {isRecording ? <IoRecordingOutline size={20} /> : <IoMicSharp size={20} />}
+                  {isRecording ? "기록 중" : "자동기록"}
+                </button>
+                <p className="meetDate">{formattedDate}</p>
+                <div className="participants">
+                  <h4 className='participants-title'>참여자</h4>
+                  <ul className='li-list'>
+                    {meetingParticipants.map((name) => (
+                      <li key={name}>
+                        {name}
+                        <button className="x" onClick={() => handleRemove(name)}>x</button>
+                      </li>
+                    ))}
+                  </ul>
+                  <select className='participants-select' onChange={handleSelectParticipant} defaultValue="">
+                    <option value="" disabled>참여자 선택</option>
+                    {projectParticipants.map((p) => (
+                      <option key={p.id} value={p.name}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className='meeting-schedule'>
+                  <h4>일정 선택</h4>
+                  <select onChange={handleScheduleSelect}>
+                    <option value="">새 회의 생성</option>
+                    {scheduleList.map((p) => (
+                      <option key={p.scheduleId} value={p.scheduleId}>{p.scheduleName}</option>
+                    ))}
+
+                  </select>
+                </div>
+                <textarea className='titleinput'
+                  name="title"
+                  value={formData.title}
+                  placeholder={titlePlaceholder}
+                  onChange={handleChange}
+                  required
+                />
+                <textarea id="autoGrow" className='loginput'
+                  name="contents"
+                  ref={textareaRef}
+                  rows={25}
+                  value={formData.contents}
+                  placeholder={detailPlaceholder}
+                  onChange={handleChange}
+                  required
+                />
+                <textarea id="autoGrow" className='fixed'
+                name='fix'
+                value={formData.fix}
+                placeholder={fixPlaceholder}
+                onChange={handleChange}
+                required
+                />
+              </div>
+
+              {audioBlob && (
+                <div className="audio-preview">
+                  <h4>기록 미리 듣기</h4>
+                  <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
+                </div>
+              )}
+              <button 
+                className="end-button" 
+                onClick={handleSubmit}
+                disabled={isUploading || isConverting}
+              >
+                {isUploading ? '저장 중...' : '작성 완료'}
+              </button>
+            </div>
+          )}
+          {viewMode === 'detail' && selectedLog && (
+            <div className="meeting-log-viewer">
+              <div className='top'>
+                <h2>{selectedLog.title}</h2>
+                <p>{formatDateTime(selectedLog.date)}</p>
+                <p><strong>참여자:</strong> {selectedLog.participants && selectedLog.participants.length > 0 
+                  ? selectedLog.participants.map(p => p.name || p).join(', ') 
+                  : '참여자 정보 없음'}</p>
+              </div>
+              <div><p><strong>내용</strong></p><p>{selectedLog.contents}</p></div>
+              <div><p><strong>확정사항</strong></p><p> {selectedLog.fix}</p></div>
+              <div className='button-row'>
+                <button onClick={() => setViewMode('new')}>← 돌아가기</button>
+                <button
+                  onClick={() => {
+                    setFormData({
+                      scheId: selectedLog.scheId || '',
+                      projId: selectedLog.projId || projId,
+                      contents: selectedLog.contents || '',
+                      title: selectedLog.title || '',
+                      date: selectedLog.date || formattedDateTime,
+                      fix: selectedLog.fix || '',
+                      participants: selectedLog.participants || [],
+                    });
+
+                    const names = selectedLog.participants?.map(p => p.name) || [];
+                    setMeetingParticipants(names);
+
+                    setEditMode(true);
+                    setViewMode('new');
+                  }}
+                >
+                  수정하기
+                </button>
+              </div>
+            </div>
+          )}
+
+        <div className="meetinglog-list" style={{ flex: 1 }}>
+          {meetingData.length > 0 && meetingData.map((log, idx) => (
+            <div
+              key={idx}
+              className="each"
+              onClick={() => handleSelectLog(log)}
+              style={{ cursor: 'pointer', borderBottom: '1px solid #ddd', marginBottom: '10px' }}
+            >
+              <p><strong>{log.title}</strong></p>
+              <p style={{ fontSize: '12px', color: '#555' }}>{formatDateTime(log.date)}</p>
+            </div>
+          ))}
+          {meetingData.length === 0 &&(
+            <p>회의록이 없습니다.</p>
+            )
+          }
+        </div>
+      </div>
+    </div>
+      
+);
+}
+
+export default MeetingLog;

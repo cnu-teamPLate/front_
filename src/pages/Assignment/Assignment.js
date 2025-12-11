@@ -106,12 +106,15 @@ function Assignment({ notifications = [] }) {
             try {
                 const response = await fetch(`${baseURL}/member/project/${projId}`);
                 if (!response.ok) {
-                    throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
+                    const errorData = await response.json().catch(() => null);
+                    const errorMsg = errorData?.message || `프로젝트 멤버 정보를 불러올 수 없습니다 (${response.status})`;
+                    throw new Error(errorMsg);
                 }
                 const members = await response.json();
                 setProjectMembers(members);
             } catch (error) {
                 console.error("프로젝트 멤버 로딩 오류:", error);
+                alert(`프로젝트 멤버 정보를 불러올 수 없습니다: ${error.message || '네트워크 오류가 발생했습니다.'}`);
                 setProjectMembers([]);
             }
         };
@@ -150,6 +153,7 @@ function Assignment({ notifications = [] }) {
 
             } catch (error) {
                 console.error('과제 불러오기 오류:', error);
+                alert(`과제 목록을 불러올 수 없습니다: ${error.message || '네트워크 오류가 발생했습니다.'}`);
                 setAllAssignments([]);
                 setMyAssignments([]);
             }

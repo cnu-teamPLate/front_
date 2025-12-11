@@ -332,8 +332,8 @@ function FileUploadPage() {
     <div className="container">
       <div className="upload-section">
         <h2>자료 업로드</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
+        <file onSubmit={handleSubmit}>
+          <div className="file-group">
             <label className="task-list-title">연관 과제 (선택)</label>
             <div className="task-list-scroll">
               {taskList.length > 0 ? taskList.map((task, index) => (
@@ -349,17 +349,29 @@ function FileUploadPage() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="file-label main-file-label">
-              파일 선택 (다중 선택 가능)
-              <input type="file" multiple onChange={handleFileChange} />
-            </label>
+        <div className="file-group">
+          <div className="files-group">
+          <label htmlFor="file-upload-input">파일 선택 (다중 선택 가능)</label>
+            <input 
+              id="file-upload-input"
+              type="file" 
+              multiple 
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+            <button 
+              type="button"
+              onClick={() => document.getElementById('file-upload-input')?.click()}
+              className="file-upload-button"
+            >
+              파일 선택
+            </button>
           </div>
 
           {/* 업로드할 파일 미리보기 목록 */}
           {filesForUploadUI.length > 0 && (
             <div className="selected-files-preview">
-              <h4>선택된 파일 (업로드 예정): {filesForUploadUI.length}개</h4>
+              <button type="button" className='all-delete' onClick={handleDeleteFromUploadForm} >전체 삭제</button>
               <ul className="file-list">
                 {filesForUploadUI.map((file, index) => (
                   <li key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
@@ -371,26 +383,27 @@ function FileUploadPage() {
                       onClick={() => handleRemoveFileFromUploadList(index)}
                       style={{ marginLeft: '10px', padding: '2px 8px', fontSize: '12px' }}
                     >
-                      삭제
+                      X
                     </button>
                   </li>
                 ))}
               </ul>
-              <button type="button" onClick={handleDeleteFromUploadForm} className="delete-all-selected-button">선택한 파일 모두 지우기</button>
+              
             </div>
           )}
+          </div>
 
-          <div className="form-group">
+          <div className="file-group">
             <label htmlFor="file-title">제목</label>
             <input id="file-title" className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.title} onChange={handleUploadInputChange} />
           </div>
 
-          <div className="form-group">
+          <div className="file-group">
             <label htmlFor="file-detail">설명</label>
             <textarea id="file-detail" className='detail' placeholder='설명을 입력해주세요' name='detail' value={formData.detail} onChange={handleUploadInputChange} />
           </div>
 
-          <div className="form-group">
+          <div className="file-group">
             <label>외부 URL (선택 사항, 여러 개 추가 가능)</label>
             <div className="url-input-wrapper">
               <input className='url-input'
@@ -399,13 +412,13 @@ function FileUploadPage() {
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
               />
-              <button className='plus button-add-url' type="button" onClick={() => {
+              <button className='add-url' type="button" onClick={() => {
                 if (newUrl.trim()) {
                   const updatedUrls = [...formData.url, newUrl.trim()];
                   setFormData((prev) => ({ ...prev, url: updatedUrls }));
                   setNewUrl('');
                 }
-              }}>URL 추가</button>
+              }}>+</button>
             </div>
             {formData.url.length > 0 && (
               <ul className="url-list added-url-list">
@@ -423,7 +436,7 @@ function FileUploadPage() {
             )}
           </div>
           <button type='submit' className="upload-button">업로드</button>
-        </form>
+        </file>
         {statusMessage && <p className={`status-message ${statusMessage.includes('오류') || statusMessage.includes('실패') ? 'error' : 'success'}`}>{statusMessage}</p>}
       </div>
 
