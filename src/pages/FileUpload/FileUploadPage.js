@@ -149,8 +149,9 @@ function FileUploadPage() {
 
   const handleDeleteFromUploadForm = () => {
     setFormData(prev => ({ ...prev, file: [] }));
-    if (document.querySelector('input[type="file"]')) { // 파일 입력 필드 초기화
-      document.querySelector('input[type="file"]').value = null;
+    const fileInput = document.getElementById('file-upload-input');
+    if (fileInput) {
+      fileInput.value = null;
     }
   };
 
@@ -169,10 +170,24 @@ function FileUploadPage() {
     setFormData((prev) => ({ ...prev, category: newCategoryValue }));
   };
 
-  // !!! handleSubmit 함수 수정 !!!
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("업로드 버튼 클릭됨. 현재 formData:", formData);
+    if (!formData.id || !formData.projId) {
+      setStatusMessage('사용자 ID 또는 프로젝트 ID가 없습니다.');
+      return;
+    }
+    
+    if (!formData.title || formData.title.trim() === '') {
+      setStatusMessage('제목을 입력해주세요.');
+      return;
+    }
+    
+    if ((!formData.file || formData.file.length === 0) && (!formData.url || formData.url.length === 0)) {
+      setStatusMessage('파일 또는 URL 중 하나는 입력해주세요.');
+      return;
+    }
+    
     setStatusMessage('업로드 중...');
 
     const formDataToSend = new FormData();
@@ -232,8 +247,9 @@ function FileUploadPage() {
         setUrlList([]); 
         setNewUrl(''); // URL 입력 필드도 리셋
         setSelectedTaskIndex(null);
-        if (document.querySelector('input[type="file"]')) {
-          document.querySelector('input[type="file"]').value = null;
+        const fileInput = document.getElementById('file-upload-input');
+        if (fileInput) {
+          fileInput.value = null;
         }
         fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
       } else {
@@ -326,13 +342,10 @@ function FileUploadPage() {
   const filesForUploadUI = formData.file || [];
 
   return (
-    // JSX 부분은 이전과 거의 동일하게 유지됩니다.
-    // 주요 변경점은 handleSubmit 함수와 같이 로직 부분에 있습니다.
-    // 하단 JSX에서 파일 업로드 폼의 파일 목록 표시 부분 수정.
     <div className="container">
       <div className="upload-section">
         <h2>자료 업로드</h2>
-        <file onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="file-group">
             <label className="task-list-title">연관 과제 (선택)</label>
             <div className="task-list-scroll">
@@ -422,21 +435,20 @@ function FileUploadPage() {
             </div>
             {formData.url.length > 0 && (
               <ul className="url-list added-url-list">
-                <h4>추가된 URL:</h4>
                 {formData.url.map((urlItem, index) => (
                   <li key={index}>
                     <a href={urlItem} target="_blank" rel="noopener noreferrer">{urlItem}</a>
                     <button type="button" className="delete-url-button" onClick={() => {
                       const updated = formData.url.filter((_, i) => i !== index);
                       setFormData((prev) => ({ ...prev, url: updated }));
-                    }}>삭제</button>
+                    }}>X</button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
           <button type='submit' className="upload-button">업로드</button>
-        </file>
+        </form>
         {statusMessage && <p className={`status-message ${statusMessage.includes('오류') || statusMessage.includes('실패') ? 'error' : 'success'}`}>{statusMessage}</p>}
       </div>
 
@@ -473,9 +485,6 @@ function FileUploadPage() {
             )}
           </div>
         </div>
-
-        {/* 파일 목록의 상태 메시지는 테이블 내부에 표시하거나 별도 위치에 둘 수 있음 */}
-        {/* {statusMessage && !statusMessage.includes('업로드') && <p className={`status-message list-status ${statusMessage.includes('오류') || statusMessage.includes('실패') ? 'error' : 'success'}`}>{statusMessage}</p>} */}
 
         <div className="file-table-container">
           <table>
@@ -561,9 +570,6 @@ function FileUploadPage() {
                       '없음'
                     )}
                   </td>
-
-
-
                   <td className='date-text'>{formatDate(file.uploadDate || file.date)}</td>
                   {mode === 'edit' && (<td> <input className="edit-input" type="text" value={file.detail} onChange={(e) => handleInputChangeForListedFile(index, 'detail', e.target.value)} /> </td>)}
                   {mode === 'edit' && (<td> <input className="edit-input" type="text" value={file.urls && file.urls[0] ? file.urls[0] : ''} onChange={(e) => handleInputChangeForListedFile(index, 'urls', [e.target.value])} placeholder="URL 입력" /> </td>)}
