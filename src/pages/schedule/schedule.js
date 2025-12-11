@@ -1,211 +1,64 @@
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import React, { useMemo, useState, useEffect, useCallback } from 'react'; // useCallback added
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
-import WhenToMeetGrid, { AvailabilityMatrix, TimeSelectionGrid, fetchEventsApi, fetchAvailabilityApi } from "./when2meet";
+import WhenToMeetGrid from "./when2meet";
 
-// 파일 맨 위쪽 - API URL을 새 URL로 업데이트
 const API = 'https://www.teamplate-api.site';
 
-// --- state 선언들 바로 아래 ---
-// 파일 상단 (컴포넌트 밖) — Hook 대신 즉시 변환
-const ProjectSidebar = ({ projectId }) => {
-    const userId = localStorage.getItem('userId');
-    const sidebarLinks = [
-        { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
-        { path: `/schedule?projectId=${projectId}&userId=${userId}`, label: '프로젝트 일정' },
-        { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
-        { path: `/project/${projectId}/FileUpload`, label: '자료 업로드' },
-    ];
+async function fetchEventsApi({ projId, userId, currentDate, view }) {
+    if (!projId || !userId) {
+        throw new Error('Project ID 또는 User ID가 누락되었습니다.');
+    }
 
-    return (
-        <aside className="project-sidebar">
-            <nav>
-                <ul>
-                    {sidebarLinks.map(link => (
-                        <li key={link.path}>
-                            <Link to={link.path}>{link.label}</Link>
-                        </li>
-                    ))}
-                </ul>
-                <hr />
-                <ul>
-                    <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer">깃허브 바로가기</a></li>
-                    <li><Link to="/useful-sites">팀플 유용 사이트</Link></li>
-                    <li><Link to="/experiences">경험담 보기</Link></li>
-                    <li><Link to="/meeting-rooms">우리 학교 회의실</Link></li>
-                </ul>
-            </nav>
-        </aside>
-    );
-};
+    const cate = "meeting,task,plan";
+    let standardDate;
+    let endpoint;
 
+    if (view === 'month') {
+        endpoint = 'monthly';
+        standardDate = moment(currentDate).startOf('month').format('YYYY-MM-DDTHH:mm:ss');
+    } else { // 'week' 및 'day' 뷰는 weekly API 사용
+        endpoint = 'weekly';
+        standardDate = moment(currentDate).startOf('week').format('YYYY-MM-DDTHH:mm:ss');
+    }
 
-/** 함수 선언식(hoisting O) */
-function buildDetails(events) {
-    const obj = {};
-    events.forEach(({ date, startTime, endTime, username }) => {
-        if (!obj[date]) obj[date] = [];
-        obj[date].push({ startTime: moment(startTime, 'H:mm:ss').format('HH:mm:ss'), endTime: moment(endTime, 'H:mm:ss').format('HH:mm:ss'), username });
-    });
-    return obj;
+    const queryParams = new URLSearchParams({ projId, userId, standardDate, cate });
+    const url = `${API}/schedule/check/${endpoint}?${queryParams}`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`API 호출 실패: ${res.status} ${res.statusText} - ${errorText}`);
+    }
+    const data = await res.json();
+
+    const teamList = data.teamSchedules?.[projId] || [];
+    const formattedTeam = teamList.map((item, idx) => ({
+        id: item.scheduleId || `team-${idx}`,
+        title: item.scheduleName,
+        start: new Date(item.date),
+        end: new Date(new Date(item.date).getTime() + (60 * 60 * 1000)),
+        resource: item,
+        category: item.category || 'meeting',
+    }));
+
+    const taskList = data.taskSchedules?.[projId] || [];
+    const formattedTask = taskList.map((item, idx) => ({
+        id: item.taskId || `task-${idx}`,
+        title: `[과제] ${item.projName} (${item.role})`,
+        start: new Date(item.deadLine),
+        end: new Date(new Date(item.deadLine).getTime() + (60 * 60 * 1000)),
+        resource: item,
+        category: 'task',
+    }));
+
+    return [...formattedTeam, ...formattedTask];
 }
-const userInfo = {
-    "20211079": "Alice",
-    "20211080": "Bob"
-};
-
-function DatePickerGrid({
-    currentYear,
-    currentMonth,
-    onSelectDate,
-    selectedDates,
-    onMouseDownDay,
-    onMouseEnterDay,
-    onMouseUp
-}) {
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-    const daysInMonth = lastDayOfMonth.getDate();
-    const startDay = firstDayOfMonth.getDay();
-
-    const calendarCells = [];
-    for (let i = 0; i < startDay; i++) calendarCells.push(null);
-    for (let day = 1; day <= daysInMonth; day++) calendarCells.push(day);
-
-    const pad = (n) => String(n).padStart(2, '0');
-
-    return (
-        <div className="date-picker-grid" onMouseUp={onMouseUp}>
-            <div className="month-label">
-                {currentYear}년 {currentMonth + 1}월
-            </div>
-
-            <div className="weekdays">
-                <div>Sun</div><div>Mon</div><div>Tue</div>
-                <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-            </div>
-
-            <div className="days">
-                {calendarCells.map((cell, index) => {
-                    if (cell === null) return <div key={index} className="day-cell empty" />;
-
-                    const dateKey = `${currentYear}-${pad(currentMonth + 1)}-${pad(cell)}`; // YYYY-MM-DD
-                    const isSelected = selectedDates.includes(dateKey);
-
-                    return (
-                        <div
-                            key={index}
-                            className={`day-cell ${isSelected ? 'selected' : ''}`}
-                            onMouseDown={(e) => {
-                                e.preventDefault(); // 텍스트 선택 방지
-                                if (onMouseDownDay) onMouseDownDay(dateKey);
-                                else onSelectDate?.(dateKey); // 드래그 미사용 시 클릭 토글
-                            }}
-                            onMouseEnter={() => onMouseEnterDay?.(dateKey)}
-                        >
-                            {cell}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-function addMonths(date, n) {
-    return new Date(date.getFullYear(), date.getMonth() + n, 1);
-}
-
-function TwoMonthPicker({ selectedDates, onSelectDate }) {
-    const today = new Date();
-    const [baseDate, setBaseDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-    const nextDate = addMonths(baseDate, 1);
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragToSelect, setDragToSelect] = useState(true); // 드래그로 '선택'할지 '해제'할지
-
-    // onSelectDate는 토글이라서, 원하는 상태(선택/해제)로 '맞추기'
-    const ensureState = (dateKey, shouldSelect) => {
-        const has = selectedDates.includes(dateKey);
-        if (shouldSelect && !has) onSelectDate(dateKey);
-        if (!shouldSelect && has) onSelectDate(dateKey);
-    };
-
-    const handleMouseDownDay = (dateKey) => {
-        const already = selectedDates.includes(dateKey);
-        const target = !already;             // 클릭 시 반대로
-        setDragToSelect(target);
-        setIsDragging(true);
-        ensureState(dateKey, target);        // 첫 칸 즉시 반영
-    };
-
-    const handleMouseEnterDay = (dateKey) => {
-        if (!isDragging) return;
-        ensureState(dateKey, dragToSelect);  // 드래그 중엔 모두 동일 상태로
-    };
-
-    const handleMouseUp = () => setIsDragging(false);
-
-    // 캘린더 바깥에서 마우스 떼어도 드래그 종료
-    useEffect(() => {
-        const up = () => setIsDragging(false);
-        window.addEventListener('mouseup', up);
-        return () => window.removeEventListener('mouseup', up);
-    }, []);
-
-    return (
-        <div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <button type="button" onClick={() => setBaseDate(addMonths(baseDate, -1))}>이전</button>
-                <button type="button" onClick={() => setBaseDate(addMonths(baseDate, 1))}>다음</button>
-            </div>
-
-            <div style={{ display: 'flex', gap: 16, userSelect: 'none' }}>
-                <DatePickerGrid
-                    currentYear={baseDate.getFullYear()}
-                    currentMonth={baseDate.getMonth()}
-                    selectedDates={selectedDates}
-                    onSelectDate={onSelectDate}            // 그대로 전달(단일 클릭 토글에도 쓰임)
-                    onMouseDownDay={handleMouseDownDay}    // ⬅ 추가
-                    onMouseEnterDay={handleMouseEnterDay}  // ⬅ 추가
-                    onMouseUp={handleMouseUp}              // ⬅ 추가
-                />
-                <DatePickerGrid
-                    _ currentYear={nextDate.getFullYear()}
-                    currentMonth={nextDate.getMonth()}
-                    selectedDates={selectedDates}
-                    onSelectDate={onSelectDate}
-                    onMouseDownDay={handleMouseDownDay}
-                    onMouseEnterDay={handleMouseEnterDay}
-                    onMouseUp={handleMouseUp}
-                />
-            </div>
-        </div>
-    );
-}
-
-
-const EventComponent = ({ event }) => {
-    const user = userInfo[event.userId];
-    return (
-        <div
-            style={{
-                borderRadius: '5px',
-                padding: '2px 4px',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#fff',
-                fontSize: '0.85em'
-            }}
-        >
-            <span>{event.title}</span>
-        </div>
-    );
-};
 
 const localizer = momentLocalizer(moment);
 
@@ -248,7 +101,6 @@ const Schedule = () => {
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
     const [loading, setLoading] = useState(false);
-    const [availability, setAvailability] = useState([]);
 
 
     const toggleSidebar = () => {
@@ -279,48 +131,10 @@ const Schedule = () => {
         setWhenToMeet(true);
     };
 
-
-    const handleSelectSlot = ({ start, end }) => {
-        // BUG FIX: currentUser와 currentProject는 .id가 없는 문자열입니다.
-        const userId = currentUser;
-        const projId = currentProject;
-        const startDate = new Date(start);
-        const endDate = new Date(end);
-
-        const existing = events.find(
-            event =>
-                event.userId === userId &&
-                event.projId === projId &&
-                new Date(event.start).getTime() === startDate.getTime() &&
-                new Date(event.end).getTime() === endDate.getTime()
-        );
-
-        if (existing) {
-            setEvents(events.filter(event => event !== existing));
-        } else {
-            const newEventObject = {
-                title: 'Available',
-                start,
-                end,
-                userId,
-                projId,
-            };
-            setEvents([...events, newEventObject]);
-        }
-    };
-
     const CustomToolbar = (toolbar) => {
-        const goToBack = () => {
-            toolbar.onNavigate('PREV');
-        };
-
-        const goToNext = () => {
-            toolbar.onNavigate('NEXT');
-        };
-
-        const goToToday = () => {
-            toolbar.onNavigate('TODAY');
-        };
+        const goToBack = () => toolbar.onNavigate('PREV');
+        const goToNext = () => toolbar.onNavigate('NEXT');
+        const goToToday = () => toolbar.onNavigate('TODAY');
 
         return (
             <div className="rbc-toolbar">
@@ -335,21 +149,12 @@ const Schedule = () => {
     };
 
     const handleEventMouseOver = (event, e) => {
-        // SAFETY CHECK: event.agenda 등이 null일 수 있으므로 || '' 추가
-        const agendaItems = (event.agenda || '').split('\n')
-            .map((item, idx) => `<li key=${idx}>${item}</li>`)
-            .join('');
-
+        const resource = event.resource || {};
         setPopupContent(
             `<div><strong>${event.title || '일정'}</strong></div>
-       <div>시간: ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}</div>
-       <div>장소: ${event.location || 'N/A'}</div>
-       <div>대상: ${event.attendees || 'N/A'}</div>
-       <div>카테고리: ${event.category || 'N/A'}</div>
-       <div>안건:</div>
-       <ul>
-          ${agendaItems}
-       </ul>`
+             <div>시간: ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}</div>
+             <div>장소: ${resource.place || 'N/A'}</div>
+             <div>카테고리: ${resource.category || 'N/A'}</div>`
         );
         setPopupStyle({
             display: 'block',
@@ -362,53 +167,34 @@ const Schedule = () => {
         setPopupStyle({ display: 'none' });
     };
 
-    // onExit 함수는 WhenToMeetGrid에서 onExit prop으로 전달됨
     const exitWhenToMeet = () => {
         setWhenToMeet(false);
         // 일정 목록 새로고침
         fetchEvents();
     };
 
-    // when2meet 확정 시 캘린더에 가용 시간 범위를 즉시 표시
-    const handleAvailabilityConfirm = (ranges = [], meta = {}) => {
-        const projId = currentProject;
-        const userId = currentUser;
-        const title = meta.title || 'Availability';
-        setEvents(prev => {
-            const keep = prev.filter(ev => !ev.isWhen2MeetLocal);
-            const newEvents = ranges.map((r, idx) => ({
-                id: `when2meet-local-${r.start.getTime()}-${idx}`,
-                title,
-                start: r.start,
-                end: r.end,
-                projId,
-                userId,
-                category: 'availability',
-                isWhen2MeetLocal: true
-            }));
-            return [...keep, ...newEvents];
-        });
-    };
-
     // 일정 생성 API 연결
     const handleAddEvent = async (eventObject) => {
-        // BUG FIX: currentUser와 currentProject는 .id가 없는 문자열입니다.
         const projId = currentProject;
 
-        // 팝업에서 입력받은 newEvent(eventObject)를 API DTO에 맞게 매핑
+        // 참여자 문자열을 배열로 변환
+        const participantsArray = (eventObject.attendees || '').split(',').map(p => p.trim());
+
+        // API DTO에 맞게 페이로드 매핑
         const newEventPayload = {
             projId: projId,
-            date: eventObject.start, // 팝업의 '시작 시간'
-            // end Time은 API 명세에 따라 별도 필드가 필요할 수 있음 (현재는 date만 전송)
-            scheName: eventObject.scheName, // BUG FIX: eventObject.title -> eventObject.scheName
+            date: moment(eventObject.start).format('YYYY-MM-DDTHH:mm:ss'), 
+            scheName: eventObject.scheName,
             place: eventObject.location,
-            category: eventObject.category, // 팝업의 '카테고리'
-            detail: eventObject.agenda, // 팝업의 '안건'
-            participants: (eventObject.attendees || '').split(',').map(p => p.trim())
+            category: eventObject.category,
+            detail: eventObject.agenda,
+            // 수정: 백엔드에서 JSON 배열을 직접 처리하므로 이중 stringify 방지
+            participants: participantsArray
         };
 
+        console.log("일정 등록 시도, 페이로드:", newEventPayload);
+
         try {
-            // API FIX: URL을 새 API 상수로 변경
             const response = await fetch(`${API}/schedule/check/upload`, {
                 method: 'POST',
                 headers: {
@@ -418,17 +204,18 @@ const Schedule = () => {
             });
 
             if (response.ok) {
-                const savedEvent = await response.json(); // 서버 응답이 이벤트 객체라고 가정
-                // fetchEvents()를 다시 호출하여 캘린더를 새로고침
+                const savedEvent = await response.json();
+                console.log("일정 등록 성공:", savedEvent);
+                alert("일정이 등록되었습니다.");
                 fetchEvents();
                 setShowPopup(false);
             } else {
-                const error = await response.text();
-                console.error("Failed to create event:", error);
-                alert("일정 생성에 실패했습니다.");
+                const errorText = await response.text();
+                console.error("일정 등록 실패 (서버 응답):", errorText);
+                alert("일정 생성에 실패했습니다: " + errorText);
             }
         } catch (error) {
-            console.error("Error creating event:", error);
+            console.error("일정 등록 실패 (네트워크/기타):", error);
             alert("서버와 연결할 수 없습니다.");
         }
     };
@@ -439,12 +226,15 @@ const Schedule = () => {
             console.warn("Project ID 또는 User ID가 없습니다. API를 호출할 수 없습니다.");
             return;
         }
+        console.log("일정 불러오기 시작:", { projId: currentProject, userId: currentUser, currentDate, view });
         setLoading(true);
         try {
             const result = await fetchEventsApi({ projId: currentProject, userId: currentUser, currentDate, view });
+            console.log("일정 불러오기 성공:", result);
             setEvents(result || []);
         } catch (e) {
             console.error("API 호출 중 오류:", e.message || e);
+            console.log("일정 불러오기 실패:", e);
             setEvents([]);
         } finally {
             setLoading(false);
@@ -455,19 +245,7 @@ const Schedule = () => {
     // 일정 조회 (주간/월간)
     useEffect(() => {
         fetchEvents();
-        // FIX: fetchAvailability() 호출은 when2meetId가 있을 때만
-        // fetchAvailability(); // <- 여기서 호출하면 안 됨
-    }, [fetchEvents]); // REFACTOR: fetchEvents가 useCallback으로 감싸졌으므로 의존성으로 사용
-
-
-    const fetchAvailability = async (id) => {
-        const data = await fetchAvailabilityApi(id);
-        if (data && typeof data === 'object') {
-            setAvailability(data.details || data);
-        } else {
-            setAvailability([]);
-        }
-    };
+    }, [fetchEvents]);
 
     return (
         <div className="board">
@@ -547,7 +325,7 @@ const Schedule = () => {
             <div className="calender-container">
                 {!whenToMeet ? (
                     <>
-                        <div className="buttonys">
+                        <div className="schedule-controls">
                             <button className="create-schedule-button" onClick={handleCreateEvent}>
                                 일정 생성하기
                             </button>
@@ -580,7 +358,7 @@ const Schedule = () => {
                 ) : (
                     <WhenToMeetGrid
                         onExit={exitWhenToMeet}
-                        onAvailabilityConfirm={handleAvailabilityConfirm}
+                       
                     />
                 )}
             </div>
