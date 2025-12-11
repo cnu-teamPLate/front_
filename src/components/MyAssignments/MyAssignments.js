@@ -2,10 +2,9 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
-const baseURL = "http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080";
+const baseURL = "https://www.teamplate-api.site";
 //const getAssignment = `${baseURL}/task/view?projId=${projId}&id=${id}`;
 
-const testURL ="http://ec2-3-34-140-89.ap-northeast-2.compute.amazonaws.com:8080/task/view?projId=CSE00001&id=20241099";
 const urlParams = new URLSearchParams(new URL(testURL).search);
 const projectId = urlParams.get("projId");
 const currentId = urlParams.get("id");
@@ -150,10 +149,49 @@ const MyAssignments = ({ isSidebar = false }) => {
     
 
     // 체크박스 클릭 시 완료/미완료 상태 변경
-    const handleCheckboxChange = async(taskId) => {
+    const handleCheckboxChange = async (taskId, e) => {
+        // 이벤트 전파 방지 (링크 클릭 방지)
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // 현재 상태에서 체크박스 값 확인 (상태 업데이트 전)
         setAssignments((prevAssignments) => {
+            const currentItem = prevAssignments.find((item) => item.taskId === taskId);
+            const newCheckBoxValue = currentItem?.checkBox === 0 ? 1 : 0;
+            
+            // API 호출 (상태 업데이트 전에 현재 값으로 호출)
+            // API: PUT /task/{taskId}?checkBox={value}
+            (async () => {
+                try {
+                    const apiUrl = `${baseURL}/task/${taskId}?checkBox=${newCheckBoxValue}`;
+                    console.log('체크박스 업데이트 API 호출:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    
+                    const responseData = await response.json().catch(() => null);
+                    
+                    if (response.ok) {
+                        console.log("과제 완료 상태 업데이트 성공:", responseData);
+                    } else {
+                        console.error("과제 완료 상태 업데이트 실패:", responseData);
+                        alert(`과제 완료 상태 업데이트 실패: ${responseData?.message || response.status}`);
+                        // 실패 시 상태 롤백은 하지 않음 (사용자가 다시 시도할 수 있도록)
+                    }
+                } catch (error) {
+                    console.error("서버 요청 중 오류 발생:", error);
+                    alert(`서버 요청 중 오류가 발생했습니다: ${error.message}`);
+                }
+            })();
+            
             const updatedAssignments = prevAssignments.map((item) =>
-                item.taskId === taskId ? { ...item, checkBox: item.checkBox === 0 ? 1 : 0 } : item
+                item.taskId === taskId ? { ...item, checkBox: newCheckBoxValue } : item
             );
 
             // 마감일 기준으로 CSS 클래스 적용
@@ -181,27 +219,7 @@ const MyAssignments = ({ isSidebar = false }) => {
             });
     
             return finalAssignments;
-            //!!마감일에 가까운 과제에 빨간 스트로크 거는게 안되고 있음
         });
-        try {
-            const response = await fetch(`${baseURL}/task/${taskId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    checkBox: assignments.find((item)=> item.taskId === taskId) ?.checkBox === 0 ? 1 : 0,
-                }),
-            });
-            if (response.ok) {
-                console.log("✅ 과제 완료 상태 업데이트 성공!");
-            } else {
-                console.error("❌ 과제 완료 상태 업데이트 실패!");
-            }
-        } catch (error) {
-            console.error("🚨 서버 요청 중 오류 발생:", error);
-        }
-        
     };
 
     //원래는 해당 과제의 taskId에 맞는 걸로 넘어가야함
@@ -242,20 +260,23 @@ const MyAssignments = ({ isSidebar = false }) => {
                 .filter((item) => String(item.id) === currentId)
                 .map((item) => (
                     <div key={item.taskId} className={item.itemClass}>
-                        <a href="/AssignmentDetail" className="click-assignment">
-                        
+                        <a href={`/AssignmentDetail?taskId=${item.taskId}${item.projId ? `&projId=${item.projId}` : ''}`} className="click-assignment">
                             <div className = "each">
                                 <p className = "each-assignment-title"><strong>{item.taskId}</strong></p>
                                 <p className = "each-assignment-kind">{item.cate} / {getComplexityLabel(item.level)} / {formatDate(item.date)}</p>
                                 <p className = "each-assignment-des">{item.detail}</p>
                             </div>
-                            <input className = "finish-check"
-                                type="checkbox"
-                                checked={item.checkBox === 1}
-                                onChange={() => handleCheckboxChange(item.taskId)}
-                            />
-                        
                         </a>
+                        <input 
+                            className = "finish-check"
+                            type="checkbox"
+                            checked={item.checkBox === 1}
+                            onChange={(e) => handleCheckboxChange(item.taskId, e)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                            }}
+                        />
                     </div>
                 ))
             ) : (

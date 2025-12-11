@@ -29,7 +29,7 @@ function MyPage() {
 
       try {
         const response = await fetch(
-          `http://ec2-3-34-144-232.ap-northeast-2.compute.amazonaws.com:8080/auth/read-my-info?userId=${userId}`,
+          `https://www.teamplate-api.site/auth/read-my-info?userId=${userId}`,
           {
             method: "GET",
             headers: {
