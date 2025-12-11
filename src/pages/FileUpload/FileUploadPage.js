@@ -312,28 +312,21 @@ function FileUploadPage() {
       } else if (fileToEdit.urls && typeof fileToEdit.urls === 'string' && fileToEdit.urls.trim() !== '') {
         urlsToSend = [fileToEdit.urls.trim()];
       }
-      
-      // 파일이 있는 경우 FormData 사용, 없는 경우 JSON 사용
-      const hasNewFiles = fileToEdit.newFiles && fileToEdit.newFiles.length > 0;
-      
+
       try {
-        let response;
-        let responseData;
-        
-        if (hasNewFiles) {
-          // 파일이 있는 경우 FormData 사용 (multipart/form-data)
           const formDataToSend = new FormData();
           formDataToSend.append('id', String(fileToEdit.fileId));
           formDataToSend.append('title', fileToEdit.title || '');
           formDataToSend.append('detail', fileToEdit.detail || '');
           formDataToSend.append('category', fileToEdit.category === -1 || fileToEdit.category === null ? '-1' : String(fileToEdit.category));
-          
           formDataToSend.append('urls', JSON.stringify(urlsToSend));
           
-          // 새 파일 추가
-          fileToEdit.newFiles.forEach((fileObj) => {
-            formDataToSend.append('files', fileObj, fileObj.name);
+          const hasNewFiles = fileToEdit.newFiles && fileToEdit.newFiles.length > 0;
+          if (hasNewFiles) {
+            fileToEdit.newFiles.forEach((fileObj) => {
+              formDataToSend.append('files', fileObj, fileObj.name);
           });
+        }
           
           console.log(`파일 수정 요청 (FormData):`, {
             id: fileToEdit.fileId,
@@ -341,46 +334,26 @@ function FileUploadPage() {
             detail: fileToEdit.detail,
             category: fileToEdit.category,
             urls: urlsToSend,
-            files: fileToEdit.newFiles.map(f => f.name)
+            files: hasNewFiles ? fileToEdit.newFiles.map(f => f.name) : []
           });
-
+          
           console.log('FormData entries:');
           for (let pair of formDataToSend.entries()) {
             console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
           }
           
-          response = await fetch(`${API_BASE_URL}/file/put`, {
+          const response = await fetch(`${API_BASE_URL}/file/put`, {
             method: 'PUT',
             body: formDataToSend
           });
-        } else {
-          // 파일이 없는 경우 JSON 사용
-          const payload = {
-            id: fileToEdit.fileId, 
-            title: fileToEdit.title || '', 
-            detail: fileToEdit.detail || '',
-            category: fileToEdit.category === -1 || fileToEdit.category === null ? -1 : parseInt(fileToEdit.category, 10),
-            urls: urlsToSend,
-            files: [] // 파일이 없으면 빈 배열
-          };
           
-          console.log(`파일 수정 요청 (JSON):`, payload);
-          console.log(`JSON 문자열:`, JSON.stringify(payload));
+          console.log(`응답 상태: ${response.status} ${response.statusText}`);
           
-          response = await fetch(`${API_BASE_URL}/file/put`, {
-            method: 'PUT', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(payload)
+          const responseData = await response.json().catch(async () => {
+            const text = await response.text();
+            console.error('응답 파싱 실패, 원본 텍스트:', text);
+            return { message: text || `서버 응답 파싱 실패 (상태: ${response.status})` };
           });
-        }
-        
-        console.log(`응답 상태: ${response.status} ${response.statusText}`);
-        
-        responseData = await response.json().catch(async () => {
-          const text = await response.text();
-          console.error('응답 파싱 실패, 원본 텍스트:', text);
-          return { message: text || `서버 응답 파싱 실패 (상태: ${response.status})` };
-        });
 
         console.log('응답 데이터:', responseData);
         
