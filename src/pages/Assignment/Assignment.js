@@ -1,49 +1,18 @@
 /* eslint-disable no-unused-vars */
 import './Assignment.css';
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
 const baseURL = 'https://www.teamplate-api.site';
 
-const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange }) => {
+const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange, projId }) => {
 
     const isPast = new Date(item.date * 1000) < new Date();
 
     const cardClasses = `assignment-card ${isPast ? 'past-due' : ''} ${item.checkBox === 1 ? 'completed' : ''}`;
     const assigneeName = getAssigneeName(item.userName);
-
-    const testURL = "https://www.teamplate-api.site/task/view?projId=CSE00001&id=20241099";
-    const urlParams = new URLSearchParams(new URL(testURL).search);
-    const projectId = urlParams.get("projId");
-    const id = urlParams.get("id");
-    const getAssignment = `${testURL}`;
-    const navigate = useNavigate();
-
-
-    fetch(getAssignment, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw {
-                    message: "오류 메시지",
-                    checkbox: 400,
-                    cate: "bad_request"
-                };
-            }
-            return response.json();
-        })
-        .then(data => console.log(data))
-        .catch(error => {
-            console.error('Error:', error);
-            alert(`Error ${error.checkbox}: ${error.message}`);
-        });
-
 
     const onCheckboxClick = (e) => {
         e.stopPropagation();
@@ -51,8 +20,16 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
         handleCheckboxChange(item.taskId);
     };
 
+    // item.projId를 우선 사용하고, 없으면 props로 전달된 projId 사용
+    const finalProjId = item.projId || projId;
+    
+    // 디버깅: projId 확인
+    if (!finalProjId) {
+        console.warn("AssignmentCard: projId가 없습니다.", { item, projId });
+    }
+    
     return (
-        <a href={`/AssignmentDetail?taskId=${item.taskId}`} className={cardClasses}>
+        <Link to={`/AssignmentDetail?taskId=${item.taskId}${finalProjId ? `&projId=${finalProjId}` : ''}`} className={cardClasses}>
             <div className="card-status-bar"></div>
             <div className="card-content">
                 <div className="card-header">
@@ -84,7 +61,7 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
                     </div>
                 </div>
             </div>
-        </a>
+        </Link>
     );
 };
 
@@ -129,12 +106,15 @@ function Assignment({ notifications = [] }) {
             try {
                 const response = await fetch(`${baseURL}/member/project/${projId}`);
                 if (!response.ok) {
-                    throw new Error('프로젝트 멤버 정보를 불러올 수 없습니다.');
+                    const errorData = await response.json().catch(() => null);
+                    const errorMsg = errorData?.message || `프로젝트 멤버 정보를 불러올 수 없습니다 (${response.status})`;
+                    throw new Error(errorMsg);
                 }
                 const members = await response.json();
                 setProjectMembers(members);
             } catch (error) {
                 console.error("프로젝트 멤버 로딩 오류:", error);
+                alert(`프로젝트 멤버 정보를 불러올 수 없습니다: ${error.message || '네트워크 오류가 발생했습니다.'}`);
                 setProjectMembers([]);
             }
         };
@@ -155,6 +135,12 @@ function Assignment({ notifications = [] }) {
                 }
                 const data = await response.json();
                 const fetchedData = Array.isArray(data) ? data : [];
+                
+                // 디버깅: 첫 번째 항목의 구조 확인
+                if (fetchedData.length > 0) {
+                    console.log("과제 데이터 샘플:", fetchedData[0]);
+                    console.log("첫 번째 과제의 projId:", fetchedData[0].projId);
+                }
 
                 const sortedData = sortData(fetchedData);
                 setAllAssignments(sortedData);
@@ -167,6 +153,7 @@ function Assignment({ notifications = [] }) {
 
             } catch (error) {
                 console.error('과제 불러오기 오류:', error);
+                alert(`과제 목록을 불러올 수 없습니다: ${error.message || '네트워크 오류가 발생했습니다.'}`);
                 setAllAssignments([]);
                 setMyAssignments([]);
             }
@@ -340,6 +327,7 @@ function Assignment({ notifications = [] }) {
                                             getComplexityLabel={getComplexityLabel}
                                             formatDate={formatDate}
                                             handleCheckboxChange={handleCheckboxChange}
+                                            projId={projId}
                                         />
                                     ))
                                 ) : (
@@ -360,6 +348,7 @@ function Assignment({ notifications = [] }) {
                                             getComplexityLabel={getComplexityLabel}
                                             formatDate={formatDate}
                                             handleCheckboxChange={handleCheckboxChange}
+                                            projId={projId}
                                         />
                                     ))
                                 ) : (

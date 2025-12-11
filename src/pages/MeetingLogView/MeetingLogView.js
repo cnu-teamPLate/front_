@@ -92,14 +92,24 @@ function MeetingLogView() {
   useEffect(() => {
     console.log("useEffect 실행됨");
     // 해당 날짜의 회의록 데이터를 가져오는 함수
-    fetch(`/api/meetinglog/${date}`)
-      .then(response => response.json())
-      .then(data => {
+    const fetchMeetingLog = async () => {
+      try {
+        const response = await fetch(`/api/meetinglog/${date}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMsg = errorData?.message || `데이터를 불러올 수 없습니다 (${response.status})`;
+          throw new Error(errorMsg);
+        }
+        const data = await response.json();
         setMeetingLog(data);
         setSelectedParticipants(data.participants);
-      })
-      .catch(error => console.error("데이터 가져오기 중 에러:", error));
+      } catch (error) {
+        console.error("데이터 가져오기 중 에러:", error);
+        alert(`회의록 데이터를 불러올 수 없습니다: ${error.message || '네트워크 오류가 발생했습니다.'}`);
+      }
+    };
     
+    fetchMeetingLog();
   }, [date]);
 
   
