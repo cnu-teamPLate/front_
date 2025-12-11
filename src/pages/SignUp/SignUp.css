@@ -1,112 +1,195 @@
-
+/* 전체 페이지 컨테이너: 화면 중앙 정렬 및 배경색 지정 */
 .SignUp {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0;
-  height: auto;
-  box-sizing: border-box;  
+  justify-content: center;
+  min-height: 100vh; /* 화면 전체 높이 사용 */
+  background-color: #f8f9fa; /* 부드러운 회색 배경 */
+  padding: 40px 20px;
+  box-sizing: border-box;
 }
 
+.SignUp h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* 진행 단계 (Progress Bar) */
 .signup-progress {
   display: flex;
   justify-content: center;
-  margin: 40px 10px;
+  margin-bottom: 30px;
+  position: relative;
 }
 
 .progress-step {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
+  width: 35px;
+  height: 35px;
+  line-height: 35px;
   border-radius: 50%;
-  background-color: #ddd;
-  color: white;
+  background-color: #e0e0e0;
+  color: #757575;
   text-align: center;
-  margin: 0 10px;
+  font-weight: bold;
+  margin: 0 15px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  z-index: 1; /* 선보다 위에 표시되도록 */
 }
 
+/* 활성화된 단계 스타일 */
 .progress-step.active {
-  background-color: #e89e9e;
+  background-color: #A32125;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(229, 70, 70, 0.2); /* 강조 효과 */
 }
 
+/* 메인 컨텐츠 카드 */
 .signup-content {
   background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 800px;
-  margin-top: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 500px; /* 너무 넓지 않게 조정 (가독성 UP) */
   width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
+  border: 1px solid #eee;
 }
 
 .signup-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.step {
-  margin-bottom: 20px;
-  max-width: 70%;
   width: 100%;
 }
 
+.step {
+  width: 100%;
+  animation: fadeIn 0.4s ease-in-out; /* 단계 전환 시 부드러운 효과 */
+}
+
+.step h3 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.25rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+/* 폼 그룹 및 라벨 */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #333;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #444;
+  font-size: 0.95rem;
 }
 
-.form-group textarea {
-  width: 100%;
-  height: 100px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-  resize: none;
-  margin-bottom: 10px;
-}
-
-.error {
-  color: red;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
+/* 입력 필드 공통 스타일 */
 .form-group input[type="text"],
 .form-group input[type="password"],
 .form-group input[type="email"],
 .form-group input[type="tel"],
-.form-group input[type="num"],
-.form-group input[type="checkbox"] {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
+.form-group textarea {
   width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box; /* 패딩 포함 크기 계산 */
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+/* 입력 필드 포커스 효과 */
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #e53e3e;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* 약관 내용 텍스트박스 (읽기 전용 느낌 강조) */
+.form-group textarea {
+  height: 120px;
+  background-color: #f9fafb;
+  color: #555;
+  line-height: 1.5;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* 체크박스 스타일링 */
 .form-group input[type="checkbox"] {
   width: auto;
-  margin-right: 5px;
+  margin-right: 8px;
+  transform: scale(1.2); /* 체크박스 크기 약간 키움 */
+  cursor: pointer;
 }
 
-
-.SignUp button [type="submit"] {
-  width: 100%;
-  margin-top: 20px;
+/* 에러 메시지 */
+.error {
+  color: #e53e3e;
+  font-size: 13px;
+  margin-top: 6px;
+  display: block;
 }
 
+/* 버튼 컨테이너 */
 .second-button {
-  display: flex;                
-  justify-content: space-between; /* 버튼들을 좌우로 벌리기 */
-  align-items: center;           /* 버튼들을 수직으로 가운데 정렬 */
-  gap: 10px;                     /* 버튼 사이에 10px의 간격 추가 */
-  margin-top: 40px;              /* 위쪽에 여백 추가 */
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+/* 공통 버튼 스타일 */
+button {
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+}
+
+/* 기본 버튼 (다음, 완료, 가입하기) - Primary */
+button[type="submit"],
+button[type="button"]:not(.secondary-btn) {
+  background-color: #A32125;
+  color: white;
+  flex: 1; /* 버튼 너비 균등 분배 */
+  width: 100%; /* 단독 버튼일 때 */
+}
+
+button[type="submit"]:hover,
+button[type="button"]:not(.secondary-btn):hover {
+  background-color: #A32125;
+}
+
+button:disabled {
+  background-color: #fca5a5;
+  cursor: not-allowed;
+}
+
+/* 이전 버튼 스타일 (수동 적용 필요, 아래 JS 수정 팁 참고) - Secondary */
+/* JS 수정 없이도 작동하도록 선택자 지정 */
+.second-button button[type="button"]:first-child {
+  background-color: #e5e7eb;
+  color: #374151;
+  flex: 0.5; /* 이전 버튼은 조금 작게 */
+}
+
+.second-button button[type="button"]:first-child:hover {
+  background-color: #d1d5db;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

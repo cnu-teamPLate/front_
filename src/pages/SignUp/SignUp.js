@@ -46,10 +46,12 @@ function SignUp() {
 
     const prevStep = () => setStep(step - 1);
 
-    const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
         e.preventDefault();
+        
         if (validateStep()) {
-            setIsSubmitting(true); // 요청 시작
+            setIsSubmitting(true);
+            
             try {
                 const response = await fetch('https://www.teamplate-api.site/auth/register', {
                     method: 'POST',
@@ -62,38 +64,44 @@ function SignUp() {
                         pwd: formData.password,
                         email: formData.email,
                         phone: formData.phone,
-                        studentNumber: formData.studentnumber,
                     }),
                 });
 
-                const contentType = response.headers.get('Content-Type');
-
-                if (!response.ok) {
-                    throw {
-                        message: "Username is taken!",
-                        checkbox: 400
-                    };
+                // 1. 409 Conflict (중복) 처리 추가
+                // API 명세와 달리 실제 서버는 409를 반환하므로 이 코드가 실행됩니다.
+                if (response.status === 409) {
+                    const errorData = await response.json();
+                    // 서버에서 보낸 "이미 존재하는 학번입니다" 메시지를 그대로 출력
+                    alert(errorData.message); 
+                    setIsSubmitting(false); // 로딩 해제
+                    return; // 함수 종료 (catch로 넘어가지 않음)
                 }
-                if (response.ok) {
-                    if (contentType && contentType.includes('application/json')) {
-                        // JSON 응답 처리
-                        const result = await response.json();
-                        console.log('회원가입 성공:', result);
-                    } else {
-                        // 일반 텍스트 응답 처리
-                        const text = await response.text();
-                        console.log('회원가입 성공:', text);
-                    }
-                    setStep(3); // 가입 완료 단계로 이동
-                } else {
+
+                // 2. 그 외의 에러 처리 (500 등)
+                if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(errorText || '회원가입에 실패했습니다.');
                 }
+                
+                // 3. 성공 (200 OK)
+                // 성공 시 응답 본문이 비어있을 수도, JSON일 수도 있으므로 안전하게 처리
+                const responseText = await response.text();
+                try {
+                     const result = JSON.parse(responseText);
+                     console.log('회원가입 성공:', result);
+                } catch (e) {
+                     console.log('회원가입 성공 (Text):', responseText);
+                }
+
+                alert("회원가입이 완료되었습니다.");
+                setStep(3); 
+
             } catch (error) {
+                // response.ok가 false이고 409가 아닌 경우 이곳으로 옵니다.
                 console.error('회원가입 요청 오류:', error.message);
-                setErrors({ server: '서버 요청 중 문제가 발생했습니다. 다시 시도해주세요.' });
+                alert('서버 요청 중 문제가 발생했습니다. 관리자에게 문의하세요.');
             } finally {
-                setIsSubmitting(false); // 요청 종료
+                setIsSubmitting(false);
             }
         }
     };
