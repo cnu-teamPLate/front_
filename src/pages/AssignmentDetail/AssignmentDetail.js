@@ -18,7 +18,8 @@ function AssignmentDetail() {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         description: '',
-        assigneeId: ''
+        assigneeId: '',
+        date:''
     });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -157,9 +158,23 @@ function AssignmentDetail() {
     // 수정 모드 진입 시 폼 초기화
     useEffect(() => {
         if (isEditing && assignment) {
+            let dateValue = '';
+            if (assignment.date) {
+                const dateObj = new Date(assignment.date);
+                if (!isNaN(dateObj.getTime())) {
+                    // 로컬 시간으로 변환하여 YYYY-MM-DDTHH:mm 형식으로
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    const hours = String(dateObj.getHours()).padStart(2, '0');
+                    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+                    dateValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+                }
+            }
             setEditForm({
                 description: assignment.detail || '',
-                assigneeId: assignment.userName || ''
+                assigneeId: assignment.userName || '',
+                date: dateValue
             });
         }
     }, [isEditing, assignment]);
@@ -176,7 +191,8 @@ function AssignmentDetail() {
 
             const response = await axios.put(editUrl, {
                 description: editForm.description,
-                assigneeId: editForm.assigneeId
+                assigneeId: editForm.assigneeId,
+                date: editForm.date
             }, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -193,12 +209,14 @@ function AssignmentDetail() {
                 // 수정한 내용을 변수에 저장 (클로저 문제 방지)
                 const savedDescription = editForm.description;
                 const savedAssigneeId = editForm.assigneeId;
+                const savedDate = editForm.date;
                 
                 // 수정 성공 시 즉시 로컬 상태 업데이트
                 const updatedAssignment = {
                     ...assignment,
                     detail: savedDescription, // description을 detail로 매핑
-                    userName: savedAssigneeId // assigneeId를 userName으로 매핑
+                    userName: savedAssigneeId, // assigneeId를 userName으로 매핑
+                    date: savedDate || assignment.date // date 업데이트
                 };
                 setAssignment(updatedAssignment);
                 console.log('로컬 상태 업데이트:', updatedAssignment);
@@ -375,7 +393,25 @@ function AssignmentDetail() {
                         <p><strong>담당자:</strong> {userName}</p>
                         <p><strong>분류:</strong> {cate}</p>
                         <p><strong>난이도:</strong> <span className={`level-tag level-${level}`}>{getComplexityLabel(level)}</span></p>
-                        <p><strong>마감일:</strong> {formatDate(date)}</p>
+                        <p>
+                            <strong>마감일:</strong> 
+                            {isEditing ? (
+                                <input
+                                    type="datetime-local"
+                                    value={editForm.date}
+                                    onChange={(e) => setEditForm(prev => ({ ...prev, date: e.target.value }))}
+                                    style={{ 
+                                        marginLeft: '8px', 
+                                        padding: '4px 8px', 
+                                        fontSize: '14px', 
+                                        border: '1px solid #ddd', 
+                                        borderRadius: '4px' 
+                                    }}
+                                />
+                            ) : (
+                                <span style={{ marginLeft: '8px' }}>{formatDate(date)}</span>
+                            )}
+                        </p>
                     </div>
                     <div className="task-description">
                         <h3>과제 설명</h3>
