@@ -126,7 +126,7 @@ function FileUploadPage() {
           detail: file.detail || '',
           category: file.category !== undefined ? file.category : -1,
           taskName: taskName || file.taskName || null, // 매핑된 taskName 추가
-          urls: Array.isArray(file.url) ? file.url : (file.url ? [file.url] : []),
+          urls: Array.isArray(file.urls) ? file.urls : (Array.isArray(file.url) ? file.url : (file.url ? [file.url] : (file.urls ? [file.urls] : []))),
         };
       })
     );
@@ -173,6 +173,8 @@ function FileUploadPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("업로드 버튼 클릭됨. 현재 formData:", formData);
+    
+    // 필수 필드 검증
     if (!formData.id || !formData.projId) {
       setStatusMessage('사용자 ID 또는 프로젝트 ID가 없습니다.');
       return;
@@ -278,31 +280,140 @@ function FileUploadPage() {
     updated[index] = { ...updated[index], [field]: value };
     setEditedFiles(updated);
   };
+
+  const handleFileChangeForEdit = (index, e) => {
+    const selectedFiles = Array.from(e.target.files);
+    const updated = [...editedFiles];
+    updated[index] = { 
+      ...updated[index], 
+      newFiles: selectedFiles // 새로 선택한 파일들을 저장
+    };
+    setEditedFiles(updated);
+  };
   const handleFileSelectForDeletion = (fileId) => {
     setSelectedFilesToDelete(prev => prev.includes(fileId) ? prev.filter(id => id !== fileId) : [...prev, fileId]);
   };
 
   const handleSaveEdits = async () => {
-    if (editedFiles.length === 0) { setStatusMessage("수정할 파일이 없습니다."); return; }
-    setStatusMessage("수정 사항 저장 중..."); let allSuccess = true; setMode('default');
-    for (const fileToEdit of editedFiles) {
-      const urlsToSend = Array.isArray(fileToEdit.urls) ? fileToEdit.urls : [];
-      const payload = {
-        id: fileToEdit.fileId, title: fileToEdit.title, detail: fileToEdit.detail,
-        category: fileToEdit.category === -1 || fileToEdit.category === null ? null : parseInt(fileToEdit.category, 10),
-        urls: urlsToSend,
-      };
-      try {
-        const response = await fetch(`${API_BASE_URL}/file/put`, {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-        });
-        if (!response.ok) { allSuccess = false; const errorData = await response.json().catch(() => null); console.error(`파일 ID ${fileToEdit.fileId} 수정 실패:`, errorData?.message || response.status); }
-      } catch (error) { allSuccess = false; console.error(`파일 ID ${fileToEdit.fileId} 수정 중 네트워크 오류:`, error); }
+    if (editedFiles.length === 0) { 
+      setStatusMessage("수정할 파일이 없습니다."); 
+      return; 
     }
-    setMode('default');
-    console.log('000');
-    setStatusMessage(allSuccess ? "모든 수정 사항이 저장되었습니다." : "일부 파일 수정에 실패했습니다. 콘솔을 확인해주세요.");
-    fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
+    
+    setStatusMessage("수정 사항 저장 중...");
+    let allSuccess = true;
+    const errors = [];
+    
+    for (const fileToEdit of editedFiles) {
+      // URL 처리: 배열이거나 문자열일 수 있음
+      let urlsToSend = [];
+      if (Array.isArray(fileToEdit.urls)) {
+        urlsToSend = fileToEdit.urls.filter(url => url && url.trim() !== '');
+      } else if (fileToEdit.urls && typeof fileToEdit.urls === 'string' && fileToEdit.urls.trim() !== '') {
+        urlsToSend = [fileToEdit.urls.trim()];
+      }
+      
+      // 파일이 있는 경우 FormData 사용, 없는 경우 JSON 사용
+      const hasNewFiles = fileToEdit.newFiles && fileToEdit.newFiles.length > 0;
+      
+      try {
+        let response;
+        let responseData;
+        
+        if (hasNewFiles) {
+          // 파일이 있는 경우 FormData 사용 (multipart/form-data)
+          const formDataToSend = new FormData();
+          formDataToSend.append('id', String(fileToEdit.fileId));
+          formDataToSend.append('title', fileToEdit.title || '');
+          formDataToSend.append('detail', fileToEdit.detail || '');
+          formDataToSend.append('category', fileToEdit.category === -1 || fileToEdit.category === null ? '-1' : String(fileToEdit.category));
+          
+          formDataToSend.append('urls', JSON.stringify(urlsToSend));
+          
+          // 새 파일 추가
+          fileToEdit.newFiles.forEach((fileObj) => {
+            formDataToSend.append('files', fileObj, fileObj.name);
+          });
+          
+          console.log(`파일 수정 요청 (FormData):`, {
+            id: fileToEdit.fileId,
+            title: fileToEdit.title,
+            detail: fileToEdit.detail,
+            category: fileToEdit.category,
+            urls: urlsToSend,
+            files: fileToEdit.newFiles.map(f => f.name)
+          });
+
+          console.log('FormData entries:');
+          for (let pair of formDataToSend.entries()) {
+            console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+          }
+          
+          response = await fetch(`${API_BASE_URL}/file/put`, {
+            method: 'PUT',
+            body: formDataToSend
+          });
+        } else {
+          // 파일이 없는 경우 JSON 사용
+          const payload = {
+            id: fileToEdit.fileId, 
+            title: fileToEdit.title || '', 
+            detail: fileToEdit.detail || '',
+            category: fileToEdit.category === -1 || fileToEdit.category === null ? -1 : parseInt(fileToEdit.category, 10),
+            urls: urlsToSend,
+            files: [] // 파일이 없으면 빈 배열
+          };
+          
+          console.log(`파일 수정 요청 (JSON):`, payload);
+          console.log(`JSON 문자열:`, JSON.stringify(payload));
+          
+          response = await fetch(`${API_BASE_URL}/file/put`, {
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload)
+          });
+        }
+        
+        console.log(`응답 상태: ${response.status} ${response.statusText}`);
+        
+        responseData = await response.json().catch(async () => {
+          const text = await response.text();
+          console.error('응답 파싱 실패, 원본 텍스트:', text);
+          return { message: text || `서버 응답 파싱 실패 (상태: ${response.status})` };
+        });
+
+        console.log('응답 데이터:', responseData);
+        
+        if (!response.ok) { 
+          allSuccess = false;
+          const errorMsg = responseData?.message || responseData?.error || `HTTP ${response.status}`;
+          errors.push(`파일 "${fileToEdit.title || fileToEdit.fileId}" 수정 실패: ${errorMsg}`);
+          console.error(`파일 ID ${fileToEdit.fileId} 수정 실패:`, {
+            status: response.status,
+            statusText: response.statusText,
+            responseData: responseData
+          });
+        } else {
+          console.log(`파일 ID ${fileToEdit.fileId} 수정 성공:`, responseData);
+        }
+      } catch (error) { 
+        allSuccess = false;
+        const errorMsg = `네트워크 오류: ${error.message}`;
+        errors.push(`파일 "${fileToEdit.title || fileToEdit.fileId}" 수정 실패: ${errorMsg}`);
+        console.error(`파일 ID ${fileToEdit.fileId} 수정 중 네트워크 오류:`, error); 
+        console.error('에러 스택:', error.stack);
+      }
+    }
+    
+    // 모든 수정 요청이 완료된 후에만 모드 변경 및 데이터 새로고침
+    if (allSuccess) {
+      setStatusMessage("모든 수정 사항이 저장되었습니다.");
+      setMode('default');
+      // 데이터 새로고침을 기다림
+      await fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
+    } else {
+      setStatusMessage(`일부 파일 수정에 실패했습니다: ${errors.join('; ')}`);
+    }
   };
 
   const handleDeleteSelectedFiles = async () => {
@@ -346,7 +457,7 @@ function FileUploadPage() {
       <div className="upload-section">
         <h2>자료 업로드</h2>
         <form onSubmit={handleSubmit}>
-          <div className="file-group">
+          <div className="form-group">
             <label className="task-list-title">연관 과제 (선택)</label>
             <div className="task-list-scroll">
               {taskList.length > 0 ? taskList.map((task, index) => (
@@ -362,61 +473,60 @@ function FileUploadPage() {
             </div>
           </div>
 
-        <div className="file-group">
-          <div className="files-group">
-          <label htmlFor="file-upload-input">파일 선택 (다중 선택 가능)</label>
-            <input 
-              id="file-upload-input"
-              type="file" 
-              multiple 
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-            <button 
-              type="button"
-              onClick={() => document.getElementById('file-upload-input')?.click()}
-              className="file-upload-button"
-            >
-              파일 선택
-            </button>
-          </div>
-
-          {/* 업로드할 파일 미리보기 목록 */}
-          {filesForUploadUI.length > 0 && (
-            <div className="selected-files-preview">
-              <button type="button" className='all-delete' onClick={handleDeleteFromUploadForm} >전체 삭제</button>
-              <ul className="file-list">
-                {filesForUploadUI.map((file, index) => (
-                  <li key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                    <span>
-                      {file.name} ({file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : `${Math.round(file.size / 1024)} KB`})
-                    </span>
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemoveFileFromUploadList(index)}
-                      style={{ marginLeft: '10px', padding: '2px 8px', fontSize: '12px' }}
-                    >
-                      X
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              
+          <div className="form-group">
+            <div className="files-group">
+              <label htmlFor="file-upload-input">파일 선택 (다중 선택 가능)</label>
+              <input 
+                id="file-upload-input"
+                type="file" 
+                multiple 
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <button 
+                type="button"
+                onClick={() => document.getElementById('file-upload-input')?.click()}
+                className="file-upload-button"
+              >
+                파일 선택
+              </button>
             </div>
-          )}
+
+            {/* 업로드할 파일 미리보기 목록 */}
+            {filesForUploadUI.length > 0 && (
+              <div className="selected-files-preview">
+                <button type="button" className='all-delete' onClick={handleDeleteFromUploadForm} >전체 삭제</button>
+                <ul className="file-list">
+                  {filesForUploadUI.map((file, index) => (
+                    <li key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                      <span>
+                        {file.name} ({file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : `${Math.round(file.size / 1024)} KB`})
+                      </span>
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveFileFromUploadList(index)}
+                        style={{ marginLeft: '10px', padding: '2px 8px', fontSize: '12px' }}
+                      >
+                        X
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
-          <div className="file-group">
+          <div className="form-group">
             <label htmlFor="file-title">제목</label>
             <input id="file-title" className='title' type='text' placeholder='제목을 입력해주세요' name='title' value={formData.title} onChange={handleUploadInputChange} />
           </div>
 
-          <div className="file-group">
+          <div className="form-group">
             <label htmlFor="file-detail">설명</label>
             <textarea id="file-detail" className='detail' placeholder='설명을 입력해주세요' name='detail' value={formData.detail} onChange={handleUploadInputChange} />
           </div>
 
-          <div className="file-group">
+          <div className="form-group">
             <label>외부 URL (선택 사항, 여러 개 추가 가능)</label>
             <div className="url-input-wrapper">
               <input className='url-input'
@@ -491,10 +601,9 @@ function FileUploadPage() {
             <thead>
               <tr>
                 {mode === 'delete' && <th className="checkbox-column">선택</th>}
-                <th>{mode === 'edit' ? '제목 (수정)' : '제목'}</th>
+                <th>{mode === 'edit' ? '제목/설명 (수정)' : '제목'}</th>
                 <th className='task-title-box'>연관 과제</th>
-                <th className='date-title-box'>업로드 날짜</th>
-                {mode === 'edit' && <th>설명 (수정)</th>}
+                {mode !== 'edit' && <th className='date-title-box'>업로드 날짜</th>}
                 {mode === 'edit' && <th>URL (수정)</th>}
               </tr>
             </thead>
@@ -548,35 +657,97 @@ function FileUploadPage() {
                       </div>
 
                     ) : (
-                      <input
-                        className="edit-input"
-                        type="text"
-                        value={file.title}
-                        onChange={(e) =>
-                          handleInputChangeForListedFile(index, 'title', e.target.value)
-                        }
-                      />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          className="edit-input"
+                          type="text"
+                          value={file.title}
+                          onChange={(e) =>
+                            handleInputChangeForListedFile(index, 'title', e.target.value)
+                          }
+                          placeholder="제목"
+                          style={{ boxSizing: 'border-box', width: '100%', padding: '8px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '4px' }}
+                        />
+                        <textarea
+                          className="edit-input"
+                          value={file.detail}
+                          onChange={(e) => handleInputChangeForListedFile(index, 'detail', e.target.value)}
+                          placeholder="설명"
+                          style={{  boxSizing: 'border-box',width: '100%', minHeight: '60px', padding: '8px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '4px', resize: 'none' }}
+                        />
+                      </div>
                     )}
                   </td>
                   <td className='category-text'>
-                    {file.taskName && file.taskName.trim() && file.category !== -1 && file.category != null ? (
-                      <Link
-                        to={`/AssignmentDetail?taskId=${file.category}${currentProjId ? `&projId=${currentProjId}` : ''}`}
-                        className="task-link"
+                    {mode === 'edit' ? (
+                      <select
+                        value={file.category === -1 || file.category === null ? '' : file.category}
+                        onChange={(e) => {
+                          const newCategory = e.target.value === '' ? -1 : parseInt(e.target.value, 10);
+                          handleInputChangeForListedFile(index, 'category', newCategory);
+                        }}
+                        style={{  boxSizing: 'border-box',width: '100%', padding: '8px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '4px' }}
                       >
-                        {file.taskName}
-                      </Link>
+                        <option value="">없음</option>
+                        {taskList.map((task) => (
+                          <option key={task.taskId} value={task.taskId}>
+                            {task.detail || task.title || `과제 ID: ${task.taskId}`}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
-                      '없음'
+                      file.taskName && file.taskName.trim() && file.category !== -1 && file.category != null ? (
+                        <Link
+                          to={`/AssignmentDetail?taskId=${file.category}${currentProjId ? `&projId=${currentProjId}` : ''}`}
+                          className="task-link"
+                        >
+                          {file.taskName}
+                        </Link>
+                      ) : (
+                        '없음'
+                      )
                     )}
                   </td>
-                  <td className='date-text'>{formatDate(file.uploadDate || file.date)}</td>
-                  {mode === 'edit' && (<td> <input className="edit-input" type="text" value={file.detail} onChange={(e) => handleInputChangeForListedFile(index, 'detail', e.target.value)} /> </td>)}
-                  {mode === 'edit' && (<td> <input className="edit-input" type="text" value={file.urls && file.urls[0] ? file.urls[0] : ''} onChange={(e) => handleInputChangeForListedFile(index, 'urls', [e.target.value])} placeholder="URL 입력" /> </td>)}
+
+                  {mode !== 'edit' && <td className='date-text'>{formatDate(file.uploadDate || file.date)}</td>}
+                  {mode === 'edit' && (
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* 파일 변경 */}
+                        <div>
+                          <input
+                            type="file"
+                            multiple
+                            onChange={(e) => handleFileChangeForEdit(index, e)}
+                            style={{ boxSizing: 'border-box', width: '100%', padding: '4px', fontSize: '12px', border: '1px solid #ddd', borderRadius: '4px' }}
+                          />
+                          {file.newFiles && file.newFiles.length > 0 && (
+                            <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                              선택된 파일: {file.newFiles.map(f => f.name).join(', ')}
+                            </div>
+                          )}
+                        </div>
+                        {/* URL 입력 */}
+                        <div>
+                          <input
+                            className="edit-input"
+                            type="text"
+                            value={Array.isArray(file.urls) && file.urls.length > 0 ? file.urls[0] : (file.urls && typeof file.urls === 'string' ? file.urls : '')}
+                            onChange={(e) => {
+                              const urlValue = e.target.value.trim();
+                              handleInputChangeForListedFile(index, 'urls', urlValue ? [urlValue] : []);
+                            }}
+                            placeholder="URL 입력"
+                            style={{ boxSizing: 'border-box', width: '100%', padding: '8px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '4px' }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={mode === 'edit' ? 6 : (mode === 'delete' ? 4 : 3)} style={{ textAlign: 'center', padding: '20px' }}>
+                  <td colSpan={mode === 'edit' ? 4 : (mode === 'delete' ? 4 : 3)} style={{ textAlign: 'center', padding: '20px' }}>
                     {statusMessage.includes('로딩 중') ? '로딩 중...' : (statusMessage && !statusMessage.includes('업로드') ? statusMessage : '표시할 파일이 없습니다.')}
                   </td>
                 </tr>

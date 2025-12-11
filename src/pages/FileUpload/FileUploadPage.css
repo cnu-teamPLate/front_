@@ -334,9 +334,10 @@ h2 {
 }
 
 table {
-  width: 100% !important;
+  width: 100% ;
   border-collapse: collapse !important;
   background-color: white !important;
+  table-layout: fixed !important;
 }
 
 th,
@@ -344,6 +345,8 @@ td {
   text-align: center !important;
   padding: 10px !important;
   border-bottom: 1px solid #ccc !important;
+  overflow: hidden !important;
+  word-wrap: break-word !important;
 }
 
 .task-link {
