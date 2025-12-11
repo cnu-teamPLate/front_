@@ -1,0 +1,103 @@
+/* --- Project Sidebar --- */
+.project-sidebar {
+  width: 240px; /* 기본 너비 */
+  height: 100vh; /* 화면 전체 높이 */
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* 내부 버튼 위치 잡기 위해 */
+  
+  /* ✨ 애니메이션 추가 */
+  transition: all 0.3s ease-in-out;
+  overflow: hidden; /* 닫힐 때 내부 내용 숨김 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
+/* 닫혔을 때 스타일 */
+.project-sidebar.closed {
+  width: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
+}
+
+/* --- 토글 버튼 스타일 --- */
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #6b7280;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-btn:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* 사이드바 내부 닫기 버튼 위치 */
+.sidebar-header {
+    display: flex;
+    justify-content: flex-end; /* 오른쪽 정렬 */
+    margin-bottom: 1rem;
+}
+
+/* 사이드바 외부 열기 버튼 위치 */
+.open-btn {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  z-index: 100; /* 콘텐츠 위에 떠있어야 함 */
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 잘 보이게 그림자 추가 */
+  border: 1px solid #e5e7eb;
+}
+
+/* --- 기존 스타일 유지 --- */
+.project-sidebar nav {
+  height: 100%;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+/* 사이드바 닫힐 때 내용물도 부드럽게 사라지게 */
+.project-sidebar.closed nav {
+  opacity: 0;
+}
+
+.project-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.project-sidebar li a {
+  display: block;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.project-sidebar li a:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.project-sidebar hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}

@@ -1,44 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; 
+
+import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
 import './project.css';
 
 // API base URL
 const API_BASE_URL = 'https://www.teamplate-api.site';
-
-// --- ProjectSidebar Component ---
-// This could be moved to its own file in /components/ProjectSidebar/ for better organization
-const ProjectSidebar = ({ projectId }) => {
-  const userId = localStorage.getItem('userId');
-  const sidebarLinks = [
-    { path: `/assignment?projectId=${projectId}&userId=${userId}`, label: '과제' },
-    { path: `/schedule?projectId=${projectId}&userId=${userId}`, label: '프로젝트 일정' },
-    { path: `/project/${projectId}/MeetingLog`, label: '회의록' },
-    { path: `/FileUpload?projectId=${projectId}&userId=${userId}`, label: '자료 업로드' },
-  ];
-
-  return (
-    <aside className="project-sidebar">
-      <nav>
-        <ul>
-          {sidebarLinks.map(link => (
-            <li key={link.path}>
-              <Link to={link.path}>{link.label}</Link>
-            </li>
-          ))}
-        </ul>
-        <hr />
-        <ul>
-          <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer">깃허브 바로가기</a></li>
-          <li><Link to="/useful-sites">팀플 유용 사이트</Link></li>
-          <li><Link to="/experiences">경험담 보기</Link></li>
-          <li><Link to="/meeting-rooms">우리 학교 회의실</Link></li>
-        </ul>
-      </nav>
-    </aside>
-  );
-};
-
-// --- ProjectDetail Page ---
 
 function ProjectDetail() {
   const { projectId } = useParams();
@@ -61,18 +28,19 @@ function ProjectDetail() {
       }
 
       try {
-        // 1. Fetch all projects to find details for the current one
+        // 1. 전체 프로젝트 목록 조회 후 현재 프로젝트 찾기
         const projectsResponse = await fetch(`${API_BASE_URL}/projects/view?userId=${userId}`);
         if (!projectsResponse.ok) throw new Error('프로젝트 목록을 불러오는 데 실패했습니다.');
         const allProjects = await projectsResponse.json();
         const currentProject = allProjects.find(p => p.projId === projectId);
+        
         if (currentProject) {
           setProject(currentProject);
         } else {
           throw new Error('해당 프로젝트 정보를 찾을 수 없습니다.');
         }
 
-        // 2. Fetch project members
+        // 2. 팀원 목록 조회
         const membersResponse = await fetch(`${API_BASE_URL}/member/project/${projectId}`);
         if (!membersResponse.ok) {
           if (membersResponse.status === 404) throw new Error('존재하지 않는 프로젝트입니다.');
@@ -94,8 +62,6 @@ function ProjectDetail() {
     }
   }, [projectId]);
 
-  // 과제 페이지로 이동하는 함수 제거됨
-
   if (loading) {
     return <div className="project-loading">Loading project details...</div>;
   }
@@ -110,8 +76,9 @@ function ProjectDetail() {
 
   return (
     <div className="ProjectPage">
-      {/* Sidebar 제거됨 */}
+      {/* ✨ 분리된 사이드바 컴포넌트 사용 */}
       <ProjectSidebar projectId={projectId} />
+      
       <main className="project-content">
         <div className="project-header">
           <h1>{project.projName || '프로젝트 이름 없음'}</h1>
@@ -135,7 +102,6 @@ function ProjectDetail() {
               <p>이 프로젝트에 참여중인 팀원이 없습니다.</p>
             )}
           </div>
-          {/* 과제 보러가기 버튼 제거됨 */}
         </div>
       </main>
     </div>

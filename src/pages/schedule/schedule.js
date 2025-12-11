@@ -7,6 +7,7 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid from "./when2meet";
+import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
 
 const API = 'https://www.teamplate-api.site';
 
@@ -101,11 +102,6 @@ const Schedule = () => {
     const [popupContent, setPopupContent] = useState('');
     const [popupStyle, setPopupStyle] = useState({ display: 'none', top: 0, left: 0 });
     const [loading, setLoading] = useState(false);
-
-
-    const toggleSidebar = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
 
     const handleCreateEvent = () => {
         // 팝업이 열릴 때 newEvent 상태 초기화 (필요시)
