@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import moment from 'moment';
 import './schedule.css';
 
-const API_BASE_URL = 'https://www.teamplate-api.site';
+const API_BASE_URL = 'https://teamplate-api.site';
 
 // ===================================================================
 //                        Utility Functions

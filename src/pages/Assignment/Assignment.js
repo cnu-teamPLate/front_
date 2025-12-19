@@ -5,7 +5,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
-const baseURL = 'https://www.teamplate-api.site';
+const baseURL = 'https://teamplate-api.site';
 
 const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange, projId }) => {
 

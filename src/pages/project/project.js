@@ -5,7 +5,7 @@ import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
 import './project.css';
 
 // API base URL
-const API_BASE_URL = 'https://www.teamplate-api.site';
+const API_BASE_URL = 'https://teamplate-api.site';
 
 function ProjectDetail() {
   const { projectId } = useParams();

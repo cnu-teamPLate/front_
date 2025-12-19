@@ -51,7 +51,7 @@ function SignUp() {
         if (validateStep()) {
             setIsSubmitting(true); // 요청 시작
             try {
-                const response = await fetch('https://www.teamplate-api.site/auth/register', {
+                const response = await fetch('https://teamplate-api.site/auth/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

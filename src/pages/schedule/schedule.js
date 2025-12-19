@@ -9,7 +9,7 @@ import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid from "./when2meet";
 import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
 
-const API = 'https://www.teamplate-api.site';
+const API = 'https://teamplate-api.site';
 
 async function fetchEventsApi({ projId, userId, currentDate, view }) {
     if (!projId || !userId) {

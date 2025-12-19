@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom'; // 파일 상단에 추가
 
-const API_BASE_URL = 'https://www.teamplate-api.site';
+const API_BASE_URL = 'https://teamplate-api.site';
 
 function FileUploadPage() {
   const [files, setFiles] = useState([]);
