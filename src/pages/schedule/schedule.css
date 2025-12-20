@@ -565,11 +565,33 @@ body {
   /* Ensures child border-radius is clipped */
   font-size: 0.8rem;
   background-color: var(--bg-primary);
+  position: relative;
+  padding-left: 72px;
 }
 
 .grid-header,
 .grid-row {
   display: flex;
+}
+
+.grid-row {
+  position: relative;
+}
+
+.grid-row::before {
+  content: attr(data-time);
+  position: absolute;
+  left: -72px;
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  padding: 0 8px;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 1;
 }
 
 .grid-cell {
