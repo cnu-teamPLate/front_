@@ -503,65 +503,69 @@ const VoteAndViewStep = ({ when2meetId, onBack }) => {
                 {/* 왼쪽: 내 시간 선택 (드래그) */}
                 <div>
                     <h3>내 시간 선택하기 (드래그)</h3>
-                    <div className="time-grid" onMouseLeave={() => setIsDragging(false)}>
-                        <div className="grid-header">
-                            {dates.map(d => <div key={d} className="grid-cell date-label">{moment(d).format('MM/DD')}</div>)}
-                        </div>
-                        {timeSlots.map(time => (
-                            <div key={time} className="grid-row" data-time={time}>
-                                {dates.map(date => {
-                                    const cellKey = `${date}-${time}`;
-                                    const isSelected = mySelectedTimes.includes(cellKey);
-                                    return (
-                                        <div
-                                            key={cellKey}
-                                            className={`grid-cell selection-cell ${isSelected ? 'selected' : ''}`}
-                                            onMouseDown={() => handleMouseDown(cellKey)}
-                                            onMouseEnter={() => handleMouseEnter(cellKey)}
-                                        />
-                                    );
-                                })}
+                    <div className="time-grid-scroll">
+                        <div className="time-grid" onMouseLeave={() => setIsDragging(false)}>
+                            <div className="grid-header">
+                                {dates.map(d => <div key={d} className="grid-cell date-label">{moment(d).format('MM/DD')}</div>)}
                             </div>
-                        ))}
+                            {timeSlots.map(time => (
+                                <div key={time} className="grid-row" data-time={time}>
+                                    {dates.map(date => {
+                                        const cellKey = `${date}-${time}`;
+                                        const isSelected = mySelectedTimes.includes(cellKey);
+                                        return (
+                                            <div
+                                                key={cellKey}
+                                                className={`grid-cell selection-cell ${isSelected ? 'selected' : ''}`}
+                                                onMouseDown={() => handleMouseDown(cellKey)}
+                                                onMouseEnter={() => handleMouseEnter(cellKey)}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* 오른쪽: 종합 결과 (히트맵) */}
                 <div>
                     <h3>팀원 응답 현황 ({totalUsers}명)</h3>
-                    <div className="time-grid">
-                        <div className="grid-header">
-                            {dates.map(d => <div key={d} className="grid-cell date-label">{moment(d).format('MM/DD')}</div>)}
-                        </div>
-                        {timeSlots.map(time => (
-                            <div key={time} className="grid-row" data-time={time}>
-                                {dates.map(date => {
-                                    // 이 시간대에 가능한 유저 필터링
-                                    const availableUsers = availability[date]?.filter(avail => {
-                                        const slotStart = moment(time, 'h:mm A');
-                                        const availStart = moment(avail.startTime, 'HH:mm:ss');
-                                        const availEnd = moment(avail.endTime, 'HH:mm:ss');
-                                        return slotStart.isBetween(availStart, availEnd, undefined, '[)');
-                                    }) || [];
-
-                                    const count = availableUsers.length;
-                                    const opacity = totalUsers > 0 ? count / totalUsers : 0;
-                                    const userNames = availableUsers.map(u => u.username).join(', ');
-
-                                    return (
-                                        <div
-                                            key={`${date}-${time}`}
-                                            className="grid-cell heatmap-cell"
-                                            title={count > 0 ? `${count}/${totalUsers}명 가능: ${userNames}` : '가능한 인원 없음'}
-                                            style={{
-                                                backgroundColor: `rgba(72, 187, 120, ${opacity})` // Green Heatmap
-                                            }}
-                                        >
-                                        </div>
-                                    );
-                                })}
+                    <div className="time-grid-scroll">
+                        <div className="time-grid">
+                            <div className="grid-header">
+                                {dates.map(d => <div key={d} className="grid-cell date-label">{moment(d).format('MM/DD')}</div>)}
                             </div>
-                        ))}
+                            {timeSlots.map(time => (
+                                <div key={time} className="grid-row" data-time={time}>
+                                    {dates.map(date => {
+                                        // 이 시간대에 가능한 유저 필터링
+                                        const availableUsers = availability[date]?.filter(avail => {
+                                            const slotStart = moment(time, 'h:mm A');
+                                            const availStart = moment(avail.startTime, 'HH:mm:ss');
+                                            const availEnd = moment(avail.endTime, 'HH:mm:ss');
+                                            return slotStart.isBetween(availStart, availEnd, undefined, '[)');
+                                        }) || [];
+
+                                        const count = availableUsers.length;
+                                        const opacity = totalUsers > 0 ? count / totalUsers : 0;
+                                        const userNames = availableUsers.map(u => u.username).join(', ');
+
+                                        return (
+                                            <div
+                                                key={`${date}-${time}`}
+                                                className="grid-cell heatmap-cell"
+                                                title={count > 0 ? `${count}/${totalUsers}명 가능: ${userNames}` : '가능한 인원 없음'}
+                                                style={{
+                                                    backgroundColor: `rgba(72, 187, 120, ${opacity})` // Green Heatmap
+                                                }}
+                                            >
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
