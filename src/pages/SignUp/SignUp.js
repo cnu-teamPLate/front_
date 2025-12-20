@@ -196,7 +196,7 @@ function SignUp() {
                                 </div>
                                 {errors.privacy && <p className="error">{errors.privacy}</p>}
                             </div>
-                            <button type="signup-button" onClick={nextStep}>다음</button>
+                            <button type="submit" onClick={nextStep}>다음</button>
                         </div>
                     )}
 
