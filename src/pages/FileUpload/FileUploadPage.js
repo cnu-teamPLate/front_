@@ -1,6 +1,6 @@
 import './FileUploadPage.css';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom'; // 파일 상단에 추가
 
 const API_BASE_URL = 'https://teamplate-api.site';
@@ -11,6 +11,7 @@ function FileUploadPage() {
   const [statusMessage, setStatusMessage] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+  const params = useParams();
 
   const [selectedFilter, setSelectedFilter] = useState('proj');
   const [taskList, setTaskList] = useState([]);
@@ -25,12 +26,12 @@ function FileUploadPage() {
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState([]);
 
   const urlParams = new URLSearchParams(location.search);
-  const currentUserId = urlParams.get("userId");
-  const currentProjId = urlParams.get("projectId");
+  const currentProjId = params.projId || urlParams.get("projectId");
+  const currentUserId = urlParams.get("userId") || localStorage.getItem('userId');
 
   const [formData, setFormData] = useState({
-    id: currentUserId, // cURL에서는 20211079 사용, 여기서는 currentUserId로 통일
-    projId: currentProjId,
+    id: null,
+    projId: null,
     title: '',
     detail: '',
     category: -1,
@@ -38,6 +39,15 @@ function FileUploadPage() {
     file: [],     // File 객체 배열
   });
 
+  useEffect(() => {
+    if (currentProjId || currentUserId) {
+      setFormData(prev => ({
+        ...prev,
+        id: currentUserId || prev.id,
+        projId: currentProjId || prev.projId,
+      }));
+    }
+  }, [currentProjId, currentUserId]);
 
 
   const fetchTasks = useCallback(async () => {
@@ -172,11 +182,15 @@ function FileUploadPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const finalUserId = currentUserId || localStorage.getItem('userId');
+    const finalProjId = currentProjId;
+    
     console.log("업로드 버튼 클릭됨. 현재 formData:", formData);
+    console.log("사용할 ID:", { userId: finalUserId, projId: finalProjId });
     
     // 필수 필드 검증
-    if (!formData.id || !formData.projId) {
-      setStatusMessage('사용자 ID 또는 프로젝트 ID가 없습니다.');
+    if (!finalUserId || !finalProjId) {
+      setStatusMessage(`사용자 ID 또는 프로젝트 ID가 없습니다. (userId: ${finalUserId}, projId: ${finalProjId})`);
       return;
     }
     
@@ -195,8 +209,8 @@ function FileUploadPage() {
     const formDataToSend = new FormData();
 
     // 1. 메타데이터를 개별 필드로 FormData에 추가
-    formDataToSend.append('id', formData.id);
-    formDataToSend.append('projId', formData.projId);
+    formDataToSend.append('id', finalUserId);
+    formDataToSend.append('projId', finalProjId);
     formDataToSend.append('title', formData.title);
     formDataToSend.append('detail', formData.detail);
     formDataToSend.append('category', String(formData.category)); // cURL은 문자열 "-1"을 보냄
@@ -211,7 +225,7 @@ function FileUploadPage() {
       // 만약 'string' 리터럴을 보내야 한다면: formDataToSend.append('url', 'string');
     }
     console.log("첨부할 메타데이터:", {
-      id: formData.id, projId: formData.projId, title: formData.title,
+      id: finalUserId, projId: finalProjId, title: formData.title,
       detail: formData.detail, category: String(formData.category),
       url: (formData.url && formData.url.length > 0) ? formData.url[0] : ''
     });
@@ -244,7 +258,15 @@ function FileUploadPage() {
       if (response.ok) {
         setStatusMessage(responseData.message || '업로드 완료되었습니다!');
         setFormData(prev => ({
-          ...prev, title: '', detail: '', category: -1, url: [], file: []
+          ...prev, 
+          title: '', 
+          detail: '', 
+          category: -1, 
+          url: [], 
+          file: [],
+          // id와 projId는 유지
+          id: finalUserId,
+          projId: finalProjId
         }));
         setUrlList([]); 
         setNewUrl(''); // URL 입력 필드도 리셋
@@ -253,7 +275,7 @@ function FileUploadPage() {
         if (fileInput) {
           fileInput.value = null;
         }
-        fetchFiles({ projId: currentProjId, userId: currentUserId, isDefaultLoad: true });
+        fetchFiles({ projId: finalProjId, userId: finalUserId, isDefaultLoad: true });
       } else {
         setStatusMessage(responseData.message || `오류 발생: ${response.status}`);
         console.error("업로드 실패 응답:", responseData);
