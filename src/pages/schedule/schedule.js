@@ -268,11 +268,11 @@ const Schedule = () => {
                             />
 
                             <label>시작 시간:</label>
-                            _                     <input
+                            <input
                                 type="datetime-local"
                                 value={newEvent.start}
                                 onChange={(e) => setNewEvent({ ...newEvent, start: e.target.value })}
-                                _ />
+                            />
                             <label>종료 시간:</label>
                             <input
                                 type="datetime-local"
