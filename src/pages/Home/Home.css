@@ -1,114 +1,240 @@
-.App {
+/* 전체 페이지 레이아웃 */
+.Home {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  color: #333;
 }
 
-.login-signup,
-.my-page-logout {
-  display: flex;
-  align-items: center;
-  margin-right: 1em;
-}
-
-.login-signup a,
-.my-page-logout a {
-  text-decoration: none;
-  margin: 0 10px;
-}
-
-.App-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
-  padding: 2em;
-  margin-top: 60px;
-  /* Adjust based on header height */
-  text-align: center;
-}
-
+/* --- Hero Section (메인 상단) --- */
 .hero {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* 은은한 그라데이션 배경 */
+  padding: 80px 20px;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  background-color: #fff;
-  padding: 3em 1em;
+  justify-content: center;
+}
+
+.hero-text {
+  max-width: 800px;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .hero-text h1 {
-  font-size: 2.7em;
-  color: #070707;
-  margin-bottom: 0.5em;
+  font-size: 3em;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  line-height: 1.2;
 }
 
 .hero-text p {
-  font-size: 1.2em;
-  margin-bottom: 1.5em;
+  font-size: 1.25em;
+  color: #555;
+  margin-bottom: 40px;
+  line-height: 1.6;
 }
 
+/* CTA 버튼 (Call To Action) */
 .cta-button {
-  background-color: #E7A5A5;
+  background-color: #4f46e5; /* SignUp 페이지와 통일된 컬러 */
   color: white;
-  padding: 0.75em 1.5em;
-  border-radius: 5px;
-  font-size: 1em;
-  font-weight: bold;
+  padding: 15px 40px;
+  border-radius: 30px; /* 둥근 버튼 */
+  font-size: 1.1em;
+  font-weight: 700;
   cursor: pointer;
   border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
 }
 
+.cta-button:hover {
+  background-color: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+
+/* --- 공통 섹션 스타일 --- */
 .features,
 .how-it-works,
 .testimonials,
 .faq {
-  margin: 2em 0;
+  padding: 80px 20px;
+  max-width: 1200px;
+  margin: 0 auto; /* 중앙 정렬 */
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.features h2,
-.how-it-works h2,
-.testimonials h2,
-.faq h2 {
+section h2 {
   text-align: center;
-  margin-bottom: 1em;
+  font-size: 2em;
+  font-weight: 700;
+  margin-bottom: 60px;
+  color: #111;
+  position: relative;
 }
 
+/* 제목 아래 작은 밑줄 포인트 */
+section h2::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background-color: #4f46e5;
+  margin: 15px auto 0;
+  border-radius: 2px;
+}
+
+/* --- Features Section (주요 기능) --- */
 .feature-list {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap; /* 모바일 대응 */
 }
 
 .feature-item {
+  flex: 1;
+  min-width: 280px;
   text-align: center;
-  width: 30%;
-  margin: 0 50px
-    /* 마진을 추가했음 */
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-10px); /* 마우스 올리면 살짝 떠오름 */
 }
 
 .feature-item img {
-  max-width: 100%;
+  max-width: 120px;
+  height: auto;
+  margin-bottom: 25px;
 }
 
+.feature-item h3 {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.feature-item p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* --- How It Works Section (이용 방법) --- */
+.how-it-works {
+  text-align: center;
+  background-color: #f9fafb; /* 배경색 살짝 다르게 */
+  border-radius: 20px;
+}
+
+.how-it-works p {
+  font-size: 1.2em;
+  color: #555;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* --- Testimonials Section (사용자 후기) --- */
 .testimonial-list {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
 }
 
 .testimonial-item {
-  background-color: #f0f0f0;
-  padding: 1em;
-  border-radius: 8px;
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
   width: 45%;
+  min-width: 300px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
 }
 
+.testimonial-item p {
+  font-size: 1.1em;
+  color: #444;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.testimonial-item .author {
+  margin-top: 20px;
+  font-weight: bold;
+  font-style: normal;
+  color: #4f46e5;
+  text-align: right;
+}
+
+/* --- FAQ Section (자주 묻는 질문) --- */
 .faq-list {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
 }
 
 .faq-item {
-  width: 80%;
-  margin-bottom: 1em;
+  width: 100%;
+  max-width: 800px;
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.faq-item h3 {
+  font-size: 1.2em;
+  color: #333;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.faq-item h3::before {
+  content: 'Q.';
+  color: #4f46e5;
+  font-weight: 800;
+  margin-right: 10px;
+  font-size: 1.3em;
+}
+
+.faq-item p {
+  color: #666;
+  line-height: 1.6;
+  padding-left: 35px; /* Q. 글자만큼 들여쓰기 */
+}
+
+/* 애니메이션 정의 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 반응형 디자인 (모바일) --- */
+@media (max-width: 768px) {
+  .hero-text h1 {
+    font-size: 2em;
+  }
+  
+  .feature-list, .testimonial-list {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .feature-item, .testimonial-item {
+    width: 100%;
+  }
 }
