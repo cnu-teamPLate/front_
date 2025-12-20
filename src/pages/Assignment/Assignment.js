@@ -357,7 +357,6 @@ function Assignment({ notifications = [] }) {
                             </div>
                         </div>
                     </div>
-                    <NotificationPopup notifications={notifications} />
                 </div>
             </main>
         </div>
