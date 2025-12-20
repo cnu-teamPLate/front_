@@ -68,7 +68,7 @@ const DatePickerGrid = ({ year, month, selectedDates, onMouseDown, onMouseEnter,
         }
         return daysArray;
     }, [year, month]);
-
+    const today = useMemo(() => moment().startOf('day'), []);
     return (
         <div className="date-picker-grid" onMouseUp={onMouseUp}>
             <div className="month-label">{year}년 {month + 1}월</div>
@@ -78,13 +78,21 @@ const DatePickerGrid = ({ year, month, selectedDates, onMouseDown, onMouseEnter,
                     if (!day) return <div key={`empty-${index}`} className="day-cell empty" />;
                     const dateKey = moment(day).format('YYYY-MM-DD');
                     const isSelected = selectedDates.includes(dateKey);
+
+                    const todayKey = moment().format('YYYY-MM-DD');
+                    const isPast = moment(dateKey).isBefore(todayKey, 'day');
+
+
+
                     return (
                         <div
                             key={dateKey}
-                            className={`day-cell ${isSelected ? 'selected' : ''}`}
-                            onMouseDown={() => onMouseDown(dateKey)}
-                            onMouseEnter={() => onMouseEnter(dateKey)}
-                        >{day.getDate()}</div>
+                            className={`day-cell ${isSelected ? 'selected' : ''} ${isPast ? 'disabled' : ''}`}
+                            onMouseDown={isPast ? undefined : () => onMouseDown(dateKey)}
+                            onMouseEnter={isPast ? undefined : () => onMouseEnter(dateKey)}
+                        >
+                            {day.getDate()}
+                        </div>
                     );
                 })}
             </div>
@@ -255,6 +263,9 @@ const CreateStep = ({ onFormCreated, onBack }) => {
     const projId = new URLSearchParams(search).get('projectId');
 
     const handleDateSelect = useCallback((dateKey, mode) => {
+        const todayKey = moment().format('YYYY-MM-DD');
+        if (moment(dateKey).isBefore(todayKey, 'day')) return;
+
         setSelectedDates(prev => {
             const exists = prev.includes(dateKey);
             if (mode === 'select' && !exists) return [...prev, dateKey].sort();
