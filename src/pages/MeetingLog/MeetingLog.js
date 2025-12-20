@@ -36,6 +36,7 @@ function MeetingLog() {
   const [projectParticipants, setProjectParticipants] = useState([]);
   const [meetingParticipants, setMeetingParticipants] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [selectedParticipantValue, setSelectedParticipantValue] = useState('');
   //일정 불러오기
   const [scheduleList, setScheduleList] = useState([]);
   const [meetingData, setMeetingData] = useState([]);
@@ -88,6 +89,9 @@ function MeetingLog() {
   //참여자 정보
   const handleSelectParticipant = (e) => {
     const selectedName = e.target.value;
+    if (!selectedName || selectedName === '') {
+      return;
+    }
     if (!meetingParticipants.includes(selectedName)) {
       const updatedList = [...meetingParticipants, selectedName];
       setMeetingParticipants(updatedList);
@@ -99,7 +103,8 @@ function MeetingLog() {
           return matched ? { name: matched.name, id: matched.id } : { name, id: '' };
         }),  date: formattedDateTime, 
       }));
-    }      
+    }
+    setSelectedParticipantValue('');
   };
 
   const handleRemove = (nameToRemove) => {
@@ -649,7 +654,11 @@ function MeetingLog() {
                       </li>
                     ))}
                   </ul>
-                  <select className='participants-select' onChange={handleSelectParticipant} defaultValue="">
+                  <select 
+                    className='participants-select' 
+                    onChange={handleSelectParticipant} 
+                    value={selectedParticipantValue}
+                  >
                     <option value="" disabled>참여자 선택</option>
                     {projectParticipants.map((p) => (
                       <option key={p.id} value={p.name}>{p.name}</option>
