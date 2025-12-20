@@ -1,256 +1,397 @@
+/* =========================================
+   Meeting Log Page Styling (Burgundy Theme)
+   ========================================= */
+
+/* --- Layout & Container --- */
+body {
+  background-color: #f4f7f9;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
 .meeting-log-container {
-    display: flex!important;
-    flex-direction: row!important;  /* 수평 정렬 */
-    gap: 40px!important;
-  }
-
-.MeetingLog {
-    flex: 2;
-    margin: auto;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    place-items: center;
-    height: 100%;    
-    grid-template-columns:repeat(1,1fr);
-    gap: 0px;
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow);
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 960px;
-    min-width: 600px;
-    padding: 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+  padding: 40px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: calc(100vh - 80px); /* 화면 높이에 맞춤 */
 }
 
+/* --- Left Panel: Meeting Log Editor/Viewer --- */
+.MeetingLog,
 .meeting-log-viewer {
-    flex: 2;
-    margin: auto;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    place-items: left;
-    height: 100%;    
-    grid-template-columns:repeat(1,1fr);
-    gap: 0px;
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow);
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 960px;
-    min-width: 600px;
-    padding: 2rem;
+  flex: 3; /* 왼쪽 패널을 더 넓게 */
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e1e4e8;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto; /* 내용 넘치면 스크롤 */
+  position: relative;
 }
 
-.top {
-    margin-bottom: 1em;
-}
-
-.top h2 {
-    margin-bottom: 0!important;
-}
-.top p{
-    place-self: center;
-    color: #9f9f9f;
-    margin: 0;
-    font-size: 14px;
-}
-
-.meetinglog-list {
-    flex: 1;
-    max-width: 300px;
-    min-width: 200px;
-    color: #7c7c7c;
-    margin-top: 2rem;
-}
-
-.meetinglog-list p {
-    margin:  0 0 0.5em 0;
-}
-
-.each {
-    margin-top: 1em;
+/* Header Section */
+h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 20px 0;
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f4f4f4;
 }
 
 .controls {
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
 }
 
-.MeetingLog h1 {
-    margin-top: 0rem!important;
-    text-align: center;
-}
-
-.meetDate {
-    align-items: center;
-    position: absolute;
-    top : 3.2rem;
-    right: 2rem;
-    margin-top: 0!important;
-    font-size: 1rem;
-    color: #9f9f9f;
+/* Top Bar: Recording & Date */
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .record-button {
-    align-items: center;
-    position: absolute;
-    top : 2rem;
-    left: 2rem;
-    margin-top: 0!important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #fcecea; /* 연한 붉은색 */
+  color: #a32828;
+  border: 1px solid #a32828;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.meeting-contents {
-    align-items: center;
-    display: grid;
-    place-items: center;
-    gap: 50px;
+.record-button:hover {
+  background-color: #a32828;
+  color: white;
 }
 
+.record-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
+.meetDate {
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: 500;
+}
+
+/* Participants Section */
 .participants {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: auto;
-
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.meeting-schedule {
-    margin-bottom: 1em;
-}
-
-.meeting-schedule h4 {
-    margin: 0;
-}
-
-.meeting-schedule select {
-    padding: 8px 12px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background-color: #f9f9f9;
-    color: #333;
-    appearance: none; /* 기본 브라우저 스타일 제거 */
-    cursor: pointer;
-    width: 200px; /* 원하는 너비로 조정 */
-    transition: border-color 0.2s ease-in-out;
-
-}
-
-.meeting-schedule select:focus {
-    border-color: #007bff;
-    outline: none;
-    background-color: #fff;
-}
-
-.button-row {
-    display: flex;
-    gap: 10px;
-    place-content: center;
-}
-
-.choose, .dicided {
-    display: grid;
-    place-items: center;
-    margin: 0 1em;
-}
-
-.par {
-    margin: 0;
-}
-
-.delete {
-    padding: 0.1em;
-    color: #A32125;
-    background-color: white;
-    text-decoration: underline;
-    margin: 0;
-}
-
-.p {
-    text-align: center;
-}
-
-.end-button {
-    align-items: right;
-}
-    
-
-.titleinput {
-    width: 100%;
-    height: 3.5em!important;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius-md);
-    resize: none;
-    box-sizing: border-box;
-    font-size: 1rem;
-    overflow: auto;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.loginput {
-    width: 100%;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius-md);
-    resize: none;
-    box-sizing: border-box;
-    font-size: 1rem;
-    height: 600px;
-    overflow: auto;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.fixed {
-    width: 100%;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius-md);
-    resize: none;
-    box-sizing: border-box;
-    font-size: 1rem;
-    height: 200px;
-    overflow: auto;
-    transition: border-color 0.2s, box-shadow 0.2s;
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .participants-title {
-    display: flex;
-    align-self: center!important;  
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4e5968;
+  font-weight: 700;
+  min-width: 10%;
 }
 
 .participants-select {
-    display: flex;
-    align-self: center!important;  
-    height: 2rem;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background-color: white;
+  cursor: pointer;
 }
-  
-.participants li {
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: center; /* 가로 가운데 */
-    align-items: center;  
-}
+
 .li-list {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    list-style: none;
-    padding: 0;
-    height: 100%;
-    align-self: center!important;  
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.li-list li {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .x {
-    padding: 0.1rem!important;
-    width: 0.8rem!important;
-    color: #ffffff;
-    font-size: 0.7rem;
-    margin-top: 0!important;
-    margin-left: 0.1rem;
+  background: #a32828;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
 }
+
+/* Schedule Select */
+.meeting-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meeting-schedule h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4e5968;
+}
+
+.meeting-schedule select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+}
+
+/* Inputs */
+.titleinput,
+.loginput,
+.fixed {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  background-color: #f9fafb;
+  transition: all 0.2s;
+  color: #333;
+  font-family: inherit;
+}
+
+.titleinput:focus,
+.loginput:focus,
+.fixed:focus {
+  outline: none;
+  background-color: #fff;
+  border-color: #a32828;
+  box-shadow: 0 0 0 3px rgba(163, 40, 40, 0.1);
+}
+
+.titleinput {
+  height: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.loginput {
+  min-height: 300px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.fixed {
+  min-height: 100px;
+  background-color: #fff5f5; /* 중요 내용 강조 배경 */
+  border-color: #ffc9c9;
+}
+
+/* Audio Preview */
+.audio-preview {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f1f3f5;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Save Button */
+.end-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #a32828;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(163, 40, 40, 0.2);
+}
+
+.end-button:hover {
+  background-color: #8a2020;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(163, 40, 40, 0.3);
+}
+
+.end-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- Right Panel: Meeting List --- */
+.meetinglog-list {
+  flex: 1; /* 오른쪽 패널은 좁게 */
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e1e4e8;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  min-width: 250px;
+}
+
+.meetinglog-list h3 {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f4f4f4;
+}
+
+.each {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 10px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.each:hover {
+  background-color: #f8f9fa;
+  border-color: #a32828;
+  transform: translateX(4px);
+}
+
+.each p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.each strong {
+  color: #333;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* --- Detail Viewer Mode --- */
+.meeting-log-viewer .top {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.meeting-log-viewer h2 {
+  font-size: 1.5rem;
+  color: #a32828;
+  margin: 0 0 10px 0;
+}
+
+.meeting-log-viewer .meta-info {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.viewer-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.content-section {
+  margin-bottom: 25px;
+}
+
+.content-label {
+  font-weight: 700;
+  color: #4e5968;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 1rem;
+}
+
+.content-text {
+  background-color: #f9fafb;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #333;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.button-row button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.button-row button:first-child {
+  background-color: #e9ecef;
+  color: #495057;
+}
+.button-row button:first-child:hover { background-color: #dee2e6; }
+
+.button-row button:last-child {
+  background-color: #a32828;
+  color: white;
+}
+.button-row button:last-child:hover { background-color: #8a2020; }
