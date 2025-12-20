@@ -173,6 +173,18 @@ const Schedule = () => {
     const handleAddEvent = async (eventObject) => {
         const projId = currentProject;
 
+        if (!eventObject.start || !eventObject.end) {
+            return;
+        }
+
+        const start = new Date(eventObject.start);
+        const end = new Date(eventObject.end);
+
+        if (end <= start) {
+            return;
+        }
+
+
         // 참여자 문자열을 배열로 변환
         const participantsArray = (eventObject.attendees || '').split(',').map(p => p.trim());
 
@@ -243,6 +255,16 @@ const Schedule = () => {
         fetchEvents();
     }, [fetchEvents]);
 
+    const isTimeInvalid =
+        !newEvent.start ||
+        !newEvent.end ||
+        new Date(newEvent.end) <= new Date(newEvent.start);
+
+    const timeRangeInvalid =
+        newEvent.start &&
+        newEvent.end &&
+        new Date(newEvent.end) <= new Date(newEvent.start);
+
     return (
         <div className="board">
             <aside className={`App-sidebar ${sidebarOpen ? 'open' : ''}`}>
@@ -277,8 +299,12 @@ const Schedule = () => {
                             <input
                                 type="datetime-local"
                                 value={newEvent.end}
+                                min={newEvent.start || undefined}
                                 onChange={(e) => setNewEvent({ ...newEvent, end: e.target.value })}
                             />
+                            {timeRangeInvalid && (
+                                <div className="form-error">종료 시간은 시작 시간 이후여야 합니다.</div>
+                            )}
                             <label>장소:</label>
                             <input
                                 type="text"
@@ -309,7 +335,7 @@ const Schedule = () => {
                                 onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
                                 placeholder="예: meeting, task"
                             />
-                            <button onClick={() => handleAddEvent(newEvent)} className="add-event-button">
+                            <button onClick={() => handleAddEvent(newEvent)} className="add-event-button" disabled={isTimeInvalid}>
                                 일정 추가
                             </button>
                             <button onClick={handleClosePopup} className="cancel-button">
