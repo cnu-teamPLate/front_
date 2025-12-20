@@ -196,7 +196,7 @@ function SignUp() {
                                 </div>
                                 {errors.privacy && <p className="error">{errors.privacy}</p>}
                             </div>
-                            <button type="signup-button" onClick={nextStep}>다음</button>
+                            <button type="submit" onClick={nextStep}>다음</button>
                         </div>
                     )}
 
@@ -236,11 +236,7 @@ function SignUp() {
                             </div>
 
                             <div className="second-button">
-<<<<<<< HEAD
-                                <button type="signup-button" onClick={prevStep}>이전</button>
-=======
                                 <button type="button" onClick={prevStep} className="secondary-btn">이전</button>
->>>>>>> lhj
                                 <button type="submit" disabled={isSubmitting}>다음</button>
                             </div>
                         </div>
