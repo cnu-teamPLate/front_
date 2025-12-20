@@ -29,7 +29,7 @@ function MyPage() {
 
       try {
         const response = await fetch(
-          `https://www.teamplate-api.site/auth/read-my-info?userId=${userId}`,
+          `https://teamplate-api.site/auth/read-my-info?userId=${userId}`,
           {
             method: "GET",
             headers: {
@@ -77,7 +77,7 @@ function MyPage() {
 
     try {
       const response = await fetch(
-        "https://www.teamplate-api.site/auth/update-my-info",
+        "https://teamplate-api.site/auth/update-my-info",
         {
           method: "PUT",
           headers: {

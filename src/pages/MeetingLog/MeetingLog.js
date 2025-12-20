@@ -3,7 +3,7 @@ import { useNavigate, useParams} from "react-router-dom";
 import { IoMenu, IoMicSharp, IoRecordingOutline } from "react-icons/io5";
 import './MeetingLog.css';
 
-const API_BASE_URL = 'https://www.teamplate-api.site';
+const API_BASE_URL = 'https://teamplate-api.site';
 
 // Debounce 유틸리티 함수
 function useDebounce(value, delay) {

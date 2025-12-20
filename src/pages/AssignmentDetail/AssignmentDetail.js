@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 
-const baseURL = 'https://www.teamplate-api.site';
+const baseURL = 'https://teamplate-api.site';
 
 function AssignmentDetail() {
     const [searchParams] = useSearchParams();
@@ -19,7 +19,7 @@ function AssignmentDetail() {
     const [editForm, setEditForm] = useState({
         description: '',
         assigneeId: '',
-        date:''
+        date: ''
     });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -40,7 +40,7 @@ function AssignmentDetail() {
         const fetchAssignmentDetail = async () => {
             // userId를 localStorage에서 가져오기
             const userId = localStorage.getItem('userId');
-            
+
             if (!userId) {
                 setError("사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
                 setLoading(false);
@@ -56,25 +56,25 @@ function AssignmentDetail() {
             console.log("전달된 projId (URL 파라미터):", projId, "타입:", typeof projId);
             console.log("사용된 userId (localStorage):", userId);
             console.log("=====================================");
-            
+
             try {
                 const response = await axios.get(apiUrl);
                 console.log("Response received:", response.status, response.data);
-                
+
                 // 응답이 배열인 경우, taskId와 일치하는 항목 찾기
                 if (Array.isArray(response.data)) {
                     // taskId를 숫자로 변환하여 비교 (API 응답의 taskId 타입에 따라 조정 필요)
                     const taskIdNum = Number(taskId);
-                    const foundAssignment = response.data.find(item => 
-                        item.taskId === taskIdNum || 
-                        item.taskId === taskId || 
+                    const foundAssignment = response.data.find(item =>
+                        item.taskId === taskIdNum ||
+                        item.taskId === taskId ||
                         String(item.taskId) === String(taskId)
                     );
-                    
+
                     if (foundAssignment) {
                         console.log("과제를 찾았습니다:", foundAssignment);
                         setAssignment(foundAssignment);
-                        
+
                         // 과제에 첨부된 파일 목록 불러오기
                         await fetchAttachedFiles(taskId);
                     } else {
@@ -84,7 +84,7 @@ function AssignmentDetail() {
                 } else {
                     // 배열이 아닌 경우 (단일 객체인 경우)
                     setAssignment(response.data);
-                    
+
                     // 과제에 첨부된 파일 목록 불러오기
                     if (response.data?.taskId) {
                         await fetchAttachedFiles(response.data.taskId);
@@ -92,7 +92,7 @@ function AssignmentDetail() {
                 }
             } catch (err) {
                 let errorMessage = "과제 정보를 불러오는 중 오류가 발생했습니다.";
-                
+
                 // 상세한 에러 정보 로깅
                 console.error("Error fetching assignment details:", {
                     message: err.message,
@@ -115,15 +115,15 @@ function AssignmentDetail() {
                         headers: err.config.headers
                     } : null
                 });
-                
+
                 if (err.response) {
                     // 서버가 응답했지만 에러 상태 코드를 반환한 경우
                     const status = err.response.status;
                     const statusText = err.response.statusText;
                     const errorData = err.response.data;
-                    
+
                     console.error(`API Error Response: ${status} ${statusText}`, errorData);
-                    
+
                     if (status === 404) {
                         errorMessage = "해당 ID의 과제를 찾을 수 없습니다.";
                     } else if (status === 500) {
@@ -145,7 +145,7 @@ function AssignmentDetail() {
                     console.error("Request setup error:", err.message);
                     errorMessage = `요청 설정 중 오류가 발생했습니다: ${err.message}`;
                 }
-                
+
                 setError(errorMessage);
             } finally {
                 setLoading(false);
@@ -210,7 +210,7 @@ function AssignmentDetail() {
                 const savedDescription = editForm.description;
                 const savedAssigneeId = editForm.assigneeId;
                 const savedDate = editForm.date;
-                
+
                 // 수정 성공 시 즉시 로컬 상태 업데이트
                 const updatedAssignment = {
                     ...assignment,
@@ -220,15 +220,15 @@ function AssignmentDetail() {
                 };
                 setAssignment(updatedAssignment);
                 console.log('로컬 상태 업데이트:', updatedAssignment);
-                
+
                 setIsEditing(false);
                 alert(response.data.message || '과제가 성공적으로 수정되었습니다.');
-                
+
                 // 서버에서 최신 데이터 가져오기 (여러 번 시도하여 서버 반영 확인)
                 const checkServerUpdate = async (attempt = 1, maxAttempts = 5) => {
                     const userId = localStorage.getItem('userId');
                     if (!userId || !projId) return;
-                    
+
                     try {
                         const apiUrl = `${baseURL}/task/view?projId=${projId}&id=${userId}`;
                         const refreshResponse = await axios.get(apiUrl);
@@ -236,19 +236,19 @@ function AssignmentDetail() {
                         if (attempt === maxAttempts) {
                             console.log(`서버 새로고침 최종 시도:`, refreshResponse.data);
                         }
-                        
+
                         let foundAssignment = null;
                         if (Array.isArray(refreshResponse.data)) {
                             const taskIdNum = Number(taskId);
-                            foundAssignment = refreshResponse.data.find(item => 
-                                item.taskId === taskIdNum || 
-                                item.taskId === taskId || 
+                            foundAssignment = refreshResponse.data.find(item =>
+                                item.taskId === taskIdNum ||
+                                item.taskId === taskId ||
                                 String(item.taskId) === String(taskId)
                             );
                         } else if (refreshResponse.data) {
                             foundAssignment = refreshResponse.data;
                         }
-                        
+
                         if (foundAssignment) {
                             // 서버의 detail이 수정한 내용과 일치하는지 확인
                             if (foundAssignment.detail === savedDescription) {
@@ -285,7 +285,7 @@ function AssignmentDetail() {
                         }
                     }
                 };
-                
+
                 // 첫 번째 시도는 1초 후에 시작
                 setTimeout(() => checkServerUpdate(1, 5), 1000);
             }
@@ -304,17 +304,17 @@ function AssignmentDetail() {
     // 과제에 첨부된 파일 목록 불러오기
     const fetchAttachedFiles = async (taskIdParam) => {
         if (!taskIdParam || !projId) return;
-        
+
         setFilesLoading(true);
         try {
             // API는 projId만 지원하므로, projId로 모든 파일을 가져온 후 category 필드로 필터링
             const filesUrl = `${baseURL}/file/view?projId=${projId}`;
             console.log('첨부 파일 목록 요청:', filesUrl);
             console.log('필터링할 taskId:', taskIdParam);
-            
+
             const filesResponse = await axios.get(filesUrl);
             console.log('첨부 파일 응답 (전체):', filesResponse.data);
-            
+
             if (Array.isArray(filesResponse.data)) {
                 // category 필드가 taskId와 일치하는 파일만 필터링
                 // category는 숫자 또는 문자열일 수 있으므로 여러 방식으로 비교
@@ -328,7 +328,7 @@ function AssignmentDetail() {
                         Number(fileCategory) === taskIdNum
                     );
                 });
-                
+
                 console.log('필터링된 파일 목록:', filteredFiles);
                 setAttachedFiles(filteredFiles);
             } else {
@@ -369,7 +369,7 @@ function AssignmentDetail() {
         const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         return new Date(dateString).toLocaleDateString('ko-KR', options);
     };
-    
+
     const getComplexityLabel = (complexity) => {
         switch (complexity) {
             case 1: return '쉬움';
@@ -394,18 +394,18 @@ function AssignmentDetail() {
                         <p><strong>분류:</strong> {cate}</p>
                         <p><strong>난이도:</strong> <span className={`level-tag level-${level}`}>{getComplexityLabel(level)}</span></p>
                         <p>
-                            <strong>마감일:</strong> 
+                            <strong>마감일:</strong>
                             {isEditing ? (
                                 <input
                                     type="datetime-local"
                                     value={editForm.date}
                                     onChange={(e) => setEditForm(prev => ({ ...prev, date: e.target.value }))}
-                                    style={{ 
-                                        marginLeft: '8px', 
-                                        padding: '4px 8px', 
-                                        fontSize: '14px', 
-                                        border: '1px solid #ddd', 
-                                        borderRadius: '4px' 
+                                    style={{
+                                        marginLeft: '8px',
+                                        padding: '4px 8px',
+                                        fontSize: '14px',
+                                        border: '1px solid #ddd',
+                                        borderRadius: '4px'
                                     }}
                                 />
                             ) : (
@@ -419,12 +419,12 @@ function AssignmentDetail() {
                             <textarea
                                 value={editForm.description}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                                style={{ 
-                                    width: '100%', 
-                                    minHeight: '100px', 
-                                    padding: '8px', 
-                                    fontSize: '14px', 
-                                    border: '1px solid #ddd', 
+                                style={{
+                                    width: '100%',
+                                    minHeight: '100px',
+                                    padding: '8px',
+                                    fontSize: '14px',
+                                    border: '1px solid #ddd',
                                     borderRadius: '4px',
                                     resize: 'none' // 크기 조절 비활성화
                                 }}
@@ -434,7 +434,7 @@ function AssignmentDetail() {
                             <p>{detail}</p>
                         )}
                     </div>
-                    
+
                     {isEditing && (
                         <div className="task-assignee" style={{ marginTop: '20px' }}>
                             <h3>담당자 ID</h3>
@@ -447,7 +447,7 @@ function AssignmentDetail() {
                             />
                         </div>
                     )}
-                    
+
                     {/* 업로드된 자료 목록 */}
                     <div className="task-files">
                         <h3>첨부 자료</h3>
@@ -471,7 +471,7 @@ function AssignmentDetail() {
                                             const fileId = file.fileId || file.id || file.docId || file.file_id;
                                             const fileName = file.filename || file.title || '제목 없음';
                                             const fileTitle = file.title || fileName;
-                                            
+
                                             return (
                                                 <tr key={fileId || idx} style={{ borderBottom: '1px solid #eee' }}>
                                                     <td style={{ padding: '8px' }}>
@@ -491,7 +491,7 @@ function AssignmentDetail() {
                                                     <td style={{ padding: '8px' }}>
                                                         {/* API 응답의 url 필드(S3 URL)를 직접 사용 */}
                                                         {file.url ? (
-                                                            <a 
+                                                            <a
                                                                 href={file.url}
                                                                 download={file.filename || file.title}
                                                                 target="_blank"
@@ -502,7 +502,7 @@ function AssignmentDetail() {
                                                             </a>
                                                         ) : fileId ? (
                                                             // fileId가 있지만 url이 없는 경우, 다운로드 엔드포인트 시도 (백업)
-                                                            <a 
+                                                            <a
                                                                 href={`${baseURL}/file/download/${fileId}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
@@ -524,7 +524,7 @@ function AssignmentDetail() {
                                         })}
                                     </tbody>
                                 </table>
-                                
+
                                 {/* 외부 URL 목록 표시 */}
                                 {(() => {
                                     // 외부 URL 수집 (urls 배열 또는 url 필드 확인)
@@ -547,23 +547,23 @@ function AssignmentDetail() {
                                             });
                                         }
                                         // url 필드가 문자열인 경우 (S3 URL이 아닌 경우만)
-                                        else if (file.url && typeof file.url === 'string' && 
-                                                 !file.url.includes('s3.amazonaws.com') && 
-                                                 !file.url.includes('teamplate-bucket') &&
-                                                 (file.url.startsWith('http://') || file.url.startsWith('https://'))) {
+                                        else if (file.url && typeof file.url === 'string' &&
+                                            !file.url.includes('s3.amazonaws.com') &&
+                                            !file.url.includes('teamplate-bucket') &&
+                                            (file.url.startsWith('http://') || file.url.startsWith('https://'))) {
                                             externalUrls.push({ url: file.url, title: file.title || '외부 링크' });
                                         }
                                     });
-                                    
+
                                     return externalUrls.length > 0 ? (
                                         <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
                                             <h4>외부 URL</h4>
                                             <ul style={{ listStyle: 'none', padding: 0 }}>
                                                 {externalUrls.map((item, idx) => (
                                                     <li key={idx} style={{ marginBottom: '8px' }}>
-                                                        <a 
-                                                            href={item.url} 
-                                                            target="_blank" 
+                                                        <a
+                                                            href={item.url}
+                                                            target="_blank"
                                                             rel="noopener noreferrer"
                                                             style={{ color: '#007bff', textDecoration: 'none' }}
                                                         >
@@ -589,15 +589,15 @@ function AssignmentDetail() {
                 <footer className="card-footer">
                     {isEditing ? (
                         <>
-                            <button 
-                                className="action-button" 
+                            <button
+                                className="action-button"
                                 onClick={handleSaveEdit}
                                 disabled={isSaving}
                             >
                                 {isSaving ? '저장 중...' : '저장'}
                             </button>
-                            <button 
-                                className="action-button" 
+                            <button
+                                className="action-button"
                                 onClick={() => setIsEditing(false)}
                                 disabled={isSaving}
                             >
@@ -605,8 +605,8 @@ function AssignmentDetail() {
                             </button>
                         </>
                     ) : (
-                        <button 
-                            className="action-button" 
+                        <button
+                            className="action-button"
                             onClick={() => setIsEditing(true)}
                         >
                             수정

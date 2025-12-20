@@ -9,7 +9,7 @@ import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid from "./when2meet";
 import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
 
-const API = 'https://www.teamplate-api.site';
+const API = 'https://teamplate-api.site';
 
 async function fetchEventsApi({ projId, userId, currentDate, view }) {
     if (!projId || !userId) {
@@ -179,7 +179,7 @@ const Schedule = () => {
         // API DTO에 맞게 페이로드 매핑
         const newEventPayload = {
             projId: projId,
-            date: moment(eventObject.start).format('YYYY-MM-DDTHH:mm:ss'), 
+            date: moment(eventObject.start).format('YYYY-MM-DDTHH:mm:ss'),
             scheName: eventObject.scheName,
             place: eventObject.location,
             category: eventObject.category,
@@ -354,7 +354,7 @@ const Schedule = () => {
                 ) : (
                     <WhenToMeetGrid
                         onExit={exitWhenToMeet}
-                       
+
                     />
                 )}
             </div>

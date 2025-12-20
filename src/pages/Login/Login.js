@@ -34,7 +34,7 @@ function Login() {
       });
 
 
-      const url = new URL('https://www.teamplate-api.site/auth/login');
+      const url = new URL('https://teamplate-api.site/auth/login');
 
       const response = await fetch(url, {
         method: 'POST',

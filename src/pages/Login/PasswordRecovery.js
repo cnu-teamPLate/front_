@@ -16,7 +16,7 @@ function PasswordRecovery({ onCancel }) {
 
     try {
       const response = await axios.post(
-        'https://www.teamplate-api.site/auth/send-password-mail',
+        'https://teamplate-api.site/auth/send-password-mail',
         { email }
       );
 
