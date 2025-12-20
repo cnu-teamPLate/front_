@@ -90,30 +90,42 @@ body {
   color: var(--text-primary);
 }
 
-/* Primary Button Style */
-.schedule-controls button:first-child {
-  background-color: var(--accent-primary);
-  color: white;
-  border-color: var(--accent-primary);
+/* ===============================
+   기본 상태
+   =============================== */
+.schedule-controls button {
+  background-color: #ffffff;
+  color: #2d3748;
+  /* 진한 회색 */
+  border: 1px solid #2d3748;
+  /* 진한 회색 테두리 */
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-.schedule-controls button:first-child:hover {
-  background-color: var(--accent-primary-hover);
-  border-color: var(--accent-primary-hover);
+/* ===============================
+   Hover 상태
+   =============================== */
+.schedule-controls button:hover {
+  background-color: #edf2f7;
+  /* 옅은 회색 */
+  border-color: #cbd5e0;
 }
 
-/* Secondary Button Style */
-.schedule-controls button:not(:first-child):hover {
-  background-color: var(--bg-tertiary);
-  border-color: #CBD5E0;
-  /* Slightly darker border on hover */
-}
-
-/* Active/Selected View Button */
+/* ===============================
+   클릭(선택) 상태 – 유지됨
+   =============================== */
 .schedule-controls button.active {
-  background-color: var(--bg-tertiary);
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background-color: #e53e3e;
+  /* 빨간색 */
+  color: #ffffff;
+  border-color: #e53e3e;
+}
+
+/* 선택된 버튼에 hover가 와도 빨간색 유지 */
+.schedule-controls button.active:hover {
+  background-color: #c53030;
+  border-color: #c53030;
 }
 
 
@@ -762,4 +774,17 @@ body {
   background-color: #edf2f7;
   color: #718096;
   border: 1px solid #cbd5e0;
+}
+
+.day-cell.today {
+  border: 2px solid #2f80ed;
+  /* 링 색 */
+  border-radius: 999px;
+  /* 동그라미 */
+  box-sizing: border-box;
+}
+
+/* 오늘이면서 선택된 경우(겹침) 더 예쁘게 */
+.day-cell.selected.today {
+  border-color: #1c5fd4;
 }

@@ -68,30 +68,37 @@ const DatePickerGrid = ({ year, month, selectedDates, onMouseDown, onMouseEnter,
         }
         return daysArray;
     }, [year, month]);
+    const todayKey = moment().format('YYYY-MM-DD');
+ return (
+    <div className="date-picker-grid" onMouseUp={onMouseUp}>
+      <div className="month-label">{year}년 {month + 1}월</div>
+      <div className="weekdays">
+        {['일', '월', '화', '수', '목', '금', '토'].map(d => <div key={d}>{d}</div>)}
+      </div>
 
-    return (
-        <div className="date-picker-grid" onMouseUp={onMouseUp}>
-            <div className="month-label">{year}년 {month + 1}월</div>
-            <div className="weekdays">{['일', '월', '화', '수', '목', '금', '토'].map(d => <div key={d}>{d}</div>)}</div>
-            <div className="days">
-                {days.map((day, index) => {
-                    if (!day) return <div key={`empty-${index}`} className="day-cell empty" />;
-                    const dateKey = moment(day).format('YYYY-MM-DD');
-                    const isSelected = selectedDates.includes(dateKey);
-                    return (
-                        <div
-                            key={dateKey}
-                            className={`day-cell ${isSelected ? 'selected' : ''}`}
-                            onMouseDown={() => onMouseDown(dateKey)}
-                            onMouseEnter={() => onMouseEnter(dateKey)}
-                        >{day.getDate()}</div>
-                    );
-                })}
+      <div className="days">
+        {days.map((day, index) => {
+          if (!day) return <div key={`empty-${index}`} className="day-cell empty" />;
+
+          const dateKey = moment(day).format('YYYY-MM-DD');
+          const isSelected = selectedDates.includes(dateKey);
+          const isToday = dateKey === todayKey; // ✅ 오늘 여부
+
+          return (
+            <div
+              key={dateKey}
+              className={`day-cell ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
+              onMouseDown={() => onMouseDown(dateKey)}
+              onMouseEnter={() => onMouseEnter(dateKey)}
+            >
+              {day.getDate()}
             </div>
-        </div>
-    );
+          );
+        })}
+      </div>
+    </div>
+  );
 };
-
 const TwoMonthPicker = ({ selectedDates, onSelectDate }) => {
     const [baseDate, setBaseDate] = useState(new Date());
     const [isDragging, setIsDragging] = useState(false);
@@ -255,6 +262,9 @@ const CreateStep = ({ onFormCreated, onBack }) => {
     const projId = new URLSearchParams(search).get('projectId');
 
     const handleDateSelect = useCallback((dateKey, mode) => {
+        const todayKey = moment().format('YYYY-MM-DD');
+        if (moment(dateKey).isBefore(todayKey, 'day')) return;
+
         setSelectedDates(prev => {
             const exists = prev.includes(dateKey);
             if (mode === 'select' && !exists) return [...prev, dateKey].sort();
