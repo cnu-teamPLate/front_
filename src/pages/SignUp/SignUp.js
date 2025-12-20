@@ -236,11 +236,7 @@ function SignUp() {
                             </div>
 
                             <div className="second-button">
-<<<<<<< HEAD
                                 <button type="signup-button" onClick={prevStep}>이전</button>
-=======
-                                <button type="button" onClick={prevStep} className="secondary-btn">이전</button>
->>>>>>> lhj
                                 <button type="submit" disabled={isSubmitting}>다음</button>
                             </div>
                         </div>
