@@ -505,12 +505,10 @@ const VoteAndViewStep = ({ when2meetId, onBack }) => {
                     <h3>내 시간 선택하기 (드래그)</h3>
                     <div className="time-grid" onMouseLeave={() => setIsDragging(false)}>
                         <div className="grid-header">
-                            <div className="grid-cell time-label">Time</div>
                             {dates.map(d => <div key={d} className="grid-cell date-label">{moment(d).format('MM/DD')}</div>)}
                         </div>
                         {timeSlots.map(time => (
-                            <div key={time} className="grid-row">
-                                <div className="grid-cell time-label">{time}</div>
+                            <div key={time} className="grid-row" data-time={time}>
                                 {dates.map(date => {
                                     const cellKey = `${date}-${time}`;
                                     const isSelected = mySelectedTimes.includes(cellKey);
@@ -533,12 +531,10 @@ const VoteAndViewStep = ({ when2meetId, onBack }) => {
                     <h3>팀원 응답 현황 ({totalUsers}명)</h3>
                     <div className="time-grid">
                         <div className="grid-header">
-                            <div className="grid-cell time-label">Time</div>
                             {dates.map(d => <div key={d} className="grid-cell date-label">{moment(d).format('MM/DD')}</div>)}
                         </div>
                         {timeSlots.map(time => (
-                            <div key={time} className="grid-row">
-                                <div className="grid-cell time-label">{time}</div>
+                            <div key={time} className="grid-row" data-time={time}>
                                 {dates.map(date => {
                                     // 이 시간대에 가능한 유저 필터링
                                     const availableUsers = availability[date]?.filter(avail => {
