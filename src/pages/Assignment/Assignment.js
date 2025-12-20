@@ -5,7 +5,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { NotificationPopup } from '../../components/NotificationPopup/NotificationPopup';
 
 
-const baseURL = 'https://.teamplate-api.site';
+const baseURL = 'https://teamplate-api.site';
 
 const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate, handleCheckboxChange, projId }) => {
 
@@ -22,12 +22,12 @@ const AssignmentCard = ({ item, getAssigneeName, getComplexityLabel, formatDate,
 
     // item.projId를 우선 사용하고, 없으면 props로 전달된 projId 사용
     const finalProjId = item.projId || projId;
-    
+
     // 디버깅: projId 확인
     if (!finalProjId) {
         console.warn("AssignmentCard: projId가 없습니다.", { item, projId });
     }
-    
+
     return (
         <Link to={`/AssignmentDetail?taskId=${item.taskId}${finalProjId ? `&projId=${finalProjId}` : ''}`} className={cardClasses}>
             <div className="card-status-bar"></div>
@@ -135,7 +135,7 @@ function Assignment({ notifications = [] }) {
                 }
                 const data = await response.json();
                 const fetchedData = Array.isArray(data) ? data : [];
-                
+
                 // 디버깅: 첫 번째 항목의 구조 확인
                 if (fetchedData.length > 0) {
                     console.log("과제 데이터 샘플:", fetchedData[0]);
