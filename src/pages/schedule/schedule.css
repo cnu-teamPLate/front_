@@ -763,3 +763,16 @@ body {
   color: #718096;
   border: 1px solid #cbd5e0;
 }
+
+.day-cell.today {
+  border: 2px solid #2f80ed;
+  /* 링 색 */
+  border-radius: 999px;
+  /* 동그라미 */
+  box-sizing: border-box;
+}
+
+/* 오늘이면서 선택된 경우(겹침) 더 예쁘게 */
+.day-cell.selected.today {
+  border-color: #1c5fd4;
+}

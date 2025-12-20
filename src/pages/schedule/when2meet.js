@@ -68,28 +68,28 @@ const DatePickerGrid = ({ year, month, selectedDates, onMouseDown, onMouseEnter,
         }
         return daysArray;
     }, [year, month]);
-    const today = useMemo(() => moment().startOf('day'), []);
+    const todayKey = moment().format('YYYY-MM-DD');
     return (
         <div className="date-picker-grid" onMouseUp={onMouseUp}>
             <div className="month-label">{year}년 {month + 1}월</div>
-            <div className="weekdays">{['일', '월', '화', '수', '목', '금', '토'].map(d => <div key={d}>{d}</div>)}</div>
+            <div className="weekdays">
+                {['일', '월', '화', '수', '목', '금', '토'].map(d => <div key={d}>{d}</div>)}
+            </div>
+
             <div className="days">
                 {days.map((day, index) => {
                     if (!day) return <div key={`empty-${index}`} className="day-cell empty" />;
+
                     const dateKey = moment(day).format('YYYY-MM-DD');
                     const isSelected = selectedDates.includes(dateKey);
-
-                    const todayKey = moment().format('YYYY-MM-DD');
-                    const isPast = moment(dateKey).isBefore(todayKey, 'day');
-
-
+                    const isToday = dateKey === todayKey; // ✅ 오늘 여부
 
                     return (
                         <div
                             key={dateKey}
-                            className={`day-cell ${isSelected ? 'selected' : ''} ${isPast ? 'disabled' : ''}`}
-                            onMouseDown={isPast ? undefined : () => onMouseDown(dateKey)}
-                            onMouseEnter={isPast ? undefined : () => onMouseEnter(dateKey)}
+                            className={`day-cell ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
+                            onMouseDown={() => onMouseDown(dateKey)}
+                            onMouseEnter={() => onMouseEnter(dateKey)}
                         >
                             {day.getDate()}
                         </div>
@@ -99,7 +99,6 @@ const DatePickerGrid = ({ year, month, selectedDates, onMouseDown, onMouseEnter,
         </div>
     );
 };
-
 const TwoMonthPicker = ({ selectedDates, onSelectDate }) => {
     const [baseDate, setBaseDate] = useState(new Date());
     const [isDragging, setIsDragging] = useState(false);
