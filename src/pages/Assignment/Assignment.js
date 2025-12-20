@@ -111,6 +111,39 @@ function Assignment({ notifications = [] }) {
                     throw new Error(errorMsg);
                 }
                 const members = await response.json();
+                console.log("=== 📋 프로젝트 멤버 데이터 로드 ===");
+                console.log(`총 멤버 수: ${members.length}명`);
+                console.log("");
+                
+                // 각 멤버별 상세 정보 출력
+                members.forEach((member, index) => {
+                    console.log(`[선택지 ${index + 1}] ${member.name || '이름 없음'}`);
+                    console.log(`  └─ ID: ${member.id} (타입: ${typeof member.id})`);
+                    console.log(`  └─ 전체 데이터:`, member);
+                    console.log("");
+                });
+                
+                // 모든 멤버의 ID 목록
+                const memberIds = members.map(m => String(m.id));
+                console.log("📌 모든 멤버 ID 목록:", memberIds);
+                
+                // ID 중복 확인
+                const uniqueIds = new Set(memberIds);
+                if (memberIds.length !== uniqueIds.size) {
+                    console.error("❌ 경고: 중복된 멤버 ID가 있습니다!");
+                    console.error("중복된 ID:", memberIds.filter((id, idx) => memberIds.indexOf(id) !== idx));
+                } else {
+                    console.log("✅ 모든 멤버 ID가 고유합니다.");
+                }
+                
+                // select 옵션에 사용될 value 값 확인
+                console.log("");
+                console.log("🔍 Select 옵션에 사용될 value 값들:");
+                members.forEach((member, index) => {
+                    console.log(`  옵션 ${index + 1}: value="${String(member.id)}" → ${member.name}`);
+                });
+                
+                console.log("========================================");
                 setProjectMembers(members);
             } catch (error) {
                 console.error("프로젝트 멤버 로딩 오류:", error);
@@ -146,8 +179,8 @@ function Assignment({ notifications = [] }) {
                 setAllAssignments(sortedData);
 
                 if (currentUserId) {
-
-                    const myData = sortedData.filter(item => item.userName === currentUserId);
+                    // 타입 불일치 해결: 문자열로 통일하여 비교
+                    const myData = sortedData.filter(item => String(item.userName) === String(currentUserId));
                     setMyAssignments(myData);
                 }
 
@@ -169,8 +202,22 @@ function Assignment({ notifications = [] }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        // 담당자가 선택되지 않은 경우 확인
+        const assigneeId = String(formData.assignee || '').trim();
+        if (!assigneeId || assigneeId === '') {
+            alert('담당자를 선택해주세요.');
+            return;
+        }
+
+        // 선택한 담당자 정보 가져오기
+        const selectedMember = projectMembers.find(m => String(m.id) === String(assigneeId));
+        if (!selectedMember) {
+            alert('선택한 담당자를 찾을 수 없습니다.');
+            return;
+        }
+        
         const payload = {
-            id: currentUserId,
+            id: String(selectedMember.id),  // 담당자 ID
             projId: projId,
             role: null,
             cate: formData.category,
@@ -179,11 +226,21 @@ function Assignment({ notifications = [] }) {
             detail: formData.description,
             checkBox: 0,
             taskName: formData.taskName,
-            userName: formData.assignee,
+            userName: String(selectedMember.name),  // 담당자 이름
             files: [],
         };
+        
+        console.log("=== 과제 생성 Payload ===");
+        console.log("담당자 ID (id):", payload.id);
+        console.log("담당자 이름 (userName):", payload.userName);
+        console.log("전체 Payload:", JSON.stringify(payload, null, 2));
+        console.log("========================");
 
-        console.log("Submitting Payload:", JSON.stringify(payload, null, 2));
+        console.log("=== 과제 생성 Payload ===");
+        console.log("생성자 ID (id):", payload.id);
+        console.log("담당자 ID (userName):", payload.userName);
+        console.log("전체 Payload:", JSON.stringify(payload, null, 2));
+        console.log("========================");
 
         try {
             const response = await fetch(`${baseURL}/task/post`, {
@@ -232,7 +289,8 @@ function Assignment({ notifications = [] }) {
         setAllAssignments(sorted);
 
         if (currentUserId) {
-            const myData = sorted.filter(item => item.userName === currentUserId);
+            // 타입 불일치 해결: 문자열로 통일하여 비교
+            const myData = sorted.filter(item => String(item.userName) === String(currentUserId));
             setMyAssignments(myData);
         }
     };
@@ -247,9 +305,29 @@ function Assignment({ notifications = [] }) {
     };
 
 
-    const getAssigneeName = (assigneeId) => {
-        const member = projectMembers.find(m => String(m.id) === String(assigneeId));
-        return member ? member.name : 'Unknown';
+    const getAssigneeName = (assigneeIdOrName) => {
+        if (!assigneeIdOrName) return 'Unknown';
+        
+        // 먼저 ID로 찾기
+        let member = projectMembers.find(m => 
+            String(m.id) === String(assigneeIdOrName) || 
+            m.id === assigneeIdOrName
+        );
+        
+        // ID로 못 찾았으면 이름으로 찾기
+        if (!member) {
+            member = projectMembers.find(m => 
+                String(m.name) === String(assigneeIdOrName)
+            );
+        }
+        
+        // 찾았으면 이름 반환
+        if (member) {
+            return member.name;
+        }
+        
+        // 못 찾았으면 이미 이름일 수도 있으니 그대로 반환
+        return String(assigneeIdOrName);
     };
 
 
@@ -266,13 +344,46 @@ function Assignment({ notifications = [] }) {
                             <h2>새 과제 생성</h2>
                         </div>
                         <div className="setting-list">
-                            <select name="assignee" value={formData.assignee} onChange={handleChange} required>
+                            <select 
+                                name="assignee" 
+                                value={formData.assignee} 
+                                onChange={(e) => {
+                                    const selectedValue = e.target.value;
+                                    const selectedMember = projectMembers.find(m => String(m.id) === String(selectedValue));
+                                    
+                                    console.log("=== 👤 담당자 선택 ===");
+                                    console.log(`선택된 값: "${selectedValue}" (타입: ${typeof selectedValue})`);
+                                    
+                                    if (selectedMember) {
+                                        console.log(`✅ 선택된 멤버: ${selectedMember.name}`);
+                                        console.log(`   └─ ID: ${selectedMember.id} (타입: ${typeof selectedMember.id})`);
+                                        console.log(`   └─ 전체 데이터:`, selectedMember);
+                                    } else {
+                                        console.error("❌ 선택된 값에 해당하는 멤버를 찾을 수 없습니다!");
+                                        console.error("   사용 가능한 멤버 ID:", projectMembers.map(m => m.id));
+                                    }
+                                    console.log("====================");
+                                    
+                                    handleChange(e);
+                                }}
+                                required
+                            >
                                 <option value="" disabled>담당자</option>
-                                {projectMembers.map((member) => (
-                                    <option key={member.id} value={member.id}>
-                                        {member.name}
-                                    </option>
-                                ))}
+                                {projectMembers.map((member, index) => {
+                                    // 첫 번째 렌더링 시에만 옵션 정보 출력 (중복 방지)
+                                    if (index === 0 && projectMembers.length > 0) {
+                                        console.log("=== 📝 Select 옵션 렌더링 ===");
+                                        projectMembers.forEach((m, idx) => {
+                                            console.log(`옵션 ${idx + 1}: value="${String(m.id)}" → ${m.name}`);
+                                        });
+                                        console.log("=============================");
+                                    }
+                                    return (
+                                        <option key={member.id} value={String(member.id)}>
+                                            {member.name}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <select name="category" value={formData.category} onChange={handleChange} required>
                                 {categoryOptions.map((option) => (

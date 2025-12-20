@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate } from 'react-router-dom'
 import './MyAssignments.css';
 
-const baseURL = "https://www.teamplate-api.site";
+const baseURL = "https://teamplate-api.site";
 //const getAssignment = `${baseURL}/task/view?projId=${projId}&id=${id}`;
 
 const urlParams = new URLSearchParams(new URL(testURL).search);

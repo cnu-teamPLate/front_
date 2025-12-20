@@ -224,18 +224,16 @@ function AssignmentDetail() {
                 setIsEditing(false);
                 alert(response.data.message || '과제가 성공적으로 수정되었습니다.');
 
-                // 서버에서 최신 데이터 가져오기 (여러 번 시도하여 서버 반영 확인)
-                const checkServerUpdate = async (attempt = 1, maxAttempts = 5) => {
-                    const userId = localStorage.getItem('userId');
-                    if (!userId || !projId) return;
+                // 서버에서 최신 데이터 가져오기
+                // 주의: 담당자가 변경되었을 수 있으므로 프로젝트 전체 과제 목록에서 찾아야 함
+                const refreshAssignmentData = async () => {
+                    if (!projId || !taskId) return;
 
                     try {
-                        const apiUrl = `${baseURL}/task/view?projId=${projId}&id=${userId}`;
+                        // 프로젝트의 전체 과제 목록 가져오기 (담당자가 변경되어도 찾을 수 있도록)
+                        const apiUrl = `${baseURL}/task/view?projId=${projId}`;
+                        console.log('수정 후 데이터 새로고침:', apiUrl);
                         const refreshResponse = await axios.get(apiUrl);
-                        // 로그 최소화: 마지막 시도에서만 상세 로그 출력
-                        if (attempt === maxAttempts) {
-                            console.log(`서버 새로고침 최종 시도:`, refreshResponse.data);
-                        }
 
                         let foundAssignment = null;
                         if (Array.isArray(refreshResponse.data)) {
@@ -250,44 +248,24 @@ function AssignmentDetail() {
                         }
 
                         if (foundAssignment) {
-                            // 서버의 detail이 수정한 내용과 일치하는지 확인
-                            if (foundAssignment.detail === savedDescription) {
-                                console.log('✅ 서버 데이터가 업데이트되었습니다.');
-                                setAssignment(foundAssignment);
-                                // 파일 목록도 다시 불러오기
-                                await fetchAttachedFiles(taskId);
-                                return; // 성공적으로 업데이트되었으므로 종료
-                            } else {
-                                // 최대 시도 횟수에 도달하지 않았으면 다시 시도
-                                if (attempt < maxAttempts) {
-                                    // 조용히 재시도 (로그 최소화)
-                                    setTimeout(() => checkServerUpdate(attempt + 1, maxAttempts), 1000 * attempt);
-                                } else {
-                                    console.error('❌ 서버 데이터가 업데이트되지 않았습니다.');
-                                    console.error('서버 detail:', foundAssignment.detail);
-                                    console.error('수정한 detail:', savedDescription);
-                                    console.error('전체 서버 응답:', foundAssignment);
-                                    console.warn('로컬 상태를 유지합니다. 페이지를 새로고침하면 서버 데이터가 표시됩니다.');
-                                    // 로컬 상태는 이미 업데이트되어 있으므로 유지
-                                    await fetchAttachedFiles(taskId);
-                                }
-                            }
+                            console.log('✅ 서버에서 업데이트된 과제 데이터를 가져왔습니다:', foundAssignment);
+                            setAssignment(foundAssignment);
+                            // 파일 목록도 다시 불러오기
+                            await fetchAttachedFiles(taskId);
                         } else {
-                            console.warn('수정 후 과제를 찾을 수 없습니다.');
-                            if (attempt < maxAttempts) {
-                                setTimeout(() => checkServerUpdate(attempt + 1, maxAttempts), 1000 * attempt);
-                            }
+                            console.warn('⚠️ 수정 후 과제를 찾을 수 없습니다. 로컬 상태를 유지합니다.');
+                            // 로컬 상태는 이미 업데이트되어 있으므로 유지
+                            await fetchAttachedFiles(taskId);
                         }
                     } catch (refreshErr) {
-                        console.error(`서버 새로고침 오류 (시도 ${attempt}):`, refreshErr);
-                        if (attempt < maxAttempts) {
-                            setTimeout(() => checkServerUpdate(attempt + 1, maxAttempts), 1000 * attempt);
-                        }
+                        console.error('서버 새로고침 오류:', refreshErr);
+                        // 에러가 발생해도 로컬 상태는 이미 업데이트되어 있으므로 유지
+                        await fetchAttachedFiles(taskId);
                     }
                 };
 
-                // 첫 번째 시도는 1초 후에 시작
-                setTimeout(() => checkServerUpdate(1, 5), 1000);
+                // 수정 후 1초 뒤에 새로고침 (서버 반영 시간을 고려)
+                setTimeout(refreshAssignmentData, 1000);
             }
         } catch (err) {
             console.error('과제 수정 오류:', err);
