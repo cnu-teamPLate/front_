@@ -142,3 +142,11 @@
     font-size: 1.2rem;
     text-align: center;
 }
+
+.task-assignee h3, .task-description h3 {
+    margin: 0!important;
+}
+
+.task-assignee {
+    margin-bottom: 1em;
+}
