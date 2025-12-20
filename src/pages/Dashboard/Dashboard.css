@@ -1,10 +1,11 @@
-/* Dashboard.css - Refined Version */
-
-/* --- 기본 레이아웃 --- */
+/* =========================================
+   1. Dashboard Layout (Main Page)
+   ========================================= */
 .Dashboard {
   display: flex;
   min-height: 100vh;
   background-color: #f4f7f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .App-content {
@@ -14,20 +15,12 @@
   transition: margin-left 0.3s ease;
 }
 
-/* --- 상단 헤더 영역 --- */
+/* Header */
 .main-header {
   display: flex;
-  justify-content: space-between; /* 양쪽 정렬 (제목이 있다면) 혹은 우측 정렬 */
+  justify-content: flex-end; /* 우측 정렬 */
   align-items: center;
   margin-bottom: 25px;
-}
-
-/* 프로젝트 리스트 타이틀 추가 (선택사항) */
-.main-header h2 {
-  font-size: 1.5rem;
-  color: #333;
-  margin: 0;
-  font-weight: 700;
 }
 
 .add-project-button {
@@ -52,46 +45,38 @@
   box-shadow: 0 6px 10px rgba(163, 40, 40, 0.3);
 }
 
+/* Project List (Center Aligned, 4 Items) */
 .project-list {
   display: flex;
-  flex-wrap: nowrap;        
-  overflow-x: auto;       
-  gap: 25px;              
-  width: fit-content;     
-  max-width: 100%;          
-  margin: 0 auto;          
-  padding: 10px 25px 30px 25px; 
-  align-items: stretch;     
-}
-/* 스크롤바 스타일링 */
-.project-list::-webkit-scrollbar {
-  height: 8px;
-}
-.project-list::-webkit-scrollbar-thumb {
-  background-color: #d1d1d1;
-  border-radius: 4px;
-}
-.project-list::-webkit-scrollbar-thumb:hover {
-  background-color: #a32828;
-}
-.project-list::-webkit-scrollbar-track {
-  background-color: #eee;
-  border-radius: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 25px;
+  width: fit-content;       /* 내용물만큼만 너비 차지 */
+  max-width: 100%;          /* 화면 넘어가면 스크롤 */
+  margin: 0 auto;           /* 중앙 정렬 */
+  padding: 10px 25px 30px 25px;
+  align-items: stretch;     /* 카드 높이 통일 */
 }
 
-/* --- 프로젝트 카드 디자인 --- */
+/* Custom Scrollbar */
+.project-list::-webkit-scrollbar { height: 8px; }
+.project-list::-webkit-scrollbar-thumb { background-color: #d1d1d1; border-radius: 4px; }
+.project-list::-webkit-scrollbar-thumb:hover { background-color: #a32828; }
+.project-list::-webkit-scrollbar-track { background-color: #eee; border-radius: 4px; }
+
+/* Project Card */
 .project-card {
   background-color: #ffffff;
   border: 1px solid #e1e4e8;
-  border-top: 4px solid #a32828; /* 상단 포인트 컬러 */
+  border-top: 4px solid #a32828;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
-  flex-direction: column;   /* 내부 요소 세로 정렬 */
-  width: 320px;             /* 고정 너비 */
-  min-width: 320px;         /* flex-shrink 방지 */
+  flex-direction: column;
+  width: 320px;
+  min-width: 320px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden;         /* 내부 요소 넘침 방지 */
+  overflow: hidden;
 }
 
 .project-card:hover {
@@ -99,7 +84,6 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* 카드 헤더 */
 .project-card-header {
   display: flex;
   justify-content: space-between;
@@ -113,81 +97,44 @@
   color: #2c3e50;
   font-weight: 700;
   line-height: 1.4;
-  /* 제목이 너무 길 경우 말줄임 */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  word-break: break-word;
 }
 
-.project-controls {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0; /* 아이콘 영역 줄어들지 않게 */
-}
+.project-controls { display: flex; gap: 10px; flex-shrink: 0; }
 
-/* 카드 본문 */
 .project-card-body {
   padding: 10px 20px 20px 20px;
-  flex-grow: 1; /* 남은 공간을 모두 차지하여 푸터를 바닥으로 밀어냄 */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.project-detail {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #555;
-  line-height: 1.5;
-}
+.project-detail { margin: 0; font-size: 0.9rem; color: #555; line-height: 1.5; }
+.project-detail strong { color: #333; font-weight: 600; margin-right: 6px; }
 
-.project-detail strong {
-  color: #333;
-  font-weight: 600;
-  margin-right: 6px;
-}
-
-/* 목표(Goal) 텍스트 스타일 - 말줄임 처리 */
 .project-goal {
   background-color: #f8f9fa;
   padding: 8px 10px;
   border-radius: 4px;
   font-size: 0.85rem;
   color: #666;
-  
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* 3줄까지만 표시 */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 3.6em; /* 최소 높이 확보로 정렬 유지 */
+  min-height: 3.6em;
 }
 
-.project-date {
-  font-size: 0.85rem;
-  color: #888;
-  margin-top: 5px;
-}
+.project-date { font-size: 0.85rem; color: #888; margin-top: 5px; }
 
-/* 팀원 목록 영역 */
-.team-members-simplified h3 {
-  font-size: 0.85rem;
-  color: #7f8c8d;
-  margin: 0 0 8px 0;
-  font-weight: 600;
-}
-
-.team-members-simplified ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
+/* Team Members in Card */
+.team-members-simplified h3 { font-size: 0.85rem; color: #7f8c8d; margin: 0 0 8px 0; font-weight: 600; }
+.team-members-simplified ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .team-members-simplified li {
   font-size: 0.8rem;
   background-color: #fcecea;
@@ -198,12 +145,11 @@
   white-space: nowrap;
 }
 
-/* 카드 푸터 (버튼 영역) */
 .project-card-footer {
   padding: 15px 20px;
   background-color: #fcfcfc;
   border-top: 1px solid #f0f0f0;
-  margin-top: auto; /* 상단 요소들과 거리를 벌려 바닥에 붙음 */
+  margin-top: auto;
 }
 
 .project-link {
@@ -218,159 +164,292 @@
   font-weight: 600;
   font-size: 0.9rem;
   transition: background-color 0.2s;
-  box-sizing: border-box; /* 패딩 포함 크기 계산 */
-}
-
-.project-link:hover {
-  background-color: #7c1e1e;
-}
-
-/* --- 팝업 (Modal) 스타일 개선 --- */
-.popupfordashboard {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.popup-inner {
-  background-color: white;
-  width: 100%;
-  max-width: 550px;
-  max-height: 80vh;
-  overflow-y: auto;
-  border-radius: 10px;
-  padding: 30px;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-}
-
-.popup-inner h2 {
-  color: #a32828;
-  margin-top: 0;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 15px;
-  margin-bottom: 10px;
-}
-
-/* 폼 요소 공통 */
-.popup-inner label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.popup-inner input[type="text"],
-.popup-inner input[type="url"],
-.popup-inner input[type="datetime-local"] {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.95rem;
   box-sizing: border-box;
 }
+.project-link:hover { background-color: #7c1e1e; }
 
-.popup-inner input:focus {
+/* Pagination */
+.pagination { display: flex; justify-content: center; list-style: none; padding: 0; margin-top: 30px; }
+.page-item { margin: 0 4px; }
+.page-link {
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  color: #a32828;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.page-item.active .page-link { background-color: #a32828; color: white; border-color: #a32828; }
+
+
+/* =========================================
+   2. Modern Modal Styles (Apple/Toss Style)
+   Prefix: .dm-
+   ========================================= */
+
+/* Overlay */
+.dm-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 9999;
+  animation: dmFadeIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Modal Content */
+.dm-content {
+  background-color: #ffffff;
+  width: 100%; max-width: 540px; max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  display: flex; flex-direction: column; position: relative;
+  animation: dmSlideUp 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.dm-content::-webkit-scrollbar { display: none; }
+
+/* Header */
+.dm-header {
+  padding: 30px 30px 20px 30px;
+  background-color: rgba(255, 255, 255, 0.95);
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(5px);
+}
+.dm-header h2 { margin: 0; color: #191f28; font-size: 1.6rem; font-weight: 700; }
+
+/* Body */
+.dm-body {
+  padding: 0 30px 30px 30px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+.dm-label { display: block; font-size: 0.95rem; font-weight: 600; color: #4e5968; margin-bottom: 8px; }
+
+/* Inputs */
+.dm-input {
+  width: 100%; padding: 14px 18px;
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  font-size: 1rem;
+  background-color: #fff; /* 배경 흰색으로 변경 */
+  color: #191f28;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+.dm-input:focus {
   border-color: #a32828;
+  box-shadow: 0 0 0 4px rgba(163, 40, 40, 0.1);
   outline: none;
 }
 
-/* 검색 섹션 박스화 */
-.subject-section, .member-section {
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 15px;
+/* Search Section Box */
+.dm-section-box {
+  background-color: #fafbfc;
+  border: 1px solid #f2f4f6;
+  padding: 20px;
+  border-radius: 16px;
 }
 
-.subject-search-container, .member-search-container {
+/* [FIX] Input Group Layout - Height Matching */
+.dm-input-group {
   display: flex;
+  align-items: stretch; /* 자식 요소 높이 강제 통일 */
   gap: 8px;
-  margin-bottom: 10px;
-}
-.subject-search-container input, .member-search-container input {
-    margin-bottom: 0 !important; /* 컨테이너 내부에서는 마진 제거 */
+  height: 50px; /* 높이 50px로 고정 */
+  width: 100%;
 }
 
-/* 버튼들 */
-.search-subject-button, .search-member-button, 
-.enroll-subject-button, .select-subject-button,
-.add-searched-member-button {
-  background-color: #555;
+.dm-input-group .dm-input {
+  flex: 1;
+  height: 100% !important; /* 부모 높이 채움 */
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid #d1d6db;
+}
+
+/* [FIX] Search Button (Icon Style) - Square */
+.dm-btn-search-inline {
+  height: 100% !important; /* 부모 높이 채움 */
+  width: 50px;             /* 정사각형 */
+  margin: 0;
+  padding: 0;
+  display: flex; justify-content: center; align-items: center;
+  background-color: #a32828;
   color: white;
+  border-radius: 12px;
   border: none;
-  padding: 0 15px;
-  border-radius: 4px;
   cursor: pointer;
-  white-space: nowrap;
-  font-size: 0.85rem;
-  height: 38px; /* 인풋 높이와 맞춤 */
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
 }
-.search-subject-button:hover, .search-member-button:hover { background-color: #333; }
+.dm-btn-search-inline:hover { background-color: #8a2020; transform: scale(1.05); }
+.dm-btn-search-inline:active { transform: scale(0.95); }
 
-.popup-actions {
-  margin-top: 20px;
+/* [FIX] Result Card Layout */
+/* --- [Fix] 결과 카드 및 버튼 크기 고정 --- */
+
+/* 1. 결과 카드: 내용을 양쪽 끝으로 배치 */
+.dm-result-card {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
+  flex-direction: row;       /* 가로 배치 */
+  align-items: center;       /* 수직 중앙 정렬 */
+  justify-content: space-between; /* 텍스트(왼쪽) - 버튼(오른쪽) 배분 */
+  
+  background-color: #fff;
+  border: 1px solid #e1e4e8;
+  border-left: 4px solid #a32828; /* 포인트 컬러 */
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
 }
 
-.popup-create-button, .popup-save-button {
-  padding: 10px 20px;
+/* 2. 텍스트 영역 */
+.dm-result-title {
+  font-size: 0.95rem; /* 15px 정도 */
+  font-weight: 700;   /* 굵게 */
+  color: #191f28;     /* 진한 검정 (가독성 UP) */
+  letter-spacing: -0.2px; /* 자간 살짝 좁게 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 학번/교수명 (Sub) - 보조 정보 */
+.dm-result-sub {
+  font-size: 0.8rem;  /* 13px 정도 */
+  font-weight: 500;   /* 중간 두께 */
+  color: #8b95a1;     /* 회색 (은은하게) */
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 1. 검색 버튼 (정사각형 돋보기) */
+.dm-btn-search-inline {
+  /* signup.css의 width: 100%를 무시하기 위해 !important 사용 */
+  width: 50px !important; 
+  height: 100% !important; /* 부모 높이에 맞춤 */
+  min-width: 50px !important; /* 찌그러짐 방지 */
+  
+  margin: 0;
+  padding: 0 !important; /* 패딩 초기화 */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background-color: #a32828;
+  color: white;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.dm-btn-search-inline:hover {
+  background-color: #8a2020;
+  transform: scale(1.05);
+}
+
+/* 2. 선택/추가 버튼 (원형 플러스/체크) */
+.dm-btn-select-small {
+  /* signup.css의 width: 100%를 무시하기 위해 !important 사용 */
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important; /* 어떤 상황에서도 줄어들지 않음 */
+  
+  padding: 0 !important; /* 패딩 제거 */
+  margin-left: 12px;
+  border-radius: 50%;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
   background-color: #a32828;
   color: white;
   border: none;
-  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dm-btn-select-small:hover {
+  background-color: #bf3030;
+  transform: scale(1.1);
+}
+
+.dm-btn-select-small:disabled {
+  background-color: #27ae60;
+  color: #fff;
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Tags Container */
+.dm-tag-container {
+  margin-top: 15px;
+  background-color: #fff5f5;
+  border: 1px solid #ffc9c9;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+
+.dm-tag {
+  background-color: #fff;
+  color: #a32828;
+  border: 1px solid #a32828;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Footer Buttons */
+.dm-footer {
+  padding: 0 30px 30px 30px;
+  display: flex; gap: 12px;
+  margin-top: 20px;
+}
+
+.dm-btn-primary {
+  flex: 2; /* 버튼 비율 조정 */
+  height: 50px;
+  border-radius: 12px;
+  background-color: #a32828;
+  color: white;
+  border: none;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
 }
-.popup-cancel-button {
-  padding: 10px 20px;
-  background-color: #e0e0e0;
-  color: #333;
+.dm-btn-primary:hover { background-color: #8a2020; }
+.dm-btn-primary:disabled { background-color: #d1d1d1; cursor: not-allowed; }
+
+.dm-btn-secondary {
+  flex: 1;
+  height: 50px;
+  border-radius: 12px;
+  background-color: #f2f4f6;
+  color: #4e5968;
   border: none;
-  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
 }
+.dm-btn-secondary:hover { background-color: #e5e8eb; }
 
-/* Error & Loading */
+/* API Messages */
+.dm-api-message { font-size: 0.85rem; color: #a32828; margin-top: 8px; margin-left: 4px; }
+
+/* Animations */
+@keyframes dmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dmSlideUp { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .loading-message { text-align: center; color: #888; margin-top: 50px; }
-.error { color: #d9534f; background: #fcedqe; padding: 10px; border-radius: 4px; text-align: center; }
-
-/* 페이지네이션 */
-.pagination {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-    padding: 0;
-    margin-top: 30px;
-}
-.page-item { margin: 0 4px; }
-.page-link {
-    display: block;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    color: #a32828;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: all 0.2s;
-}
-.page-item.active .page-link {
-    background-color: #a32828;
-    color: white;
-    border-color: #a32828;
-}
+.error { color: #d9534f; padding: 10px; border-radius: 4px; text-align: center; }

@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { IoAddCircle, IoBookmark, IoSettings } from "react-icons/io5";
+import { 
+  IoAddCircle, 
+  IoBookmark, 
+  IoSettings, 
+  IoSearch,     // 돋보기 아이콘
+  IoAdd,        // 플러스 아이콘
+  IoCheckmark   // 체크 아이콘
+} from "react-icons/io5";
+
 import './Dashboard.css';
 
 const API_BASE_URL = 'https://teamplate-api.site';
@@ -10,7 +18,7 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [projectsPerPage] = useState(4); // 한 화면에 보일 프로젝트 수
+  const [projectsPerPage] = useState(4); // 한 줄에 4개씩
   
   // Popups
   const [showProjectPopup, setShowProjectPopup] = useState(false);
@@ -397,139 +405,180 @@ function Dashboard() {
         )}
       </main>
 
-      {/* --- Create Popup --- */}
+      {/* --- Create Project Popup (Final Design with Icons) --- */}
       {showProjectPopup && (
-        <div className="popupfordashboard">
-          <div className="popup-inner">
-            <h2>새 프로젝트 생성</h2>
-            
-            <label>프로젝트명</label>
-            <input type="text" name="projectName" value={newProject.projectName} onChange={handleChange} placeholder="프로젝트 이름을 입력하세요" />
-            
-            <label>팀 이름</label>
-            <input type="text" name="teamName" value={newProject.teamName} onChange={handleChange} placeholder="팀 이름을 입력하세요" />
-
-            {/* 과목 검색 섹션 */}
-            <div className="subject-section">
-                <label>과목 검색</label>
-                <div className="subject-search-container">
-                    <input type="text" value={subjectNameInput} onChange={(e)=>setSubjectNameInput(e.target.value)} placeholder="과목명 입력" />
-                    <button type="button" onClick={handleSearchSubject} className="search-subject-button">조회</button>
-                </div>
-                {subjectApiMessage && <p style={{fontSize:'0.8rem', color: '#a32828'}}>{subjectApiMessage}</p>}
-                
-                {searchedSubject && !showEnrollForm && (
-                    <div style={{background:'#fff', padding:'10px', marginTop:'5px', border:'1px solid #ddd', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                        <span>{searchedSubject.className} ({searchedSubject.professor})</span>
-                        <button type="button" onClick={handleSelectSubject} className="select-subject-button">선택</button>
-                    </div>
-                )}
-                
-                {showEnrollForm && (
-                     <div style={{marginTop:'10px', borderTop:'1px dashed #ccc', paddingTop:'10px'}}>
-                         <label>새 과목 등록</label>
-                         <input type="text" placeholder="과목 ID" value={enrollClassIdInput} onChange={(e)=>setEnrollClassIdInput(e.target.value)} />
-                         <input type="text" placeholder="교수명" value={enrollProfessorInput} onChange={(e)=>setEnrollProfessorInput(e.target.value)} />
-                         <button type="button" onClick={handleEnrollSubject} className="enroll-subject-button">등록 후 선택</button>
-                     </div>
-                )}
+        <div className="dm-overlay">
+          <div className="dm-content">
+            <div className="dm-header">
+              <h2>새 프로젝트 생성</h2>
             </div>
-
-            <label>목표</label>
-            <input type="text" name="goal" value={newProject.goal} onChange={handleChange} />
             
-            <label>GitHub 링크</label>
-            <input type="url" name="githubLink" value={newProject.githubLink} onChange={handleChange} placeholder="https://" />
+            <div className="dm-body">
+              {/* 기본 정보 섹션 */}
+              <div>
+                <label className="dm-label">프로젝트명</label>
+                <input type="text" className="dm-input" name="projectName" value={newProject.projectName} onChange={handleChange} placeholder="예: 2024 캡스톤 디자인" />
+              </div>
+              
+              <div>
+                <label className="dm-label">팀 이름</label>
+                <input type="text" className="dm-input" name="teamName" value={newProject.teamName} onChange={handleChange} placeholder="예: 최강 1팀" />
+              </div>
 
-            {/* 팀원 검색 섹션 */}
-            <div className="member-section">
-                <label>팀원 초대</label>
-                <div className="member-search-container">
-                    <input type="text" value={memberSearchQuery} onChange={handleMemberSearchQueryChange} placeholder="학번 또는 이름" />
-                    <button type="button" onClick={handleSearchMembers} className="search-member-button">검색</button>
-                </div>
-                {memberApiMessage && <p className="api-message">{memberApiMessage}</p>}
-                
-                {searchedMembers.length > 0 && (
-                    <ul style={{listStyle:'none', padding:0, maxHeight:'100px', overflowY:'auto', border:'1px solid #eee'}}>
-                        {searchedMembers.map(m => (
-                            <li key={m.userId} style={{padding:'5px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between'}}>
-                                <span>{m.userName} ({m.userId})</span>
-                                <button type="button" onClick={() => handleAddSearchedMember(m)} className="add-searched-member-button">추가</button>
-                            </li>
+              {/* 과목 검색 섹션 */}
+              <div className="dm-section-box">
+                  <label className="dm-label">과목 추가</label>
+                  <div className="dm-input-group">
+                      <input 
+                        type="text" 
+                        className="dm-input" 
+                        value={subjectNameInput} 
+                        onChange={(e)=>setSubjectNameInput(e.target.value)} 
+                        placeholder="과목명 검색" 
+                      />
+                      <button type="button" onClick={handleSearchSubject} className="dm-btn-search-inline" title="검색">
+                        <IoSearch size={22} />
+                      </button>
+                  </div>
+                  {subjectApiMessage && <p style={{fontSize:'0.85rem', color:'#a32828', marginTop:'8px'}}>{subjectApiMessage}</p>}
+                  
+                  {searchedSubject && !showEnrollForm && (
+                      <div className="dm-result-card">
+                        <div className="dm-result-info">
+                            <span className="dm-result-title">{searchedSubject.className}  </span>
+                            <span className="dm-result-sub">{searchedSubject.professor || '교수 정보 없음'}</span>
+                        </div>
+                        <button type="button" onClick={handleSelectSubject} className="dm-btn-select-small" title="선택">
+                          <IoAdd size={20} />
+                        </button>
+                      </div>
+                  )}
+                  
+                  {showEnrollForm && (
+                       <div style={{marginTop:'15px', borderTop:'1px dashed #d1d6db', paddingTop:'15px'}}>
+                           <label className="dm-label" style={{marginBottom:'8px'}}>새 과목 직접 등록</label>
+                           <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
+                             <input type="text" className="dm-input" placeholder="과목 코드 (예: CSE4070)" value={enrollClassIdInput} onChange={(e)=>setEnrollClassIdInput(e.target.value)} />
+                             <input type="text" className="dm-input" placeholder="교수님 성함" value={enrollProfessorInput} onChange={(e)=>setEnrollProfessorInput(e.target.value)} />
+                             <button type="button" onClick={handleEnrollSubject} className="dm-btn-primary" style={{height:'42px', fontSize:'0.9rem', borderRadius:'8px'}}>등록하고 선택하기</button>
+                           </div>
+                       </div>
+                  )}
+              </div>
+
+              <div>
+                <label className="dm-label">목표</label>
+                <input type="text" className="dm-input" name="goal" value={newProject.goal} onChange={handleChange} placeholder="이번 학기 목표는?" />
+              </div>
+              
+              <div>
+                <label className="dm-label">GitHub 링크</label>
+                <input type="url" className="dm-input" name="githubLink" value={newProject.githubLink} onChange={handleChange} placeholder="https://github.com/..." />
+              </div>
+
+              {/* 팀원 검색 섹션 */}
+              <div className="dm-section-box">
+                  <label className="dm-label">팀원 초대</label>
+                  <div className="dm-input-group">
+                      <input 
+                        type="text" 
+                        className="dm-input" 
+                        value={memberSearchQuery} 
+                        onChange={handleMemberSearchQueryChange} 
+                        placeholder="학번 또는 이름 검색" 
+                      />
+                      <button type="button" onClick={handleSearchMembers} className="dm-btn-search-inline" title="검색">
+                        <IoSearch size={22} />
+                      </button>
+                  </div>
+                  {memberApiMessage && <p style={{fontSize:'0.85rem', color:'#666', marginTop:'8px'}}>{memberApiMessage}</p>}
+                  
+                  {searchedMembers.length > 0 && (
+                      <div style={{marginTop:'10px', display:'flex', flexDirection:'column', gap:'8px'}}>
+                          {searchedMembers.map(m => {
+                              const isAdded = newProject.teamMembers.some(tm => tm.id === m.userId);
+                              return (
+                                <div key={m.userId} className="dm-result-card" style={{marginTop:0}}>
+                                    <div className="dm-result-info">
+                                      <span className="dm-result-title">{m.userName}  </span>
+                                      <span className="dm-result-sub">{m.userId}</span>
+                                    </div>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleAddSearchedMember(m)} 
+                                      className="dm-btn-select-small" 
+                                      disabled={isAdded}
+                                      title={isAdded ? "추가됨" : "추가"}
+                                    >
+                                      {isAdded ? <IoCheckmark size={20} /> : <IoAdd size={20} />}
+                                    </button>
+                                </div>
+                              );
+                          })}
+                      </div>
+                  )}
+                  
+                  {/* 추가된 팀원 태그 */}
+                  {newProject.teamMembers.length > 0 && (
+                    <div className="dm-tag-container">
+                        {newProject.teamMembers.map(m => (
+                            <span key={m.id} className="dm-tag">
+                                @{m.name}
+                            </span>
                         ))}
-                    </ul>
-                )}
-                <div className="added-members" style={{marginTop:'10px'}}>
-                    <small>추가된 팀원: </small>
-                    {newProject.teamMembers.map(m => (
-                        <span key={m.id} style={{marginRight:'5px', color:'#a32828', background:'#fcecea', padding:'2px 5px', borderRadius:'4px', fontSize:'0.8rem'}}>
-                            {m.name}
-                        </span>
-                    ))}
-                </div>
+                    </div>
+                  )}
+              </div>
             </div>
 
-            <div className="popup-actions">
-              <button onClick={handleCloseProjectPopup} className="popup-cancel-button">취소</button>
-              <button onClick={handleAddProject} className="popup-create-button" disabled={isSubmitting}>
-                  {isSubmitting ? '생성 중..' : '프로젝트 생성'}
+            <div className="dm-footer">
+              <button onClick={handleCloseProjectPopup} className="dm-btn dm-btn-secondary">취소</button>
+              <button onClick={handleAddProject} className="dm-btn dm-btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? '생성 중..' : '프로젝트 생성하기'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-       {/* --- Edit Popup --- */}
-       {showEditPopup && selectedProject && (
-        <div className="popupfordashboard">
-           <div className="popup-inner">
-               <h2>프로젝트 수정</h2>
+      {/* --- Edit Project Popup (Standard) --- */}
+      {showEditPopup && selectedProject && (
+        <div className="dm-overlay">
+           <div className="dm-content">
+               <div className="dm-header">
+                 <h2>프로젝트 설정</h2>
+               </div>
                
-               <label>프로젝트명</label>
-               <input 
-                 type="text" 
-                 name="projectName" 
-                 value={selectedProject.projectName} 
-                 onChange={handleEditChange} 
-               />
+               <div className="dm-body">
+                 <div>
+                   <label className="dm-label">프로젝트명</label>
+                   <input type="text" className="dm-input" name="projectName" value={selectedProject.projectName} onChange={handleEditChange} />
+                 </div>
 
-               <label>팀 이름</label>
-               <input 
-                 type="text" 
-                 name="teamName" 
-                 value={selectedProject.teamName || ''} 
-                 onChange={handleEditChange} 
-               />
+                 <div>
+                   <label className="dm-label">팀 이름</label>
+                   <input type="text" className="dm-input" name="teamName" value={selectedProject.teamName || ''} onChange={handleEditChange} />
+                 </div>
 
-               <label>목표</label>
-               <input 
-                 type="text" 
-                 name="goal" 
-                 value={selectedProject.goal || ''} 
-                 onChange={handleEditChange} 
-               />
+                 <div>
+                   <label className="dm-label">목표</label>
+                   <input type="text" className="dm-input" name="goal" value={selectedProject.goal || ''} onChange={handleEditChange} />
+                 </div>
 
-               <label>GitHub 링크</label>
-               <input 
-                 type="url" 
-                 name="githubLink" 
-                 value={selectedProject.githubLink || ''} 
-                 onChange={handleEditChange} 
-                 placeholder="https://"
-               />
+                 <div>
+                   <label className="dm-label">GitHub 링크</label>
+                   <input type="url" className="dm-input" name="githubLink" value={selectedProject.githubLink || ''} onChange={handleEditChange} />
+                 </div>
 
-               <label>마감일</label>
-               <input
-                type="datetime-local"
-                name="date"
-                value={selectedProject.date ? selectedProject.date.substring(0, 16) : ''}
-                onChange={handleEditChange}
-               />
+                 <div>
+                   <label className="dm-label">마감일</label>
+                   <input type="datetime-local" className="dm-input" name="date" value={selectedProject.date ? selectedProject.date.substring(0, 16) : ''} onChange={handleEditChange} />
+                 </div>
+               </div>
 
-               <div className="popup-actions">
-                   <button onClick={() => { setShowEditPopup(false); setSelectedProject(null); }} className="popup-cancel-button">취소</button>
-                   <button onClick={handleSaveProject} className="popup-save-button">저장</button>
+               <div className="dm-footer">
+                   <button onClick={() => { setShowEditPopup(false); setSelectedProject(null); }} className="dm-btn dm-btn-secondary">취소</button>
+                   <button onClick={handleSaveProject} className="dm-btn dm-btn-primary">저장하기</button>
                </div>
            </div>
         </div>
