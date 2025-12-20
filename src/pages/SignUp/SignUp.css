@@ -1,11 +1,11 @@
-/* 전체 페이지 컨테이너: 화면 중앙 정렬 및 배경색 지정 */
+/* 전체 페이지 컨테이너 */
 .SignUp {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; /* 화면 전체 높이 사용 */
-  background-color: #f8f9fa; /* 부드러운 회색 배경 */
+  min-height: 100vh;
+  background-color: #f8f9fa;
   padding: 40px 20px;
   box-sizing: border-box;
 }
@@ -37,14 +37,13 @@
   margin: 0 15px;
   font-size: 14px;
   transition: all 0.3s ease;
-  z-index: 1; /* 선보다 위에 표시되도록 */
+  z-index: 1;
 }
 
-/* 활성화된 단계 스타일 */
 .progress-step.active {
   background-color: #A32125;
   color: white;
-  box-shadow: 0 0 0 4px rgba(229, 70, 70, 0.2); /* 강조 효과 */
+  box-shadow: 0 0 0 4px #A32125;
 }
 
 /* 메인 컨텐츠 카드 */
@@ -52,9 +51,9 @@
   background-color: white;
   padding: 40px;
   border-radius: 12px;
-  max-width: 500px; /* 너무 넓지 않게 조정 (가독성 UP) */
+  max-width: 500px;
   width: 100%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* 부드러운 그림자 */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
 }
 
@@ -64,7 +63,7 @@
 
 .step {
   width: 100%;
-  animation: fadeIn 0.4s ease-in-out; /* 단계 전환 시 부드러운 효과 */
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 .step h3 {
@@ -75,7 +74,7 @@
   padding-bottom: 10px;
 }
 
-/* 폼 그룹 및 라벨 */
+/* 폼 그룹 */
 .form-group {
   margin-bottom: 20px;
 }
@@ -88,45 +87,63 @@
   font-size: 0.95rem;
 }
 
-/* 입력 필드 공통 스타일 */
-.form-group input[type="text"],
-.form-group input[type="password"],
-.form-group input[type="email"],
-.form-group input[type="tel"],
+/* 약관 텍스트 영역 */
 .form-group textarea {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 15px;
-  box-sizing: border-box; /* 패딩 포함 크기 계산 */
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-/* 입력 필드 포커스 효과 */
-.form-group input:focus,
-.form-group textarea:focus {
-  border-color: #e53e3e;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-/* 약관 내용 텍스트박스 (읽기 전용 느낌 강조) */
-.form-group textarea {
   height: 120px;
+  padding: 12px;
   background-color: #f9fafb;
   color: #555;
   line-height: 1.5;
   font-size: 13px;
   margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+  resize: none;
 }
 
-/* 체크박스 스타일링 */
-.form-group input[type="checkbox"] {
-  width: auto;
-  margin-right: 8px;
-  transform: scale(1.2); /* 체크박스 크기 약간 키움 */
+/* [NEW] 체크박스 컨테이너 (우측 정렬 및 배치) */
+.checkbox-container {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  align-items: center;
+  gap: 8px; /* 텍스트와 체크박스 사이 간격 */
+  margin-top: 5px;
+}
+
+.agree-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
   cursor: pointer;
+  accent-color: #A32125; /* 체크되었을 때 색상 */
+}
+
+/* 입력 필드 스타일 */
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #A32125;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(163, 33, 37, 0.1);
 }
 
 /* 에러 메시지 */
@@ -135,9 +152,10 @@
   font-size: 13px;
   margin-top: 6px;
   display: block;
+  text-align: left;
 }
 
-/* 버튼 컨테이너 */
+/* 버튼 스타일 */
 .second-button {
   display: flex;
   justify-content: space-between;
@@ -145,7 +163,6 @@
   margin-top: 30px;
 }
 
-/* 공통 버튼 스타일 */
 button {
   padding: 12px 20px;
   border-radius: 6px;
@@ -157,18 +174,16 @@ button {
   font-family: inherit;
 }
 
-/* 기본 버튼 (다음, 완료, 가입하기) - Primary */
 button[type="submit"],
 button[type="button"]:not(.secondary-btn) {
   background-color: #A32125;
   color: white;
-  flex: 1; /* 버튼 너비 균등 분배 */
-  width: 100%; /* 단독 버튼일 때 */
+  flex: 1;
+  width: 100%;
 }
 
-button[type="submit"]:hover,
-button[type="button"]:not(.secondary-btn):hover {
-  background-color: #A32125;
+button:hover {
+  opacity: 0.9;
 }
 
 button:disabled {
@@ -176,19 +191,17 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* 이전 버튼 스타일 (수동 적용 필요, 아래 JS 수정 팁 참고) - Secondary */
-/* JS 수정 없이도 작동하도록 선택자 지정 */
-.second-button button[type="button"]:first-child {
-  background-color: #e5e7eb;
-  color: #374151;
-  flex: 0.5; /* 이전 버튼은 조금 작게 */
+/* 이전 버튼 (회색) */
+.secondary-btn {
+  background-color: #e5e7eb !important;
+  color: #374151 !important;
+  flex: 0.5;
 }
 
-.second-button button[type="button"]:first-child:hover {
-  background-color: #d1d5db;
+.secondary-btn:hover {
+  background-color: #d1d5db !important;
 }
 
-/* 애니메이션 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
