@@ -94,7 +94,7 @@ function MeetingLogView() {
     // 해당 날짜의 회의록 데이터를 가져오는 함수
     const fetchMeetingLog = async () => {
       try {
-        const response = await fetch(`/api/meetinglog/${date}`);
+        const response = await fetch(`https://teamplate-api.site/meetinglog/${date}`);
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
           const errorMsg = errorData?.message || `데이터를 불러올 수 없습니다 (${response.status})`;
