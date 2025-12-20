@@ -628,152 +628,192 @@ function MeetingLog() {
   };
   
 
+  /* MeetingLog.js의 return 문만 아래 내용으로 전체 교체하세요 */
+
   return (
-      <div>
-        <div className="meeting-log-container" style={{ display: 'flex', gap: '20px' }}>
-          {viewMode === 'new' && (
-            <div className="MeetingLog" style={{ flex: 2 }}>
-              <h1>회의록</h1>
-              <div className="controls">
+    <div>
+      <div className="meeting-log-container">
+        {/* --- 왼쪽 패널: 작성/뷰어 --- */}
+        {viewMode === 'new' && (
+          <div className="MeetingLog">
+            <h1>회의록 작성</h1>
+            
+            <div className="controls">
+              {/* 상단 컨트롤 (녹음/날짜) */}
+              <div className="top-controls">
                 <button 
                   className="record-button" 
                   onClick={handleRecordButtonClick}
                   disabled={isConverting || isUploading}
                 >
-                  {isRecording ? <IoRecordingOutline size={20} /> : <IoMicSharp size={20} />}
-                  {isRecording ? "기록 중" : "자동기록"}
+                  {isRecording ? <IoRecordingOutline size={18} /> : <IoMicSharp size={18} />}
+                  {isRecording ? "기록 중..." : "자동 기록 시작"}
                 </button>
-                <p className="meetDate">{formattedDate}</p>
-                <div className="participants">
+                <span className="meetDate">{formattedDate}</span>
+              </div>
+
+              {/* 일정 선택 */}
+              <div className='meeting-schedule'>
+                <h4>연관 일정</h4>
+                <select onChange={handleScheduleSelect}>
+                  <option value="">새 회의 생성 (일정 선택 안 함)</option>
+                  {scheduleList.map((p) => (
+                    <option key={p.scheduleId} value={p.scheduleId}>{p.scheduleName}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 참여자 섹션 */}
+              <div className="participants">
+                <div className="participants-header">
                   <h4 className='participants-title'>참여자</h4>
-                  <ul className='li-list'>
-                    {meetingParticipants.map((name) => (
-                      <li key={name}>
-                        {name}
-                        <button className="x" onClick={() => handleRemove(name)}>x</button>
-                      </li>
-                    ))}
-                  </ul>
                   <select 
                     className='participants-select' 
                     onChange={handleSelectParticipant} 
                     value={selectedParticipantValue}
                   >
-                    <option value="" disabled>참여자 선택</option>
+                    <option value="" disabled>+ 참여자 추가</option>
                     {projectParticipants.map((p) => (
                       <option key={p.id} value={p.name}>{p.name}</option>
                     ))}
                   </select>
                 </div>
-                <div className='meeting-schedule'>
-                  <h4>일정 선택</h4>
-                  <select onChange={handleScheduleSelect}>
-                    <option value="">새 회의 생성</option>
-                    {scheduleList.map((p) => (
-                      <option key={p.scheduleId} value={p.scheduleId}>{p.scheduleName}</option>
+                {meetingParticipants.length > 0 ? (
+                  <ul className='li-list'>
+                    {meetingParticipants.map((name) => (
+                      <li key={name}>
+                        {name}
+                        <button className="x" onClick={() => handleRemove(name)}>✕</button>
+                      </li>
                     ))}
+                  </ul>
+                ) : (
+                  <p style={{fontSize:'0.85rem', color:'#999', margin:0}}>참여자를 선택해주세요.</p>
+                )}
+              </div>
 
-                  </select>
-                </div>
-                <textarea className='titleinput'
-                  name="title"
-                  value={formData.title}
-                  placeholder={titlePlaceholder}
-                  onChange={handleChange}
-                  required
-                />
-                <textarea id="autoGrow" className='loginput'
-                  name="contents"
-                  ref={textareaRef}
-                  rows={25}
-                  value={formData.contents}
-                  placeholder={detailPlaceholder}
-                  onChange={handleChange}
-                  required
-                />
-                <textarea id="autoGrow" className='fixed'
+              {/* 입력 필드 */}
+              <input 
+                className='titleinput'
+                name="title"
+                value={formData.title}
+                placeholder={titlePlaceholder}
+                onChange={handleChange}
+                required
+              />
+              
+              <textarea 
+                id="autoGrow" 
+                className='loginput'
+                name="contents"
+                ref={textareaRef}
+                value={formData.contents}
+                placeholder={detailPlaceholder}
+                onChange={handleChange}
+                required
+              />
+              
+              <textarea 
+                className='fixed'
                 name='fix'
                 value={formData.fix}
                 placeholder={fixPlaceholder}
                 onChange={handleChange}
                 required
-                />
-              </div>
+              />
+            </div>
 
-              {audioBlob && (
-                <div className="audio-preview">
-                  <h4>기록 미리 듣기</h4>
-                  <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
-                </div>
-              )}
-              <button 
-                className="end-button" 
-                onClick={handleSubmit}
-                disabled={isUploading || isConverting}
+            {audioBlob && (
+              <div className="audio-preview">
+                <h4>녹음 미리 듣기</h4>
+                <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} style={{width:'100%'}} />
+              </div>
+            )}
+            
+            <button 
+              className="end-button" 
+              onClick={handleSubmit}
+              disabled={isUploading || isConverting}
+            >
+              {isUploading ? '저장 중...' : (editMode ? '수정 완료' : '작성 완료')}
+            </button>
+          </div>
+        )}
+
+        {/* 상세 보기 모드 */}
+        {viewMode === 'detail' && selectedLog && (
+          <div className="meeting-log-viewer">
+            <div className='top'>
+              <h2>{selectedLog.title}</h2>
+              <div className="meta-info">
+                <span>{formatDateTime(selectedLog.date)}</span>
+                <span style={{margin:'0 8px'}}>|</span>
+                <span>
+                  참여자: {selectedLog.participants && selectedLog.participants.length > 0 
+                    ? selectedLog.participants.map(p => p.name || p).join(', ') 
+                    : '-'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="viewer-content">
+              <div className="content-section">
+                <span className="content-label">회의 내용</span>
+                <div className="content-text">{selectedLog.contents}</div>
+              </div>
+              
+              <div className="content-section">
+                <span className="content-label">확정 사항</span>
+                <div className="content-text" style={{backgroundColor:'#fff5f5', borderColor:'#ffc9c9'}}>{selectedLog.fix || '-'}</div>
+              </div>
+            </div>
+
+            <div className='button-row'>
+              <button onClick={() => setViewMode('new')}>← 목록/작성으로</button>
+              <button
+                onClick={() => {
+                  setFormData({
+                    scheId: selectedLog.scheId || '',
+                    projId: selectedLog.projId || projId,
+                    contents: selectedLog.contents || '',
+                    title: selectedLog.title || '',
+                    date: selectedLog.date || formattedDateTime,
+                    fix: selectedLog.fix || '',
+                    participants: selectedLog.participants || [],
+                  });
+                  const names = selectedLog.participants?.map(p => p.name) || [];
+                  setMeetingParticipants(names);
+                  setEditMode(true);
+                  setViewMode('new');
+                }}
               >
-                {isUploading ? '저장 중...' : '작성 완료'}
+                수정하기
               </button>
             </div>
-          )}
-          {viewMode === 'detail' && selectedLog && (
-            <div className="meeting-log-viewer">
-              <div className='top'>
-                <h2>{selectedLog.title}</h2>
-                <p>{formatDateTime(selectedLog.date)}</p>
-                <p><strong>참여자:</strong> {selectedLog.participants && selectedLog.participants.length > 0 
-                  ? selectedLog.participants.map(p => p.name || p).join(', ') 
-                  : '참여자 정보 없음'}</p>
+          </div>
+        )}
+
+        {/* --- 오른쪽 패널: 리스트 --- */}
+        <div className="meetinglog-list">
+          <h3>회의록 목록</h3>
+          {meetingData.length > 0 ? (
+            meetingData.map((log, idx) => (
+              <div
+                key={idx}
+                className="each"
+                onClick={() => handleSelectLog(log)}
+              >
+                <strong>{log.title}</strong>
+                <p style={{ fontSize: '12px', color: '#888' }}>{formatDateTime(log.date)}</p>
               </div>
-              <div><p><strong>내용</strong></p><p>{selectedLog.contents}</p></div>
-              <div><p><strong>확정사항</strong></p><p> {selectedLog.fix}</p></div>
-              <div className='button-row'>
-                <button onClick={() => setViewMode('new')}>← 돌아가기</button>
-                <button
-                  onClick={() => {
-                    setFormData({
-                      scheId: selectedLog.scheId || '',
-                      projId: selectedLog.projId || projId,
-                      contents: selectedLog.contents || '',
-                      title: selectedLog.title || '',
-                      date: selectedLog.date || formattedDateTime,
-                      fix: selectedLog.fix || '',
-                      participants: selectedLog.participants || [],
-                    });
-
-                    const names = selectedLog.participants?.map(p => p.name) || [];
-                    setMeetingParticipants(names);
-
-                    setEditMode(true);
-                    setViewMode('new');
-                  }}
-                >
-                  수정하기
-                </button>
-              </div>
-            </div>
+            ))
+          ) : (
+            <p style={{color:'#999', textAlign:'center', marginTop:'20px'}}>등록된 회의록이 없습니다.</p>
           )}
-
-        <div className="meetinglog-list" style={{ flex: 1 }}>
-          {meetingData.length > 0 && meetingData.map((log, idx) => (
-            <div
-              key={idx}
-              className="each"
-              onClick={() => handleSelectLog(log)}
-              style={{ cursor: 'pointer', borderBottom: '1px solid #ddd', marginBottom: '10px' }}
-            >
-              <p><strong>{log.title}</strong></p>
-              <p style={{ fontSize: '12px', color: '#555' }}>{formatDateTime(log.date)}</p>
-            </div>
-          ))}
-          {meetingData.length === 0 &&(
-            <p>회의록이 없습니다.</p>
-            )
-          }
         </div>
       </div>
     </div>
-      
-);
+  );
 }
 
 export default MeetingLog;

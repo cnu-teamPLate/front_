@@ -10,7 +10,7 @@
 :root {
   /* ===== Primary Color Palette (Burgundy Theme) ===== */
   /* 변수명은 호환성을 위해 유지하되, 값은 버건디 색상으로 변경됨 */
-  --primary-navy: #4a0f0f;           /* Header Background: Very Dark Burgundy */
+  --primary-navy: #631717;           /* Header Background: Very Dark Burgundy */
   --primary-blue: #a32828;           /* Main Primary: Standard Burgundy */
   --primary-blue-light: #d97777;     /* Accents: Muted Red/Pink */
   --primary-blue-dark: #7c1e1e;      /* Hover/Active: Darker Burgundy */
