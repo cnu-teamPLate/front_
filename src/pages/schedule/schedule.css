@@ -150,10 +150,12 @@ body {
   transform: translate(-50%, -50%);
   width: 100%;
   max-width: 480px;
+  max-height: 85vh;
   background: var(--bg-primary);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-lg);
   z-index: 1001;
+  overflow: hidden;
 }
 
 .popup-inner {
@@ -161,6 +163,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .popup-inner h2 {
