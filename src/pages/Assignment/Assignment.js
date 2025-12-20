@@ -111,46 +111,18 @@ function Assignment({ notifications = [] }) {
         if (!projId) return;
         const fetchProjectMembers = async () => {
             try {
-                const response = await fetch(`${baseURL}/member/project/${projId}`);
+                const accessToken = localStorage.getItem('accessToken');
+                const response = await fetch(`${baseURL}/member/project/${projId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
                     const errorMsg = errorData?.message || `프로젝트 멤버 정보를 불러올 수 없습니다 (${response.status})`;
                     throw new Error(errorMsg);
                 }
                 const members = await response.json();
-                console.log("=== 📋 프로젝트 멤버 데이터 로드 ===");
-                console.log(`총 멤버 수: ${members.length}명`);
-                console.log("");
-                
-                // 각 멤버별 상세 정보 출력
-                members.forEach((member, index) => {
-                    console.log(`[선택지 ${index + 1}] ${member.name || '이름 없음'}`);
-                    console.log(`  └─ ID: ${member.id} (타입: ${typeof member.id})`);
-                    console.log(`  └─ 전체 데이터:`, member);
-                    console.log("");
-                });
-                
-                // 모든 멤버의 ID 목록
-                const memberIds = members.map(m => String(m.id));
-                console.log("📌 모든 멤버 ID 목록:", memberIds);
-                
-                // ID 중복 확인
-                const uniqueIds = new Set(memberIds);
-                if (memberIds.length !== uniqueIds.size) {
-                    console.error("❌ 경고: 중복된 멤버 ID가 있습니다!");
-                    console.error("중복된 ID:", memberIds.filter((id, idx) => memberIds.indexOf(id) !== idx));
-                } else {
-                    console.log("✅ 모든 멤버 ID가 고유합니다.");
-                }
-                
-                // select 옵션에 사용될 value 값 확인
-                console.log("");
-                console.log("🔍 Select 옵션에 사용될 value 값들:");
-                members.forEach((member, index) => {
-                    console.log(`  옵션 ${index + 1}: value="${String(member.id)}" → ${member.name}`);
-                });
-                
-                console.log("========================================");
                 setProjectMembers(members);
             } catch (error) {
                 console.error("프로젝트 멤버 로딩 오류:", error);
@@ -164,7 +136,12 @@ function Assignment({ notifications = [] }) {
         if (!projId) return;
         const fetchAssignments = async () => {
             try {
-                const response = await fetch(`${baseURL}/task/view?projId=${projId}`);
+                const accessToken = localStorage.getItem('accessToken');
+                const response = await fetch(`${baseURL}/task/view?projId=${projId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 if (!response.ok) {
                     if (response.status === 404) {
                         setAllAssignments([]);
@@ -175,55 +152,6 @@ function Assignment({ notifications = [] }) {
                 }
                 const data = await response.json();
                 const fetchedData = Array.isArray(data) ? data : [];
-
-                // 디버깅: 모든 과제의 date 값 확인
-                if (fetchedData.length > 0) {
-                    console.log("=== 서버에서 받은 과제 데이터 ===");
-                    console.log("총 과제 수:", fetchedData.length);
-                    console.log("현재 시간:", new Date().toISOString());
-                    console.log("현재 시간 (Unix 초):", Math.floor(Date.now() / 1000));
-                    console.log("");
-                    
-                    const allDates = [];
-                    fetchedData.forEach((item, index) => {
-                        console.log(`[과제 ${index + 1}] ${item.taskName || '제목 없음'}`);
-                        console.log(`  date 값:`, item.date);
-                        console.log(`  date 타입:`, typeof item.date);
-                        
-                        let parsedDate;
-                        if (typeof item.date === 'number') {
-                            if (item.date < 10000000000) {
-                                parsedDate = new Date(item.date * 1000);
-                                console.log(`  파싱 (초 단위):`, parsedDate.toLocaleString('ko-KR'));
-                            } else {
-                                parsedDate = new Date(item.date);
-                                console.log(`  파싱 (밀리초 단위):`, parsedDate.toLocaleString('ko-KR'));
-                            }
-                        } else if (typeof item.date === 'string') {
-                            parsedDate = new Date(item.date);
-                            console.log(`  파싱 (ISO 문자열):`, parsedDate.toLocaleString('ko-KR'));
-                        }
-                        
-                        allDates.push({ date: item.date, parsed: parsedDate, taskName: item.taskName });
-                        
-                        // 현재 시간과 비교
-                        const now = new Date();
-                        const timeDiff = Math.abs(parsedDate.getTime() - now.getTime());
-                        const minutesDiff = timeDiff / (1000 * 60);
-                        if (minutesDiff < 1) {
-                            console.warn(`  ⚠️ 경고: 현재 시간과 거의 같습니다! (${minutesDiff.toFixed(1)}분 차이)`);
-                        }
-                        console.log("");
-                    });
-                    
-                    // 모든 날짜가 같은지 확인
-                    const uniqueDates = new Set(allDates.map(d => String(d.date)));
-                    if (uniqueDates.size === 1 && allDates.length > 1) {
-                        console.error('❌ 경고: 모든 과제의 date 값이 동일합니다!', Array.from(uniqueDates)[0]);
-                        console.error('이는 서버가 모든 과제에 같은 날짜를 저장했거나 반환하는 문제일 수 있습니다.');
-                    }
-                    console.log("=====================================");
-                }
 
                 const sortedData = sortData(fetchedData);
                 setAllAssignments(sortedData);
@@ -246,16 +174,6 @@ function Assignment({ notifications = [] }) {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        
-        // 마감일자 변경 시 디버깅
-        if (name === 'deadline') {
-            console.log('=== 마감일자 입력 변경 ===');
-            console.log('이전 값:', formData.deadline);
-            console.log('새로운 값:', value);
-            console.log('값 타입:', typeof value);
-            console.log('값 길이:', value ? value.length : 0);
-            console.log('======================');
-        }
         
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
@@ -281,16 +199,7 @@ function Assignment({ notifications = [] }) {
         let deadlineDate;
         const deadlineValue = formData.deadline;
         
-        console.log('=== 마감일자 처리 ===');
-        console.log('formData.deadline 원본:', formData.deadline);
-        console.log('deadlineValue:', deadlineValue);
-        console.log('deadlineValue 타입:', typeof deadlineValue);
-        console.log('deadlineValue 길이:', deadlineValue ? deadlineValue.length : 0);
-        console.log('deadlineValue가 빈 문자열인가?', deadlineValue === '');
-        console.log('deadlineValue.trim()이 빈 문자열인가?', deadlineValue ? deadlineValue.trim() === '' : true);
-        
         if (!deadlineValue || deadlineValue.trim() === '') {
-            console.error('❌ 마감일자가 선택되지 않았습니다!');
             alert('마감일자를 선택해주세요.');
             return;
         }
@@ -298,7 +207,6 @@ function Assignment({ notifications = [] }) {
         // datetime-local 형식 검증: YYYY-MM-DDTHH:mm 형식이어야 함
         const datetimeLocalPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
         if (!datetimeLocalPattern.test(deadlineValue)) {
-            console.error('❌ 잘못된 datetime-local 형식:', deadlineValue);
             alert('올바른 마감일자 형식이 아닙니다.');
             return;
         }
@@ -306,32 +214,39 @@ function Assignment({ notifications = [] }) {
         // datetime-local 값은 로컬 시간대로 해석됨
         // "2025-01-20T14:30" 형식을 Date 객체로 변환
         const localDate = new Date(deadlineValue);
-        console.log('변환된 Date 객체:', localDate);
-        console.log('Date 객체가 유효한가?', !isNaN(localDate.getTime()));
-        console.log('로컬 시간:', localDate.toLocaleString('ko-KR'));
-        console.log('ISO 문자열:', localDate.toISOString());
         
         // 유효성 검사
         if (isNaN(localDate.getTime())) {
-            console.error('❌ 날짜 변환 실패! Invalid Date');
             alert('올바른 마감일자를 선택해주세요.');
             return;
         }
         
-        // 변환된 날짜가 현재 시간과 같은지 확인 (의도하지 않은 경우 감지)
-        const now = new Date();
-        const timeDiff = Math.abs(localDate.getTime() - now.getTime());
-        const minutesDiff = timeDiff / (1000 * 60);
-        console.log('현재 시간과의 차이:', minutesDiff, '분');
-        if (minutesDiff < 1) {
-            console.warn('⚠️ 경고: 마감일자가 현재 시간과 거의 같습니다!');
-            console.warn('선택한 시간:', localDate.toLocaleString('ko-KR'));
-            console.warn('현재 시간:', now.toLocaleString('ko-KR'));
-        }
+        // 서버가 ZonedDateTime을 기대하므로 타임존 정보가 필요함
+        // 로컬 타임존 오프셋을 가져와서 ISO 8601 형식으로 변환
+        const timezoneOffset = -localDate.getTimezoneOffset(); // 분 단위 (한국은 -540분 = UTC+9)
+        const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+        const offsetMinutes = Math.abs(timezoneOffset) % 60;
+        const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+        const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
         
-        deadlineDate = localDate.toISOString();
-        console.log('서버에 전송할 날짜 (ISO):', deadlineDate);
-        console.log('==================');
+        // YYYY-MM-DDTHH:mm:ss+09:00 형식으로 변환 (ZonedDateTime 호환)
+        const year = localDate.getFullYear();
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getDate()).padStart(2, '0');
+        const hours = String(localDate.getHours()).padStart(2, '0');
+        const minutes = String(localDate.getMinutes()).padStart(2, '0');
+        const seconds = String(localDate.getSeconds()).padStart(2, '0');
+        
+        deadlineDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezoneString}`;
+        
+        console.log("=== 날짜 변환 상세 ===");
+        console.log("원본 deadlineValue:", deadlineValue);
+        console.log("localDate 객체:", localDate);
+        console.log("로컬 시간:", localDate.toLocaleString('ko-KR'));
+        console.log("타임존 오프셋 (분):", timezoneOffset);
+        console.log("타임존 문자열:", timezoneString);
+        console.log("서버 전송 형식 (ZonedDateTime 호환):", deadlineDate);
+        console.log("====================");
         
         const payload = {
             id: String(selectedMember.id),  // 담당자 ID
@@ -351,33 +266,57 @@ function Assignment({ notifications = [] }) {
         console.log("담당자 ID (id):", payload.id);
         console.log("담당자 이름 (userName):", payload.userName);
         console.log("마감일자 (date):", payload.date);
+        console.log("원본 deadlineValue:", deadlineValue);
+        console.log("localDate 객체:", localDate);
+        console.log("localDate.toISOString():", deadlineDate);
         console.log("전체 Payload:", JSON.stringify(payload, null, 2));
         console.log("========================");
 
         try {
+            const accessToken = localStorage.getItem('accessToken');
+            console.log("=== 서버 요청 전송 ===");
+            console.log("요청 URL:", `${baseURL}/task/post`);
+            console.log("요청 Method: POST");
+            console.log("요청 Headers:", {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken ? '토큰 있음' : '토큰 없음'}`
+            });
+            console.log("요청 Body (JSON):", JSON.stringify(payload, null, 2));
+            console.log("요청 Body (date 필드 상세):", payload.date);
+            console.log("=========================");
+            
             const response = await fetch(`${baseURL}/task/post`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
                 body: JSON.stringify(payload),
             });
 
+            console.log("=== 서버 응답 ===");
+            console.log("응답 Status:", response.status);
+            console.log("응답 Status Text:", response.statusText);
+            
             if (response.ok) {
                 const responseData = await response.json().catch(() => null);
-                console.log('=== 📥 과제 생성 서버 응답 ===');
-                console.log('응답 Status:', response.status);
-                console.log('응답 Data:', responseData);
+                console.log("응답 Data:", responseData);
                 if (responseData) {
-                    console.log('서버가 반환한 date 값:', responseData.date);
-                    console.log('전송한 date 값:', payload.date);
+                    console.log("서버가 반환한 date 값:", responseData.date);
+                    console.log("클라이언트가 보낸 date 값:", payload.date);
                     if (responseData.date && responseData.date !== payload.date) {
-                        console.error('❌ 경고: 서버가 다른 날짜를 반환했습니다!');
-                        console.error('전송한 날짜:', payload.date);
-                        console.error('서버가 반환한 날짜:', responseData.date);
+                        console.error("❌ 경고: 서버가 다른 날짜를 반환했습니다!");
+                        console.error("  클라이언트 전송:", payload.date);
+                        console.error("  서버 반환:", responseData.date);
+                        const sentDate = new Date(payload.date);
+                        const returnedDate = new Date(responseData.date);
+                        console.error("  클라이언트 전송 (파싱):", sentDate.toLocaleString('ko-KR'));
+                        console.error("  서버 반환 (파싱):", returnedDate.toLocaleString('ko-KR'));
                     } else {
-                        console.log('✅ 서버가 전송한 날짜를 그대로 반환했습니다.');
+                        console.log("✅ 서버가 전송한 날짜를 그대로 반환했습니다.");
                     }
                 }
-                console.log('============================');
+                console.log("==================");
                 alert('과제가 성공적으로 생성되었습니다.');
                 window.location.reload();
             } else {
@@ -427,13 +366,6 @@ function Assignment({ notifications = [] }) {
         // 새로운 체크박스 상태 (토글)
         const newCheckBoxValue = currentItem.checkBox === 1 ? 0 : 1;
         
-        console.log('=== ✅ 체크박스 변경 요청 ===');
-        console.log('taskId:', taskId);
-        console.log('현재 checkBox 값:', currentItem.checkBox);
-        console.log('변경할 checkBox 값:', newCheckBoxValue);
-        console.log('요청 URL:', `${baseURL}/task/${taskId}?checkBox=${newCheckBoxValue}`);
-        console.log('===========================');
-
         // 먼저 로컬 상태 업데이트 (낙관적 업데이트)
         const updatedAssignments = allAssignments.map((item) =>
             item.taskId === taskId ? { ...item, checkBox: newCheckBoxValue } : item
@@ -449,24 +381,19 @@ function Assignment({ notifications = [] }) {
 
         // 서버에 체크박스 상태 변경 요청
         try {
+            const accessToken = localStorage.getItem('accessToken');
             const response = await fetch(`${baseURL}/task/${taskId}?checkBox=${newCheckBoxValue}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
                 }
             });
 
-            console.log('=== 📥 체크박스 변경 서버 응답 ===');
-            console.log('응답 Status:', response.status);
-            
             if (response.ok) {
-                const responseData = await response.json().catch(() => null);
-                console.log('응답 Data:', responseData);
-                console.log('✅ 체크박스 상태가 서버에 저장되었습니다.');
+                await response.json().catch(() => null);
             } else {
                 const errorText = await response.text();
-                console.error('❌ 체크박스 변경 실패:', errorText);
-                console.error('응답 Status:', response.status);
                 // 실패 시 원래 상태로 되돌리기
                 const revertedAssignments = allAssignments.map((item) =>
                     item.taskId === taskId ? { ...item, checkBox: currentItem.checkBox } : item
@@ -480,9 +407,7 @@ function Assignment({ notifications = [] }) {
                 }
                 alert(`체크박스 변경 실패: ${errorText}`);
             }
-            console.log('================================');
         } catch (error) {
-            console.error('❌ 체크박스 변경 네트워크 오류:', error);
             // 실패 시 원래 상태로 되돌리기
             const revertedAssignments = allAssignments.map((item) =>
                 item.taskId === taskId ? { ...item, checkBox: currentItem.checkBox } : item
@@ -513,12 +438,10 @@ function Assignment({ notifications = [] }) {
             // 문자열인 경우: ISO 형식으로 파싱
             date = new Date(dateValue);
         } else {
-            console.error('formatDate: 알 수 없는 날짜 형식:', dateValue, typeof dateValue);
             return '날짜 오류';
         }
         
         if (isNaN(date.getTime())) {
-            console.error('formatDate: 날짜 파싱 실패:', dateValue, '→', date);
             return '날짜 오류';
         }
         
@@ -573,35 +496,12 @@ function Assignment({ notifications = [] }) {
                                 value={formData.assignee} 
                                 onChange={(e) => {
                                     const selectedValue = e.target.value;
-                                    const selectedMember = projectMembers.find(m => String(m.id) === String(selectedValue));
-                                    
-                                    console.log("=== 👤 담당자 선택 ===");
-                                    console.log(`선택된 값: "${selectedValue}" (타입: ${typeof selectedValue})`);
-                                    
-                                    if (selectedMember) {
-                                        console.log(`✅ 선택된 멤버: ${selectedMember.name}`);
-                                        console.log(`   └─ ID: ${selectedMember.id} (타입: ${typeof selectedMember.id})`);
-                                        console.log(`   └─ 전체 데이터:`, selectedMember);
-                                    } else {
-                                        console.error("❌ 선택된 값에 해당하는 멤버를 찾을 수 없습니다!");
-                                        console.error("   사용 가능한 멤버 ID:", projectMembers.map(m => m.id));
-                                    }
-                                    console.log("====================");
-                                    
                                     handleChange(e);
                                 }}
                                 required
                             >
                                 <option value="" disabled>담당자</option>
                                 {projectMembers.map((member, index) => {
-                                    // 첫 번째 렌더링 시에만 옵션 정보 출력 (중복 방지)
-                                    if (index === 0 && projectMembers.length > 0) {
-                                        console.log("=== 📝 Select 옵션 렌더링 ===");
-                                        projectMembers.forEach((m, idx) => {
-                                            console.log(`옵션 ${idx + 1}: value="${String(m.id)}" → ${m.name}`);
-                                        });
-                                        console.log("=============================");
-                                    }
                                     return (
                                         <option key={member.id} value={String(member.id)}>
                                             {member.name}

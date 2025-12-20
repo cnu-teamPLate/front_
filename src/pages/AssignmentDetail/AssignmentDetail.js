@@ -47,7 +47,12 @@ function AssignmentDetail() {
             console.log("=====================================");
 
             try {
-                const response = await axios.get(apiUrl);
+                const accessToken = localStorage.getItem('accessToken');
+                const response = await axios.get(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 console.log("Response received:", response.status, response.data);
 
                 // 응답이 배열인 경우, taskId와 일치하는 항목 찾기
@@ -187,6 +192,7 @@ function AssignmentDetail() {
 
         setIsSaving(true);
         try {
+            // 현재 editForm의 최신 값을 변수에 저장 (클로저 문제 방지)
             const currentDescription = editForm.description;
             const currentAssigneeId = editForm.assigneeId;
             const currentDate = editForm.date;
@@ -197,17 +203,8 @@ function AssignmentDetail() {
                 date: currentDate
             };
             
-            
-            console.log('=== 과제 수정 요청 ===');
-            console.log('현재 editForm 상태:', editForm);
-            console.log('전송할 데이터:', {
-                description: currentDescription,
-                assigneeId: currentAssigneeId,
-                date: currentDate
-            });
-            
             const editUrl = `${baseURL}/task/edit/${taskId}`;
-
+            
             console.log('=== 📤 저장 버튼 클릭 - 서버 요청 ===');
             console.log('요청 URL:', editUrl);
             console.log('요청 Method: PUT');
@@ -221,11 +218,14 @@ function AssignmentDetail() {
             console.log('  - date:', currentDate);
             console.log('=====================================');
 
+            const accessToken = localStorage.getItem('accessToken');
             const response = await axios.put(editUrl, requestPayload, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
                 }
             });
+
             console.log('=== 📥 서버 응답 ===');
             console.log('응답 Status:', response.status);
             console.log('응답 Data:', response.data);
@@ -285,7 +285,12 @@ function AssignmentDetail() {
             console.log('첨부 파일 목록 요청:', filesUrl);
             console.log('필터링할 taskId:', taskIdParam);
 
-            const filesResponse = await axios.get(filesUrl);
+            const accessToken = localStorage.getItem('accessToken');
+            const filesResponse = await axios.get(filesUrl, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
             console.log('첨부 파일 응답 (전체):', filesResponse.data);
 
             if (Array.isArray(filesResponse.data)) {
@@ -363,13 +368,10 @@ function AssignmentDetail() {
             <div className="assignment-detail-card">
                 <header className="card-header">
                     <h1>{taskName}</h1>
-                    <div className="header-meta">
-                        <span><strong>프로젝트:</strong> {projName}</span>
-                    </div>
                 </header>
                 <section className="card-body">
                     <div className="task-info">
-                        <p><strong>담당자:</strong> {assignment.userName}</p>
+                        <p><strong>담당자:</strong> {userName}</p>
                         <p><strong>분류:</strong> {cate}</p>
                         <p><strong>난이도:</strong> <span className={`level-tag level-${level}`}>{getComplexityLabel(level)}</span></p>
                         <p>
@@ -468,7 +470,7 @@ function AssignmentDetail() {
                                                         {formatDate(file.uploadDate)}
                                                     </td>
                                                     <td style={{ padding: '8px' }}>
-
+                                                        {/* API 응답의 url 필드를 직접 사용 (별도 다운로드 API 없음) */}
                                                         {file.url ? (
                                                             <a
                                                                 href={file.url}
