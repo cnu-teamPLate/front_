@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern SaaS Dashboard - Design System Reference</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 3rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #1e3a8a;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      color: #1f2937;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      color: #374151;
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 1.125rem;
+      margin-bottom: 2rem;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .color-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .color-swatch {
+      height: 100px;
+      width: 100%;
+    }
+
+    .color-info {
+      padding: 1rem;
+      background: white;
+    }
+
+    .color-name {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+    }
+
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .button-showcase {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .btn {
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #1f2937;
+      border: 1px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .typography-sample {
+      margin: 1rem 0;
+      padding: 1.5rem;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .font-xl {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .font-lg {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .font-base {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .font-sm {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .spacing-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .spacing-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .spacing-box {
+      background: #3b82f6;
+      height: 40px;
+    }
+
+    .spacing-label {
+      font-family: 'Courier New', monospace;
+      color: #6b7280;
+      min-width: 100px;
+    }
+
+    .card-demo {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+    }
+
+    .card-demo:hover {
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .shadow-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 2rem;
+      margin: 1.5rem 0;
+    }
+
+    .shadow-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .shadow-xs { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+    .shadow-sm { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+
+    .tag {
+      display: inline-block;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 0.25rem;
+    }
+
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-yellow { background: #fef3c7; color: #92400e; }
+    .tag-red { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Modern SaaS Dashboard</h1>
+    <p class="subtitle">Design System Reference Guide</p>
+
+    <!-- Color Palette -->
+    <h2>Color Palette</h2>
+    
+    <h3>Primary Colors</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #1e3a8a;"></div>
+        <div class="color-info">
+          <div class="color-name">Primary Navy</div>
+          <div class="color-value">#1e3a8a</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #3b82f6;"></div>
+        <div class="color-info">
+          <div class="color-name">Primary Blue</div>
+          <div class="color-value">#3b82f6</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #60a5fa;"></div>
+        <div class="color-info">
+          <div class="color-name">Blue Light</div>
+          <div class="color-value">#60a5fa</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #1d4ed8;"></div>
+        <div class="color-info">
+          <div class="color-name">Blue Dark</div>
+          <div class="color-value">#1d4ed8</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Status Colors</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #10b981;"></div>
+        <div class="color-info">
+          <div class="color-name">Success Green</div>
+          <div class="color-value">#10b981</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #f59e0b;"></div>
+        <div class="color-info">
+          <div class="color-name">Warning Yellow</div>
+          <div class="color-value">#f59e0b</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #ef4444;"></div>
+        <div class="color-info">
+          <div class="color-name">Error Red</div>
+          <div class="color-value">#ef4444</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #3b82f6;"></div>
+        <div class="color-info">
+          <div class="color-name">Info Blue</div>
+          <div class="color-value">#3b82f6</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Neutral Grays</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #f9fafb;"></div>
+        <div class="color-info">
+          <div class="color-name">Gray 50</div>
+          <div class="color-value">#f9fafb</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #e5e7eb;"></div>
+        <div class="color-info">
+          <div class="color-name">Gray 200</div>
+          <div class="color-value">#e5e7eb</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #9ca3af;"></div>
+        <div class="color-info">
+          <div class="color-name">Gray 400</div>
+          <div class="color-value">#9ca3af</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #6b7280;"></div>
+        <div class="color-info">
+          <div class="color-name">Gray 500</div>
+          <div class="color-value">#6b7280</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #374151;"></div>
+        <div class="color-info">
+          <div class="color-name">Gray 700</div>
+          <div class="color-value">#374151</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #111827;"></div>
+        <div class="color-info">
+          <div class="color-name">Gray 900</div>
+          <div class="color-value">#111827</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <h2>Typography</h2>
+    <div class="typography-sample">
+      <div class="font-xl">Heading 1 - Bold 36px</div>
+      <div class="font-lg">Heading 2 - Semibold 24px</div>
+      <div class="font-base">Body Text - Regular 16px</div>
+      <div class="font-sm">Small Text - Regular 14px</div>
+    </div>
+
+    <!-- Buttons -->
+    <h2>Buttons</h2>
+    <div class="button-showcase">
+      <button class="btn btn-primary">Primary Button</button>
+      <button class="btn btn-secondary">Secondary Button</button>
+      <button class="btn btn-danger">Danger Button</button>
+      <button class="btn btn-primary" disabled style="opacity: 0.6;">Disabled</button>
+    </div>
+
+    <!-- Spacing -->
+    <h2>Spacing System</h2>
+    <div class="spacing-demo">
+      <div class="spacing-item">
+        <span class="spacing-label">XS (4px)</span>
+        <div class="spacing-box" style="width: 4px;"></div>
+      </div>
+      <div class="spacing-item">
+        <span class="spacing-label">SM (8px)</span>
+        <div class="spacing-box" style="width: 8px;"></div>
+      </div>
+      <div class="spacing-item">
+        <span class="spacing-label">MD (16px)</span>
+        <div class="spacing-box" style="width: 16px;"></div>
+      </div>
+      <div class="spacing-item">
+        <span class="spacing-label">LG (24px)</span>
+        <div class="spacing-box" style="width: 24px;"></div>
+      </div>
+      <div class="spacing-item">
+        <span class="spacing-label">XL (32px)</span>
+        <div class="spacing-box" style="width: 32px;"></div>
+      </div>
+      <div class="spacing-item">
+        <span class="spacing-label">2XL (48px)</span>
+        <div class="spacing-box" style="width: 48px;"></div>
+      </div>
+    </div>
+
+    <!-- Shadows -->
+    <h2>Shadows</h2>
+    <div class="shadow-demo">
+      <div class="shadow-box shadow-xs">XS</div>
+      <div class="shadow-box shadow-sm">SM</div>
+      <div class="shadow-box shadow-md">MD</div>
+      <div class="shadow-box shadow-lg">LG</div>
+      <div class="shadow-box shadow-xl">XL</div>
+    </div>
+
+    <!-- Cards -->
+    <h2>Card Example</h2>
+    <div class="card-demo">
+      <h3 style="margin-top: 0;">Project Card</h3>
+      <p style="color: #6b7280; margin-bottom: 1rem;">
+        This is an example of a card component with hover effect. 
+        Try hovering over this card to see the elevation change.
+      </p>
+      <div>
+        <span class="tag tag-blue">React</span>
+        <span class="tag tag-green">Active</span>
+        <span class="tag tag-yellow">In Progress</span>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <h2>Status Tags</h2>
+    <div style="margin: 1.5rem 0;">
+      <span class="tag tag-blue">Info Tag</span>
+      <span class="tag tag-green">Success Tag</span>
+      <span class="tag tag-yellow">Warning Tag</span>
+      <span class="tag tag-red">Error Tag</span>
+    </div>
+
+    <!-- Footer -->
+    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid #e5e7eb; text-align: center; color: #6b7280;">
+      <p>Modern SaaS Dashboard Theme v1.0</p>
+      <p style="font-size: 0.875rem;">Created for TeamPlate Project Management Service</p>
+    </div>
+  </div>
+</body>
+</html>

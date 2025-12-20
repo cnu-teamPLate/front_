@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import moment from 'moment';
 import './schedule.css';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 const API_BASE_URL = 'https://teamplate-api.site';
 

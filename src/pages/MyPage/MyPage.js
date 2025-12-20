@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./MyPage.css";
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 function MyPage() {
   const [formData, setFormData] = useState({

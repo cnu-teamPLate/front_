@@ -10,6 +10,8 @@ import {
 } from "react-icons/io5";
 
 import './Dashboard.css';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 const API_BASE_URL = 'https://teamplate-api.site';
 

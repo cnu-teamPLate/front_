@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 import Footer from '../../components/Footer'; // 경로가 맞는지 확인해주세요
 
 function Home() {
