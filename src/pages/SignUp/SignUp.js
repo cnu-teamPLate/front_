@@ -158,7 +158,7 @@ function SignUp() {
                                 <input type="checkbox" name="privacy" onChange={handleChange} /> 동의합니다.
                                 {errors.privacy && <p className="error">{errors.privacy}</p>}
                             </div>
-                            <button type="button" onClick={nextStep}>다음</button>
+                            <button type="signup-button" onClick={nextStep}>다음</button>
                         </div>
                     )}
 
@@ -198,7 +198,7 @@ function SignUp() {
                             </div>
 
                             <div className="second-button">
-                                <button type="button" onClick={prevStep}>이전</button>
+                                <button type="signup-button" onClick={prevStep}>이전</button>
                                 <button type="submit" disabled={isSubmitting}>다음</button>
                             </div>
                         </div>
@@ -208,7 +208,7 @@ function SignUp() {
                             <h3>가입 완료</h3>
                             <p>가입이 완료되었습니다. 아래 버튼을 클릭하여 로그인하세요.</p>
                             <Link to="/Login">
-                                <button type="button">회원가입 완료</button>
+                                <button type="signup-button">회원가입 완료</button>
                             </Link>
                         </div>
                     )}

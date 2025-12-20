@@ -146,7 +146,7 @@
 }
 
 /* 공통 버튼 스타일 */
-button {
+signup-button {
   padding: 12px 20px;
   border-radius: 6px;
   font-size: 16px;
@@ -157,21 +157,21 @@ button {
   font-family: inherit;
 }
 
-/* 기본 버튼 (다음, 완료, 가입하기) - Primary */
-button[type="submit"],
-button[type="button"]:not(.secondary-btn) {
+/*v기본 버튼 (다음, 완료, 가입하기) - Primary */
+signup-button[type="submit"],
+signup-button[type="button"]:not(.secondary-btn) {
   background-color: #A32125;
   color: white;
   flex: 1; /* 버튼 너비 균등 분배 */
   width: 100%; /* 단독 버튼일 때 */
 }
 
-button[type="submit"]:hover,
-button[type="button"]:not(.secondary-btn):hover {
+signup-button[type="submit"]:hover,
+signup-button[type="button"]:not(.secondary-btn):hover {
   background-color: #A32125;
 }
 
-button:disabled {
+signup-button:disabled {
   background-color: #fca5a5;
   cursor: not-allowed;
 }
