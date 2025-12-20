@@ -226,6 +226,16 @@ body {
   background-color: var(--accent-primary-hover);
 }
 
+.add-event-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-error {
+  color: #e53e3e;
+  font-size: 0.8rem;
+}
+
 .popup-buttons .cancel-button {
   background-color: var(--bg-primary);
   color: var(--text-secondary);
@@ -357,6 +367,73 @@ body {
 .rbc-event[data-category="meeting"] {
   background-color: var(--event-purple);
 }
+
+/* =========================================================
+   Week/Day(Time View) 이벤트 카드: 시간(위) + 제목(아래) 형태로 표시
+   ========================================================= */
+
+/* 0) 혹시 예전에 숨겨놨다면 복구 (중요) */
+.rbc-time-view .rbc-event-label {
+  display: block !important;
+}
+
+/* 1) 이벤트 카드 자체를 column 레이아웃으로 */
+.rbc-time-view .rbc-event,
+.rbc-time-view .rbc-day-slot .rbc-event {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  padding: 8px 10px !important;
+  /* 카드 안 여백 */
+  border-radius: 0px;
+  /* 스샷처럼 각진 느낌이면 0, 둥글게면 6~10 */
+  overflow: hidden;
+  /* 카드 밖으로 튀는 텍스트 방지 */
+}
+
+/* 2) 시간 라벨(위) 스타일 */
+.rbc-time-view .rbc-event-label {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 6px;
+  opacity: 0.95;
+}
+
+/* 3) 제목(아래) 스타일: 줄바꿈 허용해서 “짤림” 최소화 */
+.rbc-time-view .rbc-event-content {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.15;
+
+  white-space: normal !important;
+  /* 줄바꿈 허용 */
+  word-break: break-word;
+  /* 좁으면 단어도 깨서 표시 */
+}
+
+/* 4) 너무 짧은 이벤트도 텍스트 2줄이 들어갈 최소 높이 확보 */
+.rbc-time-view .rbc-event {
+  min-height: 54px;
+  /* 시간+제목 기본 2줄이 안정적으로 보이는 값 */
+}
+
+/* 5) 겹치는 이벤트(너무 좁아질 때)에서도 가독성 확보 */
+.rbc-time-view .rbc-event-label,
+.rbc-time-view .rbc-event-content {
+  width: 100%;
+}
+
+/* (선택) 이벤트가 너무 촘촘할 때 글자 크기 약간 줄이기 */
+/*
+.rbc-time-view .rbc-event-label,
+.rbc-time-view .rbc-event-content {
+  font-size: 12px;
+}
+*/
+
 
 /* Event Popup (Tooltip) */
 .event-popup {
