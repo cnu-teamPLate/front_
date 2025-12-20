@@ -294,12 +294,14 @@ const Schedule = () => {
                                 placeholder="쉼표(,)로 구분"
                             />
                             <label>안건 (상세내용):</label>
-                            <textarea
-                                rows={4}
-                                style={{ resize: 'none', height: '96px', overflow: 'auto', width: '100%', boxSizing: 'border-box' }}
-                                value={newEvent.agenda} // 'detail' 대신 'agenda' 사용
-                                _ onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
+
+                            <input
+                                type="text"
+                                value={newEvent.agenda}
+                                onChange={(e) => setNewEvent({ ...newEvent, agenda: e.target.value })}
+                                placeholder="예: 프로젝트 진행 상황 논의"
                             />
+
                             <label>카테고리:</label>
                             <input
                                 _ type="text"
