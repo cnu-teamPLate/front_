@@ -38,23 +38,12 @@ function AssignmentDetail() {
         }
 
         const fetchAssignmentDetail = async () => {
-            // userId를 localStorage에서 가져오기
-            const userId = localStorage.getItem('userId');
-
-            if (!userId) {
-                setError("사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
-                setLoading(false);
-                return;
-            }
-
-            // API는 projId와 id(userId)를 쿼리 파라미터로 사용합니다: /task/view?projId=...&id=userId
-            // 이 API는 해당 사용자의 과제 목록(배열)을 반환하므로, 그 중에서 taskId와 일치하는 항목을 찾아야 합니다.
-            const apiUrl = `${baseURL}/task/view?projId=${projId}&id=${userId}`;
+            // 프로젝트 전체 과제를 가져와서 taskId로 찾기 (담당자가 다른 과제도 볼 수 있도록)
+            const apiUrl = `${baseURL}/task/view?projId=${projId}`;
             console.log("=== AssignmentDetail API 호출 정보 ===");
             console.log("URL:", apiUrl);
             console.log("전달된 taskId (URL 파라미터):", taskId, "타입:", typeof taskId);
             console.log("전달된 projId (URL 파라미터):", projId, "타입:", typeof projId);
-            console.log("사용된 userId (localStorage):", userId);
             console.log("=====================================");
 
             try {
@@ -72,7 +61,14 @@ function AssignmentDetail() {
                     );
 
                     if (foundAssignment) {
+                        console.log("=== 📥 새로고침 시 서버에서 가져온 과제 데이터 ===");
                         console.log("과제를 찾았습니다:", foundAssignment);
+                        console.log("상세 내용:");
+                        console.log("  - detail:", foundAssignment.detail);
+                        console.log("  - userName:", foundAssignment.userName);
+                        console.log("  - date:", foundAssignment.date);
+                        console.log("  - 전체 데이터:", JSON.stringify(foundAssignment, null, 2));
+                        console.log("=============================================");
                         setAssignment(foundAssignment);
 
                         // 과제에 첨부된 파일 목록 불러오기
@@ -160,7 +156,10 @@ function AssignmentDetail() {
         if (isEditing && assignment) {
             let dateValue = '';
             if (assignment.date) {
-                const dateObj = new Date(assignment.date);
+                // assignment.date는 Unix timestamp (초 단위)일 수 있으므로 확인
+                // Assignment.js에서 item.date * 1000을 사용하므로 여기서도 동일하게 처리
+                const timestamp = typeof assignment.date === 'number' ? assignment.date * 1000 : assignment.date;
+                const dateObj = new Date(timestamp);
                 if (!isNaN(dateObj.getTime())) {
                     // 로컬 시간으로 변환하여 YYYY-MM-DDTHH:mm 형식으로
                     const year = dateObj.getFullYear();
@@ -169,15 +168,18 @@ function AssignmentDetail() {
                     const hours = String(dateObj.getHours()).padStart(2, '0');
                     const minutes = String(dateObj.getMinutes()).padStart(2, '0');
                     dateValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+                } else {
+                    console.error('날짜 변환 실패:', assignment.date, 'timestamp:', timestamp);
                 }
             }
             setEditForm({
                 description: assignment.detail || '',
-                assigneeId: assignment.userName || '',
+                assigneeId: assignment.id || '',
                 date: dateValue
             });
         }
-    }, [isEditing, assignment]);
+        // assignment 의존성 제거 - 수정 모드 진입 시에만 초기화 (assignment 변경 시에는 초기화하지 않음)
+    }, [isEditing]);
 
     // 과제 수정 API 호출
     const handleSaveEdit = async () => {
@@ -185,31 +187,64 @@ function AssignmentDetail() {
 
         setIsSaving(true);
         try {
+            const currentDescription = editForm.description;
+            const currentAssigneeId = editForm.assigneeId;
+            const currentDate = editForm.date;
+            
+            const requestPayload = {
+                description: currentDescription,
+                assigneeId: currentAssigneeId,
+                date: currentDate
+            };
+            
+            
+            console.log('=== 과제 수정 요청 ===');
+            console.log('현재 editForm 상태:', editForm);
+            console.log('전송할 데이터:', {
+                description: currentDescription,
+                assigneeId: currentAssigneeId,
+                date: currentDate
+            });
+            
             const editUrl = `${baseURL}/task/edit/${taskId}`;
-            console.log('과제 수정 API 호출:', editUrl);
-            console.log('수정 데이터:', editForm);
 
-            const response = await axios.put(editUrl, {
-                description: editForm.description,
-                assigneeId: editForm.assigneeId,
-                date: editForm.date
-            }, {
+            console.log('=== 📤 저장 버튼 클릭 - 서버 요청 ===');
+            console.log('요청 URL:', editUrl);
+            console.log('요청 Method: PUT');
+            console.log('요청 Headers:', {
+                'Content-Type': 'application/json'
+            });
+            console.log('요청 Body (Payload):', JSON.stringify(requestPayload, null, 2));
+            console.log('요청 상세 내용:');
+            console.log('  - description:', currentDescription);
+            console.log('  - assigneeId:', currentAssigneeId);
+            console.log('  - date:', currentDate);
+            console.log('=====================================');
+
+            const response = await axios.put(editUrl, requestPayload, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-
-            console.log('과제 수정 API 응답:', {
-                status: response.status,
-                data: response.data,
-                수정한내용: { description: editForm.description, assigneeId: editForm.assigneeId }
-            });
+            console.log('=== 📥 서버 응답 ===');
+            console.log('응답 Status:', response.status);
+            console.log('응답 Data:', response.data);
+            console.log('응답 전체:', response);
+            console.log('전송한 데이터와 비교:');
+            console.log('  전송한 description:', currentDescription);
+            console.log('  전송한 assigneeId:', currentAssigneeId);
+            console.log('  전송한 date:', currentDate);
+            if (response.data) {
+                console.log('  서버 응답 message:', response.data.message);
+                console.log('  서버 응답 전체:', JSON.stringify(response.data, null, 2));
+            }
+            console.log('===================');
 
             if (response.status === 200) {
-                // 수정한 내용을 변수에 저장 (클로저 문제 방지)
-                const savedDescription = editForm.description;
-                const savedAssigneeId = editForm.assigneeId;
-                const savedDate = editForm.date;
+                // 수정한 내용은 이미 위에서 변수에 저장됨
+                const savedDescription = currentDescription;
+                const savedAssigneeId = currentAssigneeId;
+                const savedDate = currentDate;
 
                 // 수정 성공 시 즉시 로컬 상태 업데이트
                 const updatedAssignment = {
@@ -223,49 +258,9 @@ function AssignmentDetail() {
 
                 setIsEditing(false);
                 alert(response.data.message || '과제가 성공적으로 수정되었습니다.');
-
-                // 서버에서 최신 데이터 가져오기
-                // 주의: 담당자가 변경되었을 수 있으므로 프로젝트 전체 과제 목록에서 찾아야 함
-                const refreshAssignmentData = async () => {
-                    if (!projId || !taskId) return;
-
-                    try {
-                        // 프로젝트의 전체 과제 목록 가져오기 (담당자가 변경되어도 찾을 수 있도록)
-                        const apiUrl = `${baseURL}/task/view?projId=${projId}`;
-                        console.log('수정 후 데이터 새로고침:', apiUrl);
-                        const refreshResponse = await axios.get(apiUrl);
-
-                        let foundAssignment = null;
-                        if (Array.isArray(refreshResponse.data)) {
-                            const taskIdNum = Number(taskId);
-                            foundAssignment = refreshResponse.data.find(item =>
-                                item.taskId === taskIdNum ||
-                                item.taskId === taskId ||
-                                String(item.taskId) === String(taskId)
-                            );
-                        } else if (refreshResponse.data) {
-                            foundAssignment = refreshResponse.data;
-                        }
-
-                        if (foundAssignment) {
-                            console.log('✅ 서버에서 업데이트된 과제 데이터를 가져왔습니다:', foundAssignment);
-                            setAssignment(foundAssignment);
-                            // 파일 목록도 다시 불러오기
-                            await fetchAttachedFiles(taskId);
-                        } else {
-                            console.warn('⚠️ 수정 후 과제를 찾을 수 없습니다. 로컬 상태를 유지합니다.');
-                            // 로컬 상태는 이미 업데이트되어 있으므로 유지
-                            await fetchAttachedFiles(taskId);
-                        }
-                    } catch (refreshErr) {
-                        console.error('서버 새로고침 오류:', refreshErr);
-                        // 에러가 발생해도 로컬 상태는 이미 업데이트되어 있으므로 유지
-                        await fetchAttachedFiles(taskId);
-                    }
-                };
-
-                // 수정 후 1초 뒤에 새로고침 (서버 반영 시간을 고려)
-                setTimeout(refreshAssignmentData, 1000);
+                
+                // 파일 목록만 다시 불러오기 (과제 데이터는 이미 로컬 상태로 업데이트됨)
+                await fetchAttachedFiles(taskId);
             }
         } catch (err) {
             console.error('과제 수정 오류:', err);
@@ -343,9 +338,15 @@ function AssignmentDetail() {
         files
     } = assignment;
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateValue) => {
+        // dateValue가 Unix timestamp (초 단위)인지 확인하고 밀리초로 변환
+        let timestamp = dateValue;
+        if (typeof dateValue === 'number' && dateValue < 10000000000) {
+            // 10자리 이하면 초 단위 timestamp로 간주 (10000000000은 2001년 정도)
+            timestamp = dateValue * 1000;
+        }
         const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        return new Date(dateString).toLocaleDateString('ko-KR', options);
+        return new Date(timestamp).toLocaleDateString('ko-KR', options);
     };
 
     const getComplexityLabel = (complexity) => {
@@ -368,7 +369,7 @@ function AssignmentDetail() {
                 </header>
                 <section className="card-body">
                     <div className="task-info">
-                        <p><strong>담당자:</strong> {userName}</p>
+                        <p><strong>담당자:</strong> {assignment.userName}</p>
                         <p><strong>분류:</strong> {cate}</p>
                         <p><strong>난이도:</strong> <span className={`level-tag level-${level}`}>{getComplexityLabel(level)}</span></p>
                         <p>
@@ -467,7 +468,7 @@ function AssignmentDetail() {
                                                         {formatDate(file.uploadDate)}
                                                     </td>
                                                     <td style={{ padding: '8px' }}>
-                                                        {/* API 응답의 url 필드(S3 URL)를 직접 사용 */}
+
                                                         {file.url ? (
                                                             <a
                                                                 href={file.url}
@@ -478,23 +479,8 @@ function AssignmentDetail() {
                                                             >
                                                                 다운로드
                                                             </a>
-                                                        ) : fileId ? (
-                                                            // fileId가 있지만 url이 없는 경우, 다운로드 엔드포인트 시도 (백업)
-                                                            <a
-                                                                href={`${baseURL}/file/download/${fileId}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                style={{ color: '#007bff', textDecoration: 'none' }}
-                                                                onClick={(e) => {
-                                                                    // 에러 발생 시 알림
-                                                                    e.preventDefault();
-                                                                    alert('파일 다운로드 URL을 찾을 수 없습니다. 파일이 삭제되었거나 접근 권한이 없을 수 있습니다.');
-                                                                }}
-                                                            >
-                                                                다운로드 시도
-                                                            </a>
                                                         ) : (
-                                                            <span style={{ color: '#999' }}>다운로드 불가</span>
+                                                            <span style={{ color: '#999' }}>다운로드 불가 (URL 없음)</span>
                                                         )}
                                                     </td>
                                                 </tr>
