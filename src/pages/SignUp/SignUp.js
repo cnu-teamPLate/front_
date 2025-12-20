@@ -11,30 +11,56 @@ function SignUp() {
         email: '',
         phone: '',
         studentnumber: '',
+        terms: false,   // 초기값 boolean으로 명시
+        privacy: false, // 초기값 boolean으로 명시
     });
     const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false); // 서버 요청 상태 확인
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // [수정 1] 체크박스와 일반 입력값 구분하여 처리
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
     };
 
+    // [수정 2] 유효성 검사 로직 강화 (이메일, 전화번호 정규식 추가)
     const validateStep = () => {
         const newErrors = {};
+        
+        // 정규식 정의
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        // 전화번호: 010으로 시작하고 중간 3~4자리, 끝 4자리 (하이픈 허용)
+        const phoneRegex = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/;
+
         if (step === 1) {
             if (!formData.terms) newErrors.terms = "서비스 약관에 동의해야 합니다.";
             if (!formData.privacy) newErrors.privacy = "개인 정보 수집 및 이용에 동의해야 합니다.";
         } else if (step === 2) {
+            if (!formData.studentnumber) newErrors.studentnumber = "학번을 입력해주세요.";
+            
             if (!formData.password) newErrors.password = "비밀번호를 입력해주세요.";
+            
             if (!formData.confirmPassword) newErrors.confirmPassword = "비밀번호 확인을 입력해주세요.";
-            if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "비밀번호가 다릅니다.";
+            else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "비밀번호가 일치하지 않습니다.";
+            
             if (!formData.name) newErrors.name = "이름을 입력해주세요.";
-            if (!formData.email) newErrors.email = "이메일을 입력해주세요.";
-            if (!formData.phone) newErrors.phone = "전화번호를 입력해주세요.";
+            
+            // 이메일 검사
+            if (!formData.email) {
+                newErrors.email = "이메일을 입력해주세요.";
+            } else if (!emailRegex.test(formData.email)) {
+                newErrors.email = "올바른 이메일 형식이 아닙니다. (예: example@domain.com)";
+            }
+
+            // 전화번호 검사
+            if (!formData.phone) {
+                newErrors.phone = "전화번호를 입력해주세요.";
+            } else if (!phoneRegex.test(formData.phone)) {
+                newErrors.phone = "올바른 휴대전화 번호를 입력해주세요. (예: 010-1234-5678)";
+            }
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -46,12 +72,12 @@ function SignUp() {
 
     const prevStep = () => setStep(step - 1);
 
-   const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (validateStep()) {
             setIsSubmitting(true);
-            
+
             try {
                 const response = await fetch('https://teamplate-api.site/auth/register', {
                     method: 'POST',
@@ -67,24 +93,18 @@ function SignUp() {
                     }),
                 });
 
-                // 1. 409 Conflict (중복) 처리 추가
-                // API 명세와 달리 실제 서버는 409를 반환하므로 이 코드가 실행됩니다.
                 if (response.status === 409) {
                     const errorData = await response.json();
-                    // 서버에서 보낸 "이미 존재하는 학번입니다" 메시지를 그대로 출력
-                    alert(errorData.message); 
-                    setIsSubmitting(false); // 로딩 해제
-                    return; // 함수 종료 (catch로 넘어가지 않음)
+                    alert(errorData.message || "이미 존재하는 정보입니다."); 
+                    setIsSubmitting(false);
+                    return;
                 }
 
-                // 2. 그 외의 에러 처리 (500 등)
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(errorText || '회원가입에 실패했습니다.');
                 }
                 
-                // 3. 성공 (200 OK)
-                // 성공 시 응답 본문이 비어있을 수도, JSON일 수도 있으므로 안전하게 처리
                 const responseText = await response.text();
                 try {
                      const result = JSON.parse(responseText);
@@ -97,7 +117,6 @@ function SignUp() {
                 setStep(3); 
 
             } catch (error) {
-                // response.ok가 false이고 409가 아닌 경우 이곳으로 옵니다.
                 console.error('회원가입 요청 오류:', error.message);
                 alert('서버 요청 중 문제가 발생했습니다. 관리자에게 문의하세요.');
             } finally {
@@ -119,7 +138,9 @@ function SignUp() {
                     {step === 1 && (
                         <div className="step">
                             <h3>약관 동의</h3>
-                            <div className="form-group">
+                            
+                            {/* [수정 3] 약관 및 체크박스 레이아웃 구조 변경 */}
+                            <div className="form-group terms-group">
                                 <label>서비스 약관 동의</label>
                                 <textarea readOnly value={`서비스 약관 내용:
 
@@ -132,10 +153,19 @@ function SignUp() {
 4. 개인정보 보호: 본 서비스는 사용자의 개인정보를 보호하기 위해 최선을 다하며, 사용자의 동의 없이 개인정보를 외부에 제공하지 않습니다. 다만, 법적으로 요구되는 경우에는 예외로 할 수 있습니다.
 
 5. 서비스 약관의 변경: 본 서비스 약관은 필요에 따라 변경될 수 있으며, 변경 시 변경된 사항을 사용자에게 고지합니다.`} />
-                                <input type="checkbox" name="terms" onChange={handleChange} /> 동의합니다.
+                                <div className="checkbox-container">
+                                    <span className="agree-text">동의합니다.</span>
+                                    <input 
+                                        type="checkbox" 
+                                        name="terms" 
+                                        checked={formData.terms} 
+                                        onChange={handleChange} 
+                                    />
+                                </div>
                                 {errors.terms && <p className="error">{errors.terms}</p>}
                             </div>
-                            <div className="form-group">
+
+                            <div className="form-group terms-group">
                                 <label>개인 정보 수집 및 이용 동의</label>
                                 <textarea readOnly value={`개인정보 수집 및 이용 동의 내용:
 
@@ -155,7 +185,15 @@ function SignUp() {
 
 5. 개인정보 처리 위탁
 - 본 서비스는 외부 업체에 개인정보 처리 업무를 위탁할 수 있으며, 위탁된 업체는 개인정보 보호 의무를 다할 의무가 있습니다.`} />
-                                <input type="checkbox" name="privacy" onChange={handleChange} /> 동의합니다.
+                                <div className="checkbox-container">
+                                    <span className="agree-text">동의합니다.</span>
+                                    <input 
+                                        type="checkbox" 
+                                        name="privacy" 
+                                        checked={formData.privacy} 
+                                        onChange={handleChange} 
+                                    />
+                                </div>
                                 {errors.privacy && <p className="error">{errors.privacy}</p>}
                             </div>
                             <button type="signup-button" onClick={nextStep}>다음</button>
@@ -188,17 +226,21 @@ function SignUp() {
                             </div>
                             <div className="form-group">
                                 <label htmlFor="email">이메일</label>
-                                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
+                                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@email.com" required />
                                 {errors.email && <p className="error">{errors.email}</p>}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="phone">전화번호</label>
-                                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required />
+                                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="010-0000-0000" required />
                                 {errors.phone && <p className="error">{errors.phone}</p>}
                             </div>
 
                             <div className="second-button">
+<<<<<<< HEAD
                                 <button type="signup-button" onClick={prevStep}>이전</button>
+=======
+                                <button type="button" onClick={prevStep} className="secondary-btn">이전</button>
+>>>>>>> lhj
                                 <button type="submit" disabled={isSubmitting}>다음</button>
                             </div>
                         </div>
