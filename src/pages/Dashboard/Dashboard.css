@@ -233,7 +233,7 @@
   border: 1px solid #e1e4e8;
   border-radius: 12px;
   font-size: 1rem;
-  background-color: #fff; /* 배경 흰색으로 변경 */
+  background-color: #fff;
   color: #191f28;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -252,7 +252,7 @@
   border-radius: 16px;
 }
 
-/* [FIX] Input Group Layout - Height Matching */
+/* Input Group Layout - Height Matching */
 .dm-input-group {
   display: flex;
   align-items: stretch; /* 자식 요소 높이 강제 통일 */
@@ -269,65 +269,7 @@
   border: 1px solid #d1d6db;
 }
 
-/* [FIX] Search Button (Icon Style) - Square */
-.dm-btn-search-inline {
-  height: 100% !important; /* 부모 높이 채움 */
-  width: 50px;             /* 정사각형 */
-  margin: 0;
-  padding: 0;
-  display: flex; justify-content: center; align-items: center;
-  background-color: #a32828;
-  color: white;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-}
-.dm-btn-search-inline:hover { background-color: #8a2020; transform: scale(1.05); }
-.dm-btn-search-inline:active { transform: scale(0.95); }
-
-/* [FIX] Result Card Layout */
-/* --- [Fix] 결과 카드 및 버튼 크기 고정 --- */
-
-/* 1. 결과 카드: 내용을 양쪽 끝으로 배치 */
-.dm-result-card {
-  display: flex;
-  flex-direction: row;       /* 가로 배치 */
-  align-items: center;       /* 수직 중앙 정렬 */
-  justify-content: space-between; /* 텍스트(왼쪽) - 버튼(오른쪽) 배분 */
-  
-  background-color: #fff;
-  border: 1px solid #e1e4e8;
-  border-left: 4px solid #a32828; /* 포인트 컬러 */
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-top: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-}
-
-/* 2. 텍스트 영역 */
-.dm-result-title {
-  font-size: 0.95rem; /* 15px 정도 */
-  font-weight: 700;   /* 굵게 */
-  color: #191f28;     /* 진한 검정 (가독성 UP) */
-  letter-spacing: -0.2px; /* 자간 살짝 좁게 */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 학번/교수명 (Sub) - 보조 정보 */
-.dm-result-sub {
-  font-size: 0.8rem;  /* 13px 정도 */
-  font-weight: 500;   /* 중간 두께 */
-  color: #8b95a1;     /* 회색 (은은하게) */
-  letter-spacing: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 1. 검색 버튼 (정사각형 돋보기) */
+/* --- [FIX] Search Button (Icon Style) - Square & Override --- */
 .dm-btn-search-inline {
   /* signup.css의 width: 100%를 무시하기 위해 !important 사용 */
   width: 50px !important; 
@@ -348,13 +290,35 @@
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
 }
+.dm-btn-search-inline:hover { background-color: #8a2020; transform: scale(1.05); }
+.dm-btn-search-inline:active { transform: scale(0.95); }
 
-.dm-btn-search-inline:hover {
-  background-color: #8a2020;
-  transform: scale(1.05);
+/* --- [FIX] Result Card Layout --- */
+.dm-result-card {
+  display: flex; flex-direction: row; justify-content: space-between; align-items: center;
+  background-color: #fff;
+  border: 1px solid #e1e4e8;
+  border-left: 4px solid #a32828; /* 포인트 컬러 */
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
 }
 
-/* 2. 선택/추가 버튼 (원형 플러스/체크) */
+.dm-result-info {
+  display: flex; flex-direction: column; gap: 2px;
+  overflow: hidden; flex: 1; margin-right: 10px;
+}
+.dm-result-title { 
+  font-weight: 700; color: #191f28; font-size: 0.95rem; 
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dm-result-sub { 
+  font-size: 0.8rem; color: #8b95a1; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* --- [FIX] Select/Add Button (Icon Style) - Circle & Override --- */
 .dm-btn-select-small {
   /* signup.css의 width: 100%를 무시하기 위해 !important 사용 */
   width: 32px !important;
@@ -362,7 +326,6 @@
   min-width: 32px !important; /* 어떤 상황에서도 줄어들지 않음 */
   
   padding: 0 !important; /* 패딩 제거 */
-  margin-left: 12px;
   border-radius: 50%;
   
   display: flex;
@@ -377,14 +340,9 @@
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
-.dm-btn-select-small:hover {
-  background-color: #bf3030;
-  transform: scale(1.1);
-}
-
+.dm-btn-select-small:hover { background-color: #bf3030; transform: scale(1.1); }
 .dm-btn-select-small:disabled {
-  background-color: #27ae60;
+  background-color: #27ae60; /* 완료(체크) 상태 녹색 */
   color: #fff;
   cursor: default;
   box-shadow: none;
