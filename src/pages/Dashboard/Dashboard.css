@@ -1,459 +1,376 @@
-/* General Body Styles */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  margin: 0;
-  background-color: #f0f2f5;
-  color: #333;
-  line-height: 1.6;
-}
+/* Dashboard.css - Refined Version */
 
+/* --- 기본 레이아웃 --- */
 .Dashboard {
   display: flex;
   min-height: 100vh;
-}
-
-/* Sidebar Styles */
-.App-sidebar {
-  width: 260px;
-  background-color: #ffffff;
-  padding: 20px 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-  transition: width 0.3s ease;
-  border-right: 1px solid #e8e8e8;
-}
-.sidebar-content h2 {
-  font-size: 1.25em;
-  color: #a32828; /* Base color for header accent */
-  margin-top: 0;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ecf0f1;
-}
-.my-projects .project-item {
-  padding: 10px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  font-size: 0.9em;
-  color: #34495e;
-}
-.my-projects .project-item:hover {
-  background-color: #fcecea; /* Lighter shade of base color for hover */
-  color: #a32828; /* Base color for text on hover */
-}
-.my-projects .project-item p {
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Main Content Area */
-.App-content {
-  flex-grow: 1;
-  padding: 25px 30px;
   background-color: #f4f7f9;
 }
+
+.App-content {
+  flex-grow: 1;
+  padding: 30px 40px;
+  background-color: #f4f7f9;
+  transition: margin-left 0.3s ease;
+}
+
+/* --- 상단 헤더 영역 --- */
 .main-header {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 30px;
+  justify-content: space-between; /* 양쪽 정렬 (제목이 있다면) 혹은 우측 정렬 */
+  align-items: center;
+  margin-bottom: 25px;
 }
+
+/* 프로젝트 리스트 타이틀 추가 (선택사항) */
+.main-header h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+  font-weight: 700;
+}
+
 .add-project-button {
   padding: 10px 20px;
-  background-color: #a32828; /* Base color */
+  background-color: #a32828;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.add-project-button:hover {
-  background-color: #8a2020; /* Darker shade for hover */
-  transform: translateY(-1px);
-}
-.add-project-button:active {
-  transform: translateY(0px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(163, 40, 40, 0.2);
 }
 
-/* Project List & Card Styling */
+.add-project-button:hover {
+  background-color: #8a2020;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(163, 40, 40, 0.3);
+}
+
 .project-list {
   display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 25px;
-  padding: 10px 5px 25px 5px;
-  min-height: 350px;
+  flex-wrap: nowrap;        
+  overflow-x: auto;       
+  gap: 25px;              
+  width: fit-content;     
+  max-width: 100%;          
+  margin: 0 auto;          
+  padding: 10px 25px 30px 25px; 
+  align-items: stretch;     
 }
-.project-list::-webkit-scrollbar { height: 10px; }
-.project-list::-webkit-scrollbar-thumb { background-color: #c79393; border-radius: 5px; }
-.project-list::-webkit-scrollbar-thumb:hover { background-color: #a32828; }
-.project-list::-webkit-scrollbar-track { background-color: #ecf0f1; border-radius: 5px; }
-
-/* Pagination Styles */
-.pagination {
-  display: flex;
-  justify-content: center;
-  padding: 20px 0;
-  list-style: none;
+/* 스크롤바 스타일링 */
+.project-list::-webkit-scrollbar {
+  height: 8px;
 }
-
-.page-item {
-  margin: 0 5px;
+.project-list::-webkit-scrollbar-thumb {
+  background-color: #d1d1d1;
+  border-radius: 4px;
 }
-
-.page-link {
-  cursor: pointer;
-  color: #a32828;
-  padding: 10px 15px;
-  text-decoration: none;
-  transition: background-color 0.3s;
-  border: 1px solid #ddd;
+.project-list::-webkit-scrollbar-thumb:hover {
+  background-color: #a32828;
+}
+.project-list::-webkit-scrollbar-track {
+  background-color: #eee;
   border-radius: 4px;
 }
 
-.page-item.active .page-link {
-  background-color: #a32828;
-  color: white;
-  border-color: #a32828;
-}
-
-.page-link:hover {
-  background-color: #fcecea;
-}
-
+/* --- 프로젝트 카드 디자인 --- */
 .project-card {
   background-color: #ffffff;
-  border: 1px solid #dfe4ea;
-  border-left: 4px solid #a32828; /* Accent border with base color */
-  border-radius: 6px;
-  padding: 0;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e1e4e8;
+  border-top: 4px solid #a32828; /* 상단 포인트 컬러 */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
-  flex-direction: column;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
-  flex-shrink: 0;
-  width: 330px;
-  min-height: 280px;
-  overflow: hidden;
-}
-.project-card:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transform: translateY(-3px);
+  flex-direction: column;   /* 내부 요소 세로 정렬 */
+  width: 320px;             /* 고정 너비 */
+  min-width: 320px;         /* flex-shrink 방지 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;         /* 내부 요소 넘침 방지 */
 }
 
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* 카드 헤더 */
 .project-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid #e9ecef;
+  align-items: flex-start;
+  padding: 20px 20px 10px 20px;
 }
+
 .project-card-header h2 {
   margin: 0;
-  font-size: 1.2em;
-  color: #a32828; /* Base color for card titles */
+  font-size: 1.25rem;
+  color: #2c3e50;
+  font-weight: 700;
+  line-height: 1.4;
+  /* 제목이 너무 길 경우 말줄임 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.project-controls {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0; /* 아이콘 영역 줄어들지 않게 */
+}
+
+/* 카드 본문 */
+.project-card-body {
+  padding: 10px 20px 20px 20px;
+  flex-grow: 1; /* 남은 공간을 모두 차지하여 푸터를 바닥으로 밀어냄 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-detail {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.project-detail strong {
+  color: #333;
   font-weight: 600;
-  white-space: nowrap;
+  margin-right: 6px;
+}
+
+/* 목표(Goal) 텍스트 스타일 - 말줄임 처리 */
+.project-goal {
+  background-color: #f8f9fa;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #666;
+  
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 3줄까지만 표시 */
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-height: 3.6em; /* 최소 높이 확보로 정렬 유지 */
 }
-.project-controls { display: flex; gap: 15px; }
-.project-controls > * { cursor: pointer; color: #7f8c8d; transition: color 0.2s ease; }
-.project-controls > *:hover { color: #a32828; }
 
-.project-card-body { padding: 15px 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
-.project-detail { margin: 0; line-height: 1.5; color: #555; font-size: 0.875rem; }
-.project-detail strong { color: #333; font-weight: 500; margin-right: 5px; }
-.project-goal { white-space: pre-wrap; word-break: break-word; max-height: 60px; overflow-y: auto; }
-.project-date { font-style: italic; color: #777; }
-
-.team-members-simplified { margin-top: 8px; }
-.team-members-simplified h3 { font-size: 0.95em; margin-top: 0; margin-bottom: 6px; color: #34495e; font-weight: 500; }
-.team-members-simplified ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.team-members-simplified li {
-  font-size: 0.8rem; color: #a32828; background-color: #fcecea;
-  padding: 3px 8px; border-radius: 10px; white-space: nowrap;
-  border: 1px solid #f7c5c5;
-}
-.no-members-text { font-size: 0.8rem; color: #777; font-style: italic; }
-
-.project-card-footer { padding: 15px 20px; border-top: 1px solid #e9ecef; background-color: #f8f9fa; margin-top: auto; }
-.project-link {
-  display: block; padding: 8px 15px; background-color: #a32828;
-  color: white !important; text-decoration: none; border-radius: 4px;
-  font-weight: 500; text-align: center; transition: background-color 0.2s ease;
+.project-date {
   font-size: 0.85rem;
+  color: #888;
+  margin-top: 5px;
 }
-.project-link:hover { background-color: #8a2020; }
 
-/* Error and Loading Messages */
-.error { color: #a32828; background-color: #fcecea; border: 1px solid #f7c5c5; padding: 12px; border-radius: 4px; text-align: center; }
-.loading-message { font-size: 1.1em; text-align: center; padding: 20px; color: #7f8c8d; }
+/* 팀원 목록 영역 */
+.team-members-simplified h3 {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
 
-/* Popup Styling */
-.popupfordashboard {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(40, 40, 40, 0.65);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 1000; padding: 20px; box-sizing: border-box;
+.team-members-simplified ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-.popup-inner {
-  background-color: #fff; padding: 25px 30px; border-radius: 6px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  width: 100%; max-width: 600px; max-height: 85vh;
-  overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;
-}
-.popup-inner h2 {
-  text-align: center; margin-top: 0; margin-bottom: 25px;
-  color: #a32828; font-size: 1.4em; font-weight: 600;
-}
-.popup-inner label { display: block; margin-bottom: 12px; font-weight: 500; color: #495057; font-size: 0.9rem; }
-.popup-inner input[type="text"], .popup-inner input[type="url"] {
-  width: 100%; padding: 10px; margin-top: 4px;
-  border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;
-  font-size: 0.95rem; transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.popup-inner input[type="text"]:focus, .popup-inner input[type="url"]:focus {
-  border-color: #a32828; outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(163, 40, 40, .25);
-}
-.divider { margin: 20px 0; border: 0; border-top: 1px solid #e9ecef; }
 
-/* Dashboard.css */
-
-/* ... 기존 다른 스타일들 ... */
-
-/* --- Unified Styles for Subject & Member Sections in Popup (간격 조정 및 스타일 통일) --- */
-.subject-section, .member-section {
-  margin-top: 15px; /* 상하 마진 약간 줄임 */
-  margin-bottom: 15px;
-  padding: 12px;    /* 내부 패딩 약간 줄임 */
-  border: 1px solid #e9ecef;
-  border-radius: 5px;
-  background-color: #f8f9fa;
-}
-.subject-section > label[htmlFor="subjectNameInputId"],
-.member-section > label[htmlFor="memberSearchQueryInputId"] {
-  display: block;
-  margin-bottom: 6px; /* 마진 약간 줄임 */
+.team-members-simplified li {
+  font-size: 0.8rem;
+  background-color: #fcecea;
+  color: #a32828;
+  padding: 4px 8px;
+  border-radius: 12px;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 카드 푸터 (버튼 영역) */
+.project-card-footer {
+  padding: 15px 20px;
+  background-color: #fcfcfc;
+  border-top: 1px solid #f0f0f0;
+  margin-top: auto; /* 상단 요소들과 거리를 벌려 바닥에 붙음 */
+}
+
+.project-link {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  background-color: #a32828;
+  color: white !important;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
   font-size: 0.9rem;
-  color: #343a40;
+  transition: background-color 0.2s;
+  box-sizing: border-box; /* 패딩 포함 크기 계산 */
+}
+
+.project-link:hover {
+  background-color: #7c1e1e;
+}
+
+/* --- 팝업 (Modal) 스타일 개선 --- */
+.popupfordashboard {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.popup-inner {
+  background-color: white;
+  width: 100%;
+  max-width: 550px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-inner h2 {
+  color: #a32828;
+  margin-top: 0;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+/* 폼 요소 공통 */
+.popup-inner label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.popup-inner input[type="text"],
+.popup-inner input[type="url"],
+.popup-inner input[type="datetime-local"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.popup-inner input:focus {
+  border-color: #a32828;
+  outline: none;
+}
+
+/* 검색 섹션 박스화 */
+.subject-section, .member-section {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
 }
 
 .subject-search-container, .member-search-container {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 8px; /* 마진 약간 줄임 */
+  margin-bottom: 10px;
 }
-.subject-search-container input[type="text"],
-.member-search-container input[type="text"] {
-  flex-grow: 1; padding: 8px 10px; border: 1px solid #ced4da; border-radius: 4px;
-  font-size: 0.9rem; height: 36px; /* 높이 통일 (이전 38px에서 약간 줄임) */
-  box-sizing: border-box; margin-top: 0;
+.subject-search-container input, .member-search-container input {
+    margin-bottom: 0 !important; /* 컨테이너 내부에서는 마진 제거 */
 }
 
-.search-subject-button, .search-member-button {
-  color: white; background-color: #a32828; /* 기본 테마색 유지 */
-  border: none; border-radius: 4px; cursor: pointer; font-weight: 500;
-  font-size: 0.85rem; white-space: nowrap; height: 36px; /* 높이 통일 */
-  padding: 0 15px; display: inline-flex; align-items: center;
-  justify-content: center; transition: background-color 0.15s ease-in-out; margin-top: 0;
-}
-.search-subject-button:hover, .search-member-button:hover { background-color: #8a2020; }
-
-.api-message {
-  font-size: 0.8rem; margin: 6px 0 8px 0; /* 상하 마진 약간 줄임 */
-  padding: 7px 10px; /* 패딩 약간 줄임 */
-  border-radius: 4px; border: 1px solid transparent; text-align: center;
-}
-/* .api-message.enroll-prompt 스타일은 유지 (노란색 경고) */
-.api-message.enroll-prompt { background-color: #fef3cd; border-color: #fce8ae; color: #664d03; }
-.api-message:not(.enroll-prompt) { background-color: #e9ecef; color: #495057; border-color: #ced4da; }
-
-/* --- Sub-headers within forms (h4) --- */
-.subject-enroll-form h4,
-.searched-members-list h4 {
-  margin-top: 0;
-  margin-bottom: 10px; /* 마진 약간 줄임 */
-  font-size: 1em;
-  color: #343a40;
-  font-weight: 600;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-/* --- Subject Specific Styles in Popup (수정) --- */
-.subject-found-details { /* 과목 검색 성공 시 표시 영역 - 배경 및 테두리는 이전과 동일 (흰색/회색) */
-  padding: 10px 12px; /* 패딩 약간 조정 */
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  font-size: 0.85rem;
-}
-
-/* 새로 추가된 wrapper div 스타일 */
-.subject-found-details .subject-info-wrapper {
-  display: flex;                 /* Flexbox 레이아웃 사용 */
-  justify-content: space-between;/* 양쪽 끝으로 요소를 분산 */
-  align-items: center;           /* 세로 중앙 정렬 */
-  width: 100%;
-}
-
-/* 검색된 과목 텍스트 스타일 */
-.subject-found-details .subject-text-details {
-  margin: 0;                     /* p 태그의 기본 마진 제거 */
-  flex-grow: 1;                  /* 텍스트 부분이 가능한 많은 공간 차지 */
-  padding-right: 10px;           /* 버튼과의 간격 */
-  color: #333;
-  line-height: 1.4;              /* 줄 간격 조정 */
-}
-.subject-found-details .subject-text-details strong {
-  color: #000;
-}
-
-
-/* "이 과목 선택" 버튼 스타일 - 팀원 "추가" 버튼과 유사하게 변경 */
-.select-subject-button {
-  padding: 4px 8px;         /* 팀원 추가 버튼과 동일한 패딩 */
-  font-size: 0.75rem;       /* 팀원 추가 버튼과 동일한 폰트 크기 */
-  color: white;
-  border: none;
-  border-radius: 3px;       /* 팀원 추가 버튼과 동일한 모서리 둥글기 */
-  cursor: pointer;
-  transition: background-color 0.15s ease-in-out;
-  background-color: #a32828; /* 기본 테마색 */
-  flex-shrink: 0;           /* 버튼이 줄어들지 않도록 함 */
-  white-space: nowrap;      /* 버튼 텍스트가 여러 줄로 나뉘는 것 방지 */
-}
-.select-subject-button:hover {
-  background-color: #8a2020; /* 기본 테마색의 어두운 톤 */
-}
-
-
-/* 과목 등록 폼 스타일 (큰 변경 없음, 필요시 간격 등 미세 조정) */
-.subject-enroll-form {
-  padding: 15px;
-  background-color: #fff; /* 흰색 배경 및 테두리 유지 */
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-top: 8px;
-}
-.subject-enroll-form h4 { /* 스타일은 이전 답변에서 .searched-members-list h4와 통일됨 */
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 1em;
-  color: #343a40;
-  font-weight: 600;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e0e0e0;
-}
-.subject-enroll-form label {
-  font-weight: normal; font-size: 0.85rem; margin-bottom: 5px;
-}
-.subject-enroll-form input[type="text"] {
-  font-size: 0.9rem; height: 36px;
-  padding: 8px 10px; margin-bottom: 8px;
-}
-.enroll-subject-button { /* 과목 등록 버튼 스타일 */
-  margin-top: 5px;
-  padding: 7px 12px;
-  font-size: 0.8rem;
-  color: white; border: none;
-  border-radius: 4px; cursor: pointer; transition: background-color 0.15s ease-in-out;
-  background-color: #a32828; /* 기본 테마색 */
-}
-.enroll-subject-button:hover {
-  background-color: #8a2020; /* 기본 테마색의 어두운 톤 */
-}
-
-.add-searched-member-button { /* 이 버튼 스타일을 .select-subject-button이 참조함 */
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  margin-left: 8px; /* 왼쪽 여백으로 텍스트와 구분 */
-  transition: background-color 0.15s ease-in-out;
-  background-color: #a32828; /* 기본 테마색 */
-  flex-shrink: 0; /* 버튼 크기 유지 */
-  white-space: nowrap;
-}
-.add-searched-member-button:hover {
-  background-color: #8a2020;
-}
-.add-searched-member-button:disabled {
-  background-color: #adb5bd;
-  color: #fff;
-  cursor: not-allowed;
-  opacity: 0.8;
-}
-
-/* Member Specific Styles in Popup (기존 스타일 유지 또는 약간의 간격 조정) */
-.searched-members-list {
-  margin-top: 8px; /* API 메시지와의 간격 */
-  max-height: 150px; overflow-y: auto;
-  border: 1px solid #e0e0e0; padding: 10px; /* 패딩 조정 */
-  border-radius: 4px; background-color: #fff;
-}
-/* .searched-members-list h4 스타일은 위에서 .subject-enroll-form h4 와 통일됨 */
-.searched-members-list ul { list-style: none; padding: 0; margin: 0; }
-.searched-members-list li {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 5px; /* 패딩 약간 줄임 */
-  border-bottom: 1px solid #f1f3f5; font-size: 0.85rem; color: #495057;
-}
-.searched-members-list li:last-child { border-bottom: none; }
-.searched-members-list li span { flex-grow: 1; }
-
+/* 버튼들 */
+.search-subject-button, .search-member-button, 
+.enroll-subject-button, .select-subject-button,
 .add-searched-member-button {
-  padding: 4px 8px; font-size: 0.75rem; color: white; border: none;
-  border-radius: 3px; cursor: pointer; margin-left: 8px;
-  transition: background-color 0.15s ease-in-out;
-  background-color: #a32828; /* 기본 테마색 유지 */
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  height: 38px; /* 인풋 높이와 맞춤 */
+  transition: background-color 0.2s;
 }
-.add-searched-member-button:hover { background-color: #8a2020; }
-.add-searched-member-button:disabled { background-color: #adb5bd; color: #fff; cursor: not-allowed; opacity: 0.8; }
-
-/* Added Members & Popup Actions (기존 스타일 유지 또는 약간의 간격 조정) */
-.added-members {
-  margin-top: 10px; /* 간격 약간 줄임 */
-  padding: 10px; background-color: #f8f9fa; border-radius: 4px;
-}
-.added-members h4 { font-size: 0.95em; margin-top:0; margin-bottom: 8px; color: #343a40; }
-.added-members ul { list-style: none; padding-left: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.added-members li {
-  font-size: 0.85rem; color: #a32828; background-color: #fcecea;
-  padding: 3px 8px; border-radius: 10px; border: 1px solid #f7c5c5;
-}
-
-.divider { margin: 15px 0; /* 간격 약간 줄임 */ border: 0; border-top: 1px solid #e9ecef; }
+.search-subject-button:hover, .search-member-button:hover { background-color: #333; }
 
 .popup-actions {
-  display: flex; justify-content: flex-end; gap: 10px;
-  margin-top: 15px; /* 간격 약간 줄임 */
-  padding-top: 15px; border-top: 1px solid #e9ecef;
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
 }
 
-.popup-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e9ecef; }
-.popup-actions button { padding: 9px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 0.95rem; transition: background-color 0.2s ease, box-shadow 0.2s ease; }
-.popup-actions button:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.popup-create-button, .popup-save-button {
+  padding: 10px 20px;
+  background-color: #a32828;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.popup-cancel-button {
+  padding: 10px 20px;
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-.popup-create-button, .popup-save-button { background-color: #a32828; color: white; } /* Base color */
-.popup-create-button:hover, .popup-save-button:hover { background-color: #8a2020; } /* Darker shade */
-.popup-cancel-button { background-color: #6c757d; color: white; } /* Kept as neutral gray */
-.popup-cancel-button:hover { background-color: #5a6268; }
+/* Error & Loading */
+.loading-message { text-align: center; color: #888; margin-top: 50px; }
+.error { color: #d9534f; background: #fcedqe; padding: 10px; border-radius: 4px; text-align: center; }
+
+/* 페이지네이션 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin-top: 30px;
+}
+.page-item { margin: 0 4px; }
+.page-link {
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    color: #a32828;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.page-item.active .page-link {
+    background-color: #a32828;
+    color: white;
+    border-color: #a32828;
+}
