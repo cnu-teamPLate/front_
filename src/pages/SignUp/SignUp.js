@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './SignUp.css';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 function SignUp() {
     const [step, setStep] = useState(1);

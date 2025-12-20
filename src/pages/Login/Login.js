@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import { Link } from 'react-router-dom';
 import PasswordRecovery from './PasswordRecovery';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 function Login() {
   const [formData, setFormData] = useState({

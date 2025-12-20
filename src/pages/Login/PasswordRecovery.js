@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './Login.css';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 function PasswordRecovery({ onCancel }) {
   const [email, setEmail] = useState('');

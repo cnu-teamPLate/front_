@@ -8,6 +8,8 @@ import './schedule.css';
 import MyCalendar from '../../components/Calendar/Calendar';
 import WhenToMeetGrid from "./when2meet";
 import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 const API = 'https://teamplate-api.site';
 

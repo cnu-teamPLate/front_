@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import ProjectSidebar from '../../components/SideBar/ProjectSidebar';
 import './project.css';
+import '../../style/variables.css';
+import '../../style/modern-theme-overhaul.css';
 
 // API base URL
 const API_BASE_URL = 'https://teamplate-api.site';

@@ -17,6 +17,7 @@ import Footer from './components/Footer';//사이드바가 필요없는 페이�
 import Header from './components/Header';
 import './App.css';
 import './style/variables.css';
+import './style/modern-theme-overhaul.css';
 
 function App() {
   const notifications = [
