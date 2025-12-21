@@ -14,7 +14,8 @@
     width: 100%;
     max-width: 1000px;
     overflow: hidden;
-    padding-right: 40px;
+    min-width: 700px;
+
 }
 
 .assignment-detail-container .card-header {
@@ -39,9 +40,9 @@
 }
 
 .assignment-detail-container .task-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 4rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid #e0e0e0;

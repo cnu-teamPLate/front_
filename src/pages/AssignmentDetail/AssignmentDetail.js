@@ -372,10 +372,10 @@ function AssignmentDetail() {
                 </header>
                 <section className="card-body">
                     <div className="task-info">
-                        <p><strong>담당자:</strong> {userName}</p>
-                        <p><strong>분류:</strong> {cate}</p>
-                        <p><strong>난이도:</strong> <span className={`level-tag level-${level}`}>{getComplexityLabel(level)}</span></p>
-                        <p>
+                        <p className='p-width'><strong>담당자:</strong> {userName}</p>
+                        <p className='p-width'><strong>분류:</strong> {cate}</p>
+                        <p className='p-width'><strong>난이도:</strong> <span className={`level-tag level-${level}`}>{getComplexityLabel(level)}</span></p>
+                        <p className='p-width'>
                             <strong>마감일:</strong>
                             {isEditing ? (
                                 <input
@@ -383,7 +383,6 @@ function AssignmentDetail() {
                                     value={editForm.date}
                                     onChange={(e) => setEditForm(prev => ({ ...prev, date: e.target.value }))}
                                     style={{
-                                        marginLeft: '8px',
                                         padding: '4px 8px',
                                         fontSize: '14px',
                                         border: '1px solid #ddd',
